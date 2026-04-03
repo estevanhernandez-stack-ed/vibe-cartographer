@@ -57,7 +57,7 @@ Adapt your communication to the check-in cadence the learner chose:
 
 **Mode influences the default cadence:**
 - **Learner mode:** Default to learning-driven narration unless the learner chose otherwise in `/checklist`.
-- **Builder mode:** Default to balanced or speed-run narration unless the learner chose otherwise in `/checklist`.
+- **Builder mode:** Default to balanced narration unless the learner chose otherwise in `/checklist`.
 The learner's explicit choice in `/checklist` always takes precedence over the mode default.
 
 #### 3. Verify (if opted in)

@@ -31,8 +31,6 @@ Frame this for the learner early in the conversation: "The scope doc was the big
 
 This follows the two-phase deepening rounds pattern described in `guide/SKILL.md`. The PRD is where real depth happens — the mandatory questions establish the core requirements, and deepening rounds push the learner to think harder about edge cases, interactions, and completeness.
 
-Frame this for the learner early: "The scope doc was the big picture. Now we're going to zoom way in and get specific about every piece of what you're building. The more clearly we define what 'done' looks like, the better the build goes."
-
 **Adapt the framing to mode:**
 - **Learner mode:** Explain what a PRD is and why acceptance criteria matter before the first question. "A PRD — product requirements document — is where we get really specific about what your app does. The scope was the big picture; this is the blueprint. We're going to write acceptance criteria for every feature — that means 'how do I know this is working?' — so there's no ambiguity when we build."
 - **Builder mode:** Skip the explainer. Go straight to the first mandatory question with a brief transition: "Time to get specific. Let's walk through the scope and tighten everything up."

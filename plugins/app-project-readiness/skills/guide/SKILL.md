@@ -95,6 +95,7 @@ Read the learner's mode from `docs/learner-profile.md` (once it exists). Mode is
 - Same guard rails and prerequisite checks
 - Deepening rounds available in both — just framed differently
 - Same process notes logging
+- When mode and experience level suggest different defaults, mode is the primary driver and experience level is the tiebreaker
 
 ## Command Chain
 
