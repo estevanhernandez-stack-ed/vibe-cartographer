@@ -1,0 +1,6 @@
+{
+  "name": "app-project-readiness",
+  "version": "0.2.0",
+  "description": "A spec-driven development curriculum delivered as eight slash commands. Walk through the process from idea spark to working app.",
+  "author": {"name": "Marcus Corporation"}
+}

@@ -1,0 +1,21 @@
+{
+  "name": "app-project-readiness",
+  "owner": {
+    "name": "Marcus Corporation"
+  },
+  "metadata": {
+    "description": "Marcus Corporation App Project Readiness Tool — spec-driven development from idea to working app."
+  },
+  "plugins": [
+    {
+      "name": "app-project-readiness",
+      "source": "./plugins/app-project-readiness",
+      "description": "A spec-driven development curriculum delivered as eight slash commands. Walk through the process from idea spark to working app.",
+      "author": {
+        "name": "Marcus Corporation"
+      },
+      "keywords": ["spec-driven", "curriculum", "project-readiness"],
+      "category": "education"
+    }
+  ]
+}
