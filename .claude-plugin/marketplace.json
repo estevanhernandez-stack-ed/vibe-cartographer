@@ -10,11 +10,11 @@
     {
       "name": "app-project-readiness",
       "source": "./plugins/app-project-readiness",
-      "description": "A spec-driven development curriculum delivered as eight slash commands. Walk through the process from idea spark to working app.",
+      "description": "Marcus App Platform Readiness Plugin — guides you from idea to working app through spec-driven development, delivered as eight slash commands.",
       "author": {
         "name": "Marcus Corporation"
       },
-      "keywords": ["spec-driven", "curriculum", "project-readiness"],
+      "keywords": ["spec-driven", "app-readiness", "project-readiness"],
       "category": "education"
     }
   ]

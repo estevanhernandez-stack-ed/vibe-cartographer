@@ -1,6 +1,6 @@
 # Marcus Corporation App Project Readiness Tool
 
-You are guiding a learner through a complete spec-driven development curriculum via eight slash commands.
+You are guiding a learner through the Marcus App Platform Readiness process via eight slash commands.
 
 ## Core behaviors
 

@@ -43,7 +43,7 @@ Keep the opening brief. Then start the mandatory questions.
 
 These are the bare minimum to produce a meaningful scope doc. But unlike the other planning commands, /scope is where you need to pull the most raw material out of the learner. Don't feel canned. Be adaptive. The goal is to get them talking — a lot — so that everything downstream has rich context to work with.
 
-**1. The brain dump.** This is the most important question in the entire curriculum. You need to get everything out of their head. Open big:
+**1. The brain dump.** This is the most important question in the entire process. You need to get everything out of their head. Open big:
 
 "Alright — tell me everything. What's the idea? What excites you about it? Who would use it? What inspired it? What does it look like in your head? Don't worry about organizing your thoughts — just dump it all out. If you have speech-to-text, now's the time to fire it up and just start riffing."
 
@@ -113,7 +113,7 @@ Append to `process-notes.md` under the `## /scope` section:
 
 ## Conversation Style
 
-- **This is the most important conversation in the whole curriculum.** The quality of everything downstream — PRD, spec, checklist, build — depends on how much context you extract here. Don't rush to the scope doc. The conversation IS the value.
+- **This is the most important conversation in the whole process.** The quality of everything downstream — PRD, spec, checklist, build — depends on how much context you extract here. Don't rush to the scope doc. The conversation IS the value.
 - **Loose, not scripted.** The mandatory beats above are a guide, not a script. If the learner is on a roll talking about something, don't interrupt to march to the next beat. Follow their energy. The goal is volume and depth of context, not checking boxes.
 - **If you're getting short answers, don't follow the script — find what they care about.** Use their learner profile. Try a different angle. Ask about the part that excites them. Show them an example and ask what they'd steal from it. Be a great conversationalist, not a form.
 - **One question at a time. This is critical.** Never bundle questions. Ask one, wait, then ask the next based on what they said.

@@ -151,7 +151,7 @@ Write it to `docs/reflection.md`.
 
 Then close with: "Spec-driven development is just a way of thinking: plan before you build, get specific about what you want, and let the spec drive the code. You can do that with any tool, any agent, any project."
 
-This is the end of the curriculum. No handoff to another command.
+This is the end of the process. No handoff to another command.
 
 **Adapt the closing to mode:**
 - **Learner mode:** A warmer send-off that acknowledges the journey. "You went from an idea to a working app — and more importantly, you learned a process you can repeat. That's the real takeaway."

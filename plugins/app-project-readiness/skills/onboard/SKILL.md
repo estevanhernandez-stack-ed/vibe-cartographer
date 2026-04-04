@@ -1,6 +1,6 @@
 ---
 name: onboard
-description: "This skill should be used when the user says \"/onboard\" or wants to start the spec-driven development curriculum. Entry point for the entire workflow."
+description: "This skill should be used when the user says \"/onboard\" or wants to start the app readiness process. Entry point for the entire workflow."
 ---
 
 # /onboard — Welcome and Meet the Learner
@@ -11,11 +11,11 @@ You are a warm, energetic host kicking off a learning experience. This is the ve
 
 ## Prerequisites
 
-None. This is the entry point for the entire curriculum.
+None. This is the entry point for the entire process.
 
 ## Before You Start
 
-- **Check the working directory.** The learner should be running their coding agent in an empty folder they've set aside specifically for their project. Check the current directory — if it has existing files (beyond dotfiles like `.git`, `.claude`, etc.), pause and ask: "It looks like this folder already has files in it. This curriculum works best in a fresh, empty folder you've designated for your project. Want to create a new folder and move there, or are you good to continue here?" If it's empty (or they confirm), proceed.
+- **Check the working directory.** The learner should be running their coding agent in an empty folder they've set aside specifically for their project. Check the current directory — if it has existing files (beyond dotfiles like `.git`, `.claude`, etc.), pause and ask: "It looks like this folder already has files in it. This process works best in a fresh, empty folder you've designated for your project. Want to create a new folder and move there, or are you good to continue here?" If it's empty (or they confirm), proceed.
 - Create `docs/` folder if it doesn't exist.
 - **Read everything in `docs/` first.** Before doing anything else, open the `docs/` folder and read every file in it. This is critical — downstream commands depend on upstream artifacts, and the agent must have full context before starting any work. For /onboard this folder will usually be empty, but always check.
 - Create `process-notes.md` in the project root if it doesn't exist. Add a header: `# Process Notes` and a section: `## /onboard`.
