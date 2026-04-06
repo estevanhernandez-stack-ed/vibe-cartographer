@@ -26,7 +26,7 @@
 
 ## Plan vs. Reality
 
-**What went well:** [One specific strength — where the build matched the plan, or where the learner adapted well to drift]
+**What went well:** [One specific strength — where the build matched the plan, or where the builder adapted well to drift]
 
 **What to try next time:** [One specific, actionable growth area]
 
@@ -38,11 +38,11 @@
 
 ## Your Goals
 
-[Loop back to the learner's stated goals. Connect the feedback to what they said they wanted to get out of this experience.]
+[Loop back to the builder's stated project goals. Connect the feedback to what they said they wanted to accomplish.]
 
 ## Reflection
 
-[The learner's answer to the reflection question, and the agent's response.]
+[The builder's answer to the reflection question, and the agent's response.]
 
 ## Milestone Completion
 

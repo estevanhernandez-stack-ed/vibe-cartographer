@@ -10,7 +10,7 @@ The plugin delivers a guided spec-driven development workflow as eight slash com
 
 | Command | What It Does |
 |---------|-------------|
-| `/onboard` | Welcome, learner profiling, and architecture docs setup |
+| `/onboard` | Welcome, builder profiling, and architecture docs setup |
 | `/scope` | Brainstorm and refine your idea into a focused project scope |
 | `/prd` | Turn scope into detailed product requirements |
 | `/spec` | Translate PRD into a technical blueprint using your architecture |
@@ -23,7 +23,7 @@ The final checklist step is always **Documentation & Security Verification** —
 
 ## Architecture Docs
 
-The plugin supports custom architecture docs so technical decisions are guided by your preferred stack, patterns, and conventions. During `/onboard`, the learner points to their architecture docs (or skips to use sensible defaults).
+The plugin supports custom architecture docs so technical decisions are guided by your preferred stack, patterns, and conventions. During `/onboard`, the builder points to their architecture docs (or skips to use sensible defaults).
 
 See [`plugins/app-project-readiness/architecture/`](plugins/app-project-readiness/architecture/) for the included defaults and an example.
 

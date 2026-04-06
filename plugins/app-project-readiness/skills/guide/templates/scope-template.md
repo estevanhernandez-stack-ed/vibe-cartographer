@@ -17,7 +17,7 @@ Include URLs to everything referenced — these become a research map
 that /spec and other downstream commands can use to gather more context.
 
 ## Goals
-What the learner wants this project to accomplish. What would make them proud.
+What the builder wants this project to accomplish. What would make them proud.
 
 ## What "Done" Looks Like
 Concrete description of the finished product.

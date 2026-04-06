@@ -7,7 +7,7 @@ description: "This skill should be used when the user says "/iterate" or wants t
 
 Read `skills/guide/SKILL.md` for your overall behavior, then follow this command.
 
-You are a collaborative partner. The learner has graduated from the structured process — now they're working with the agent more directly, which is the whole point. This command is completely optional. Don't pressure anyone to iterate — if the build is done and they're happy, go straight to `/reflect`.
+You are a collaborative partner. The builder has graduated from the structured process — now they're working with the agent more directly, which is the whole point. This command is completely optional. Don't pressure anyone to iterate — if the build is done and they're happy, go straight to `/reflect`.
 
 ## Prerequisites
 
@@ -19,13 +19,13 @@ ALL original checklist items in `docs/checklist.md` must be complete. If any are
 - Confirm all original items in `docs/checklist.md` are checked.
 - Pay special attention to `docs/prd.md` — especially "What we'd add with more time." These are natural starting points.
 - Note the current architecture from `docs/spec.md`.
-- Read `process-notes.md` — what happened during the build? Any issues, surprises, or things the learner mentioned wanting to fix?
+- Read `process-notes.md` — what happened during the build? Any issues, surprises, or things the builder mentioned wanting to fix?
 - Skim the current app code to understand what actually got built (it may have drifted from the spec).
 - Append a `## /iterate` section to `process-notes.md` (or `## Iteration N` if this isn't the first run).
 
 ## Flow
 
-### 1. Learner Describes What to Improve
+### 1. Builder Describes What to Improve
 
 Ask: "What do you want to work on? Could be a bug, a new feature, UX polish, or anything else."
 
@@ -38,10 +38,10 @@ Before jumping to a mini-checklist, do a quick review of the current state. This
 Read the app code, the original spec, the PRD, and the checklist. Surface what you find:
 
 - Did anything change during the build that affects the nice-to-haves in the PRD? Maybe the data model shifted, or a deferred feature is now trivial because the infrastructure is already there.
-- Is the learner's requested improvement aligned with what's realistic given the current architecture?
+- Is the builder's requested improvement aligned with what's realistic given the current architecture?
 - Are there quick wins they haven't thought of — things that would take 5 minutes because the scaffolding already exists?
 
-Share 2-3 observations with the learner. Keep it brief — this is a check-in, not a new planning phase. "Based on what we built, adding search filters is actually easy now because the API already supports query params. But the social sharing feature would need a whole new auth flow — bigger than it looks."
+Share 2-3 observations with the builder. Keep it brief — this is a check-in, not a new planning phase. "Based on what we built, adding search filters is actually easy now because the API already supports query params. But the social sharing feature would need a whole new auth flow — bigger than it looks."
 
 **Adapt the review pass to mode:**
 - **Learner mode:** Frame observations with a bit more context. "Based on what we built, here's what I noticed..." and explain the implications of each observation.
@@ -49,7 +49,7 @@ Share 2-3 observations with the learner. Keep it brief — this is a check-in, n
 
 ### 3. Scope the Iteration Together
 
-Interview the learner to nail down exactly what they want. One question at a time — draw out what they're picturing, what "done" looks like for this improvement.
+Interview the builder to nail down exactly what they want. One question at a time — draw out what they're picturing, what "done" looks like for this improvement.
 
 If they want something that's too big, help them cut it down. "That's a great idea but it's probably an hour of work on its own. Want to do a simpler version first?"
 
@@ -71,27 +71,27 @@ Append these to `docs/checklist.md` under an `## Iteration N` header (where N in
 
 "Your iteration items are added to the checklist. Run `/clear`, then run `/build` to start working through them."
 
-The learner runs /build exactly as before — same mode, same verification preferences, same comprehension checks (if opted in). The iteration items just happen to be at the bottom of checklist.md under a new section header.
+The builder runs /build exactly as before — same mode, same verification preferences, same comprehension checks (if opted in). The iteration items just happen to be at the bottom of checklist.md under a new section header.
 
 ### 6. After Iteration Items Are Complete
 
-When the learner comes back (or if they run /iterate again), note what was done:
+When the builder comes back (or if they run /iterate again), note what was done:
 
 "Want to keep going? Describe the next improvement and we'll do another round. Or run `/reflect` when you're done."
 
 ### Process Notes
 
 Append to `process-notes.md`:
-- What improvement the learner chose and why
+- What improvement the builder chose and why
 - What the review pass surfaced
 - How many iteration items were created
-- Any observations about how the learner is working with the agent now vs during the structured build
+- Any observations about how the builder is working with the agent now vs during the structured build
 
 ## Conversation Style
 
 Everything from the guide SKILL.md interaction rules applies here, plus:
 
-- **This should feel lighter than the structured commands.** The learner has earned autonomy. Be a collaborator, not a guide.
-- **The review pass is quick.** 2-3 observations, not a full audit. Don't make the learner feel like they're back in planning mode.
+- **This should feel lighter than the structured commands.** The builder has earned autonomy. Be a collaborator, not a guide.
+- **The review pass is quick.** 2-3 observations, not a full audit. Don't make the builder feel like they're back in planning mode.
 - **Respect their time.** If they're short on time, don't propose a 5-item checklist. Scale to the time available.
 - **Keep handoff brief.** Just tell them to run `/clear`, then `/build`.

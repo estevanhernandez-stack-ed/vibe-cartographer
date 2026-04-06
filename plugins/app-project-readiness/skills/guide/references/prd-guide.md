@@ -1,10 +1,10 @@
 # PRD Guide — Agent Reference
 
-This document is for the agent only. It informs how you conduct the /prd conversation and write the PRD. Do not surface PM jargon, framework names, or theory to the learner. Use this knowledge to ask better questions and produce a more rigorous document.
+This document is for the agent only. It informs how you conduct the /prd conversation and write the PRD. Do not surface PM jargon, framework names, or theory to the builder. Use this knowledge to ask better questions and produce a more rigorous document.
 
 ## What Makes a Good PRD
 
-A good PRD is exhaustive about *what* the user wants without touching *how* to build it. It translates a brainstorm (scope.md) into precise behavior descriptions. Every ambiguity, assumption, and edge case the learner didn't know they were making gets surfaced here.
+A good PRD is exhaustive about *what* the user wants without touching *how* to build it. It translates a brainstorm (scope.md) into precise behavior descriptions. Every ambiguity, assumption, and edge case the builder didn't know they were making gets surfaced here.
 
 The PRD should be significantly more detailed than the scope doc. The scope doc is a big-picture sketch. The PRD is a zoomed-in, exhaustive accounting of what "done" actually means.
 
@@ -25,7 +25,7 @@ Common mistakes to watch for and gently redirect:
 - Missing the "so that": stories without benefits are tasks, not stories
 - Too big: "I want to manage my account" — help break it into specific capabilities
 
-When the learner describes what they want, translate their casual language into stories naturally. Don't make them write the stories — you write them together through conversation, and the learner confirms they capture what they meant.
+When the builder describes what they want, translate their casual language into stories naturally. Don't make them write the stories — you write them together through conversation, and the builder confirms they capture what they meant.
 
 ## Grouping Stories into Epics
 
@@ -36,13 +36,13 @@ For example, a recipe app might have:
 - **Managing ingredients**: stories about adding what's in the fridge, tracking what's used
 - **Cooking flow**: stories about following a recipe step by step
 
-Name epics in plain language that describes the area of the app, not PM terminology. The learner should see epics as natural groupings of "things the app does," not as a framework.
+Name epics in plain language that describes the area of the app, not PM terminology. The builder should see epics as natural groupings of "things the app does," not as a framework.
 
 **Important:** Give epics clear, stable heading names in the PRD. Downstream commands (/spec, /checklist, /build) reference these headings to trace requirements through the whole process. For example, `/spec` might say "this component implements the stories in `prd.md > Finding Recipes`" and `/checklist` might reference `prd.md > Finding Recipes > no-results story`. This cross-referencing makes the documents work as a connected system, not isolated files.
 
 ## Acceptance Criteria
 
-For each story or requirement, write acceptance criteria as simple checklists. These describe specific, testable behaviors — things the learner can verify with their own eyes during /build.
+For each story or requirement, write acceptance criteria as simple checklists. These describe specific, testable behaviors — things the builder can verify with their own eyes during /build.
 
 Good acceptance criteria:
 - [ ] When I search for "chicken", recipes with chicken appear
@@ -54,7 +54,7 @@ Avoid:
 - Implementation-specific criteria: "the SQL query returns results in < 100ms"
 - Untestable criteria: "the UX is intuitive"
 
-Cover the happy path first, then ask about what happens when things go wrong or are empty. Frame edge cases as "what ifs" the learner will actually encounter during build.
+Cover the happy path first, then ask about what happens when things go wrong or are empty. Frame edge cases as "what ifs" the builder will actually encounter during build.
 
 ## Asking Sharpening Questions
 
@@ -82,7 +82,7 @@ The PRD naturally wants to expand. Your job is to be exhaustive about what's IN 
 Watch for:
 - Requirements that keep spawning sub-requirements
 - "While we're at it" additions
-- Features the learner is excited about but that would significantly extend the build
+- Features the builder is excited about but that would significantly extend the build
 - Vague requirements that hide enormous complexity ("social features," "real-time sync," "recommendations")
 
 When you spot creep, name it directly: "This is growing. Is this essential for your project, or would you add it with more time?" This naturally sorts requirements into the two sections without teaching prioritization theory.
@@ -93,7 +93,7 @@ Strong non-goals prevent scope creep during build. They should be specific and n
 
 Pull non-goals from two sources:
 1. What was explicitly cut in scope.md
-2. Adjacent features that will tempt the learner during build
+2. Adjacent features that will tempt the builder during build
 
 ## Open Questions
 

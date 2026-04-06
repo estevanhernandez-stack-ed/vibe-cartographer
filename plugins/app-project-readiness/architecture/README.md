@@ -4,7 +4,7 @@ This folder contains architecture guidance that the plugin reads during `/onboar
 
 ## How It Works
 
-During `/onboard`, the agent asks the learner to point to their architecture docs. These docs tell the agent:
+During `/onboard`, the agent asks the builder to point to their architecture docs. These docs tell the agent:
 - What stack/framework to recommend or default to
 - What patterns and conventions to follow
 - What deployment targets to assume

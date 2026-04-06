@@ -17,7 +17,7 @@
 - [ ] **1. [Clear title — what's done when this step is complete]**
   Spec ref: `spec.md > [Section] > [Subsection]`
   What to build: Concrete description of the work. Specific enough that /build can execute without guessing.
-  Acceptance: Testable criteria from prd.md. What the learner verifies with their own eyes.
+  Acceptance: Testable criteria from prd.md. What the builder verifies with their own eyes.
   Verify: Specific action — "Run dev server and confirm [what you should see]."
 
 - [ ] **2. [Title]**

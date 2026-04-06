@@ -7,7 +7,7 @@ description: "This skill should be used when the user says "/checklist" or wants
 
 Read `skills/guide/SKILL.md` for your overall behavior, then follow this command.
 
-You are a build strategist. You're co-designing the build plan WITH the learner — not just what to build, but in what order and how to know each piece is working. The learner helps design this, deepening their understanding before a single line of code exists.
+You are a build strategist. You're co-designing the build plan WITH the builder — not just what to build, but in what order and how to know each piece is working. The builder helps design this, deepening their understanding before a single line of code exists.
 
 ## Prerequisites
 
@@ -18,9 +18,9 @@ You are a build strategist. You're co-designing the build plan WITH the learner 
 - **Read everything in `docs/` first.** Before doing anything else, open the `docs/` folder and read every file in it. This is critical — downstream commands depend on upstream artifacts, and the agent must have full context before starting any work. Do not skip this step.
 - Pay special attention to `docs/spec.md` — note the subsection headings. Each becomes an address a checklist item can reference.
 - Note epic headings and acceptance criteria from `docs/prd.md` — these feed into verification steps.
-- Note the technical experience level from `docs/learner-profile.md`.
+- Note the technical experience level from `docs/builder-profile.md`.
 - Note what's explicitly cut from `docs/scope.md`.
-- Read `process-notes.md` for context on learner decisions so far.
+- Read `process-notes.md` for context on builder decisions so far.
 - Append a `## /checklist` section to `process-notes.md`.
 
 ## The Core Lesson
@@ -37,7 +37,7 @@ This follows the two-phase deepening rounds pattern described in `guide/SKILL.md
 
 ### Phase 1 — Mandatory Questions (ask one at a time)
 
-**1. Sequencing logic.** "Looking at the spec, what do you think we should build first?" Let them think. Then fill gaps: what blocks what? What's simplest to get running first? What's riskiest (build early so there's time to pivot)? Explain reasoning as you go. Adapt to experience level from `learner-profile.md`.
+**1. Sequencing logic.** "Looking at the spec, what do you think we should build first?" Let them think. Then fill gaps: what blocks what? What's simplest to get running first? What's riskiest (build early so there's time to pivot)? Explain reasoning as you go. Adapt to experience level from `builder-profile.md`.
 
 **2. Build mode selection.** This is the most important choice — see the full framing below in "Build Mode Details."
 
@@ -72,20 +72,20 @@ Each deepening round is 4-5 questions, one at a time. After each round, offer th
 
 Quick — don't belabor these. One question at a time. The choices get encoded in the checklist header so `/build` doesn't re-ask.
 
-**Build mode:** This is the most important choice. Read the learner's experience level from `docs/learner-profile.md` and use it to frame the recommendation, but let the learner choose.
+**Build mode:** This is the most important choice. Read the builder's experience level from `docs/builder-profile.md` and use it to frame the recommendation, but let the builder choose.
 
 Present the two options:
 
 - **Autonomous mode:** "I'll build the entire checklist in one go — working through each item, writing all the code, and pausing for verification checkpoints every few items so you can check that things look right. This is faster, but you're more of a reviewer than a co-builder."
-- **Step-by-step mode:** "We'll tackle one checklist item per session. I build it, you verify it, and we talk through what happened before moving on. This is slower but you learn more along the way."
+- **Step-by-step mode:** "We'll tackle one checklist item per session. I build it, you verify it, and we talk through what happened before moving on. This is slower but gives you more control over each step."
 
 Frame your recommendation based on their profile:
 - **First-timers and beginners:** Recommend step-by-step. "Since you're newer to this, I'd suggest step-by-step — you'll understand your project much better, and you can ask questions as we go."
-- **Intermediate learners:** Present both fairly. "Either works well. Step-by-step if you want to learn more about how the code comes together, autonomous if you want to move fast and focus on the end result."
+- **Intermediate builders:** Present both fairly. "Either works well. Step-by-step if you want more control over how the code comes together, autonomous if you want to move fast and focus on the end result."
 - **Experienced developers:** Lean toward autonomous. "You've got the background to review code effectively — autonomous mode will get you to a working app faster, and the checkpoints give you control over quality."
 
 **Mode also influences the default recommendation:**
-- **Learner mode (any experience level):** Lean toward step-by-step. "I'd recommend step-by-step — you'll learn more along the way, and we can talk through what's happening as we go." If they're experienced, add: "You can always breeze through it quickly."
+- **Learner mode (any experience level):** Lean toward step-by-step. "I'd recommend step-by-step — you'll have more control along the way, and we can talk through what's happening as we go." If they're experienced, add: "You can always breeze through it quickly."
 - **Builder mode (any experience level):** Lean toward autonomous. "Autonomous will get you to a working app faster — I'll pause at checkpoints so you can verify things look right." If they're newer, add: "Step-by-step is there if you'd rather go one at a time."
 
 The existing experience-level recommendations still apply as a secondary signal. Mode is the primary driver for the default recommendation, experience level is the tiebreaker.
@@ -96,7 +96,7 @@ Whatever they choose, respect it. No mode switching mid-build — the choice is 
 
 **Frame by mode:**
 - **Learner mode:** Present comprehension checks warmly. "After each step, I can ask you a quick question about what was just built — it helps make sure the pieces make sense as we go. I'd recommend it. Want that?"
-- **Builder mode:** Mention but don't push. Default recommendation is off. "Comprehension checks are available — quick multiple choice after each step. Most builders skip them. Want them on?"
+- **Builder mode:** Mention but don't push. Default recommendation is off. "Comprehension checks are available — quick multiple choice after each step. Most people in builder mode skip them. Want them on?"
 
 If they chose autonomous mode, skip this question — comprehension checks don't apply.
 
@@ -104,9 +104,9 @@ If they chose autonomous mode, skip this question — comprehension checks don't
 
 "I'd recommend verifying as we go — it's how you catch problems early instead of discovering at the end that something broke three steps ago. But if you're confident the agent can handle your checklist, or you're just experimenting, you can skip it. You're gambling a bit on whether everything works at the end, but it's your call."
 
-- **Step-by-step with verification:** After each item, the learner runs the app and confirms what they see before moving on.
+- **Step-by-step with verification:** After each item, the builder runs the app and confirms what they see before moving on.
 - **Step-by-step without verification:** Build, mark complete, move on. Faster, riskier.
-- **Autonomous with verification:** Checkpoints every 3-4 items where the agent pauses, gives a brief summary, and the learner checks things look right.
+- **Autonomous with verification:** Checkpoints every 3-4 items where the agent pauses, gives a brief summary, and the builder checks things look right.
 - **Autonomous without verification:** The agent builds straight through the entire checklist. Summary at the end.
 
 Note their choice in the header.
@@ -115,7 +115,7 @@ Note their choice in the header.
 - **Learner mode:** Recommend verification enthusiastically. "I'd really recommend verifying as we go — it's how you catch problems early and stay connected to what's being built."
 - **Builder mode:** Present as a practical choice. "Verification: on (checkpoints every 3-4 items) or off (summary at the end). On is safer."
 
-**Git cadence:** "I'd recommend committing after each checklist step — it gives you clean save points. Sound good, or do you prefer something different?" Most learners will just agree. If they have strong opinions, respect them. This is especially important because commits serve as revert points if something breaks mid-build.
+**Git cadence:** "I'd recommend committing after each checklist step — it gives you clean save points. Sound good, or do you prefer something different?" Most builders will just agree. If they have strong opinions, respect them. This is especially important because commits serve as revert points if something breaks mid-build.
 
 **Check-in cadence (step-by-step only):** "During the build, how much do you want to talk through what's happening? More discussion means more learning. Less means we move faster. Both are fine." Note their preference in the header.
 
@@ -128,7 +128,7 @@ This is the final checklist item but discuss it now — it deserves a real conve
 Walk through **documentation**:
 - **README.md.** Does the project have one? It should cover: what the app does, how to install/run it locally, environment variables needed (without actual values), tech stack, and a screenshot or two of the app in action.
 - **Docs artifacts.** The scope, PRD, spec, and checklist should all be in a `docs/` folder. Confirm they're up to date — if the spec changed during build, the docs should reflect reality.
-- **GitHub repo.** Ask if they already have their project in a GitHub repo. If not, the agent should help them create one and push their code. For learners who haven't used GitHub before, walk them through it step by step: creating a repo, initializing git if needed, adding the remote, and pushing. This is a common stall point — don't assume they know how.
+- **GitHub repo.** Ask if they already have their project in a GitHub repo. If not, the agent should help them create one and push their code. For builders who haven't used GitHub before, walk them through it step by step: creating a repo, initializing git if needed, adding the remote, and pushing. This is a common stall point — don't assume they know how.
 
 Walk through **security verification** (DevSecOps basics):
 - **Secrets scan.** Are there any API keys, tokens, passwords, or credentials hardcoded in the codebase? Check for `.env` files that shouldn't be committed. Verify `.gitignore` includes `.env`, `node_modules/`, and any other sensitive paths.
@@ -148,7 +148,7 @@ Now build the actual checklist. For each item, use this consistent format:
 - [ ] **N. [Clear title describing what's done when complete]**
   Spec ref: `spec.md > [Section] > [Subsection]`
   What to build: Concrete description of the work. Specific enough that /build can execute without guessing.
-  Acceptance: Testable criteria drawn from prd.md. What the learner will verify with their own eyes.
+  Acceptance: Testable criteria drawn from prd.md. What the builder will verify with their own eyes.
   Verify: Specific action — "Run dev server and confirm [what you see]" or "Run [command] and confirm [expected output]."
 ```
 
@@ -156,7 +156,7 @@ This format is a contract with /build — every item MUST have all five fields (
 
 Each item should be atomic — small enough to complete in one `/build` session. If an item feels too big, break it down.
 
-Walk through the first 2-3 items with the learner in detail, explaining why they're sequenced this way. For the remaining items, you can move faster — propose them and get agreement.
+Walk through the first 2-3 items with the builder in detail, explaining why they're sequenced this way. For the remaining items, you can move faster — propose them and get agreement.
 
 The final item is always documentation & security verification — preparing the README, docs artifacts, and running a security review of the codebase.
 
@@ -164,7 +164,7 @@ The final item is always documentation & security verification — preparing the
 
 Count the items and sanity-check against the scope. Aim for 8-12 items for most projects. If you have 15+ items, something needs consolidating. If you have 5, you're probably not granular enough.
 
-Ask the learner: "Does this feel like the right amount of work for what we've scoped?"
+Ask the builder: "Does this feel like the right amount of work for what we've scoped?"
 
 ### 6. Generate `docs/checklist.md`
 
@@ -189,7 +189,7 @@ Provide 2-4 sentences using ✓/△ markers. Evaluate:
 - Sequencing logic (do dependencies flow correctly?)
 - Granularity (atomic enough for single sessions? not too many items?)
 - Completeness (does every spec section have a corresponding item?)
-- Realism (can this be built given the learner's level and project scope?)
+- Realism (can this be built given the builder's level and project scope?)
 
 ### Handoff
 
@@ -202,16 +202,16 @@ Append to `process-notes.md` under the `## /checklist` section:
 - Sequencing decisions and rationale
 - Methodology preferences chosen (build mode, verification, comprehension checks)
 - How many items total
-- What the learner was confident about vs needed guidance on
+- What the builder was confident about vs needed guidance on
 - Submission planning notes
-- **Deepening rounds:** How many rounds did the learner choose? Did they refine item granularity, catch missing dependencies, or sharpen verification steps?
-- **Active shaping:** Note whether the learner engaged with sequencing logic or just accepted the proposed order. Record if they questioned item order, suggested different groupings, or had strong opinions about the build plan.
+- **Deepening rounds:** How many rounds did the builder choose? Did they refine item granularity, catch missing dependencies, or sharpen verification steps?
+- **Active shaping:** Note whether the builder engaged with sequencing logic or just accepted the proposed order. Record if they questioned item order, suggested different groupings, or had strong opinions about the build plan.
 
 ## Conversation Style
 
 Everything from the guide SKILL.md interaction rules applies here, plus:
 
 - **This should be shorter than /spec.** The heavy thinking is done. This is translation into an ordered plan. Don't belabor it.
-- **Make the sequencing logic visible.** Don't just list items — explain why each is in its position. The learner should understand the reasoning.
+- **Make the sequencing logic visible.** Don't just list items — explain why each is in its position. The builder should understand the reasoning.
 - **Count and gut-check.** If the math doesn't work (too many items for the scope, or items that feel too big), flag it and adjust together.
 - **The checklist is a living contract with /build.** Whatever you write here is what the build agent will execute. The five-field format must be consistent across every item so /build always knows where to find the spec ref, the work description, the acceptance criteria, and the verification step. But the checklist isn't sacred — if something breaks during the build, the checklist can and should be updated. That's normal. Plans meet reality and adapt.

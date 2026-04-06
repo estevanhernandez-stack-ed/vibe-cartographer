@@ -31,13 +31,13 @@ Grounded in the scope doc but sharper and more specific.
 
 ## What We're Building
 Everything the app must do to be complete.
-Each item has acceptance criteria — specific, testable behaviors the learner
+Each item has acceptance criteria — specific, testable behaviors the builder
 can verify with their own eyes. These become the basis for the build checklist.
 
 ## What We'd Add With More Time
 Features or polish that would make the app better but aren't essential.
 Keep these lighter — a sentence or two each, no full acceptance criteria.
-These are available as starting points if the learner runs /iterate after build.
+These are available as starting points if the builder runs /iterate after build.
 
 ## Non-Goals
 3-5 things this project explicitly will NOT do.

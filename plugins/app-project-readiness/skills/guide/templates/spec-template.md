@@ -8,7 +8,7 @@
 # [Project Name] — Technical Spec
 
 ## Stack
-Language, framework, key libraries. Brief rationale tied to learner's
+Language, framework, key libraries. Brief rationale tied to builder's
 preferences and experience level.
 Link to current documentation for each major dependency.
 
