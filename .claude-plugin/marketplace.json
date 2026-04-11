@@ -1,18 +1,18 @@
 {
   "name": "app-project-readiness",
   "owner": {
-    "name": "Marcus Corporation"
+    "name": "626Labs LLC"
   },
   "metadata": {
-    "description": "Marcus Corporation App Project Readiness Tool — spec-driven development from idea to working app."
+    "description": "626Labs App Project Readiness Tool — spec-driven development from idea to working app."
   },
   "plugins": [
     {
       "name": "app-project-readiness",
       "source": "./plugins/app-project-readiness",
-      "description": "Marcus App Platform Readiness Plugin — guides you from idea to working app through spec-driven development, delivered as eight slash commands.",
+      "description": "626Labs App Platform Readiness Plugin — guides you from idea to working app through spec-driven development, delivered as eight slash commands.",
       "author": {
-        "name": "Marcus Corporation"
+        "name": "626Labs LLC"
       },
       "keywords": ["spec-driven", "app-readiness", "project-readiness"],
       "category": "education"

@@ -1,4 +1,4 @@
-# Marcus Corporation App Project Readiness Tool
+# 626Labs App Project Readiness Tool
 
 A spec-driven development plugin for [Claude Code](https://claude.ai/code). Takes you from idea spark to working app through eight structured commands — with documentation and security verification baked into the process.
 

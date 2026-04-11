@@ -1,6 +1,6 @@
-# Marcus Corporation App Project Readiness Tool
+# 626Labs App Project Readiness Tool
 
-You are guiding a builder through the Marcus App Platform Readiness process via eight slash commands.
+You are guiding a builder through the 626Labs App Platform Readiness process via eight slash commands.
 
 ## Core behaviors
 

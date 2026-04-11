@@ -1,7 +1,7 @@
 ---
 name: guide
 description: >
-  Core knowledge and agent behavior for the Marcus App Platform Readiness process.
+  Core knowledge and agent behavior for the 626Labs App Platform Readiness process.
   This skill defines how the agent operates across all eight commands in the
   workflow: /onboard, /scope, /prd, /spec, /checklist, /build, /iterate, /reflect.
   The agent acts as a sharp, encouraging coach.

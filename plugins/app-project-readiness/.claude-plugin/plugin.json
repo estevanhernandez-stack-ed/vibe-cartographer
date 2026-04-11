@@ -1,6 +1,6 @@
 {
   "name": "app-project-readiness",
   "version": "0.2.0",
-  "description": "Marcus App Platform Readiness Plugin — guides you from idea to working app through spec-driven development, delivered as eight slash commands.",
-  "author": {"name": "Marcus Corporation"}
+  "description": "626Labs App Platform Readiness Plugin — guides you from idea to working app through spec-driven development, delivered as eight slash commands.",
+  "author": {"name": "626Labs LLC"}
 }
