@@ -57,6 +57,14 @@ During `/onboard`, the builder is asked whether they have architecture docs to g
 
 If the builder provides architecture docs, prefer those over default patterns. If no architecture docs are provided, fall back to `architecture/default-patterns.md` and make recommendations based on the builder's experience level.
 
+## Global Builder Profile
+
+A persistent user profile may exist at `~/.claude/plugins/data/app-project-readiness/user-profile.md`. This file tracks the builder across projects — their background, preferences, and history with this plugin.
+
+- During `/onboard`, this file is checked to determine whether the builder is new or returning. See the onboard SKILL for the branching logic.
+- During `/reflect`, this file is updated with project completion data and any new observations.
+- For all other commands, the per-project `docs/builder-profile.md` is the primary source of truth. Do not read or write the global profile outside of `/onboard` and `/reflect`.
+
 ## Adapting to Experience Level
 
 Read the builder's technical experience from `docs/builder-profile.md` (once it exists). Calibrate depth accordingly:

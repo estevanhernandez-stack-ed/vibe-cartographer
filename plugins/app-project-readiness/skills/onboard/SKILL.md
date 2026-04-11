@@ -20,6 +20,15 @@ None. This is the entry point for the entire process.
 - **Read everything in `docs/` first.** Before doing anything else, open the `docs/` folder and read every file in it. This is critical — downstream commands depend on upstream artifacts, and the agent must have full context before starting any work. For /onboard this folder will usually be empty, but always check.
 - Create `process-notes.md` in the project root if it doesn't exist. Add a header: `# Process Notes` and a section: `## /onboard`.
 
+## Global Profile Check
+
+Before starting the flow, check if a persistent builder profile exists at `~/.claude/plugins/data/app-project-readiness/user-profile.md`.
+
+- If the file **exists**, read it. This is a **returning builder**. Their background, preferences, and history are on file.
+- If the file **does not exist**, this is a **new builder**. Run the full onboard interview.
+
+This check determines which path the flow takes below.
+
 ## Flow
 
 ### 1. Welcome
@@ -38,9 +47,9 @@ Open with energy. Display this welcome banner **inside a code block** (triple ba
    ━━━━━━━━━━━━━━━━━━━━━━
 ```
 
-Then a brief, warm welcome — something like: "Welcome! Over the course of this process, you're going to go from an idea to a working app — and you'll learn a workflow you can reuse on any project. Let's start by getting to know each other."
+**If returning builder:** Welcome them back by name (from the global profile). Summarize what's on file — experience level, languages/frameworks, mode preference, number of projects completed. Then ask: "Has anything changed since last time, or are we good?" If they mention changes, update those fields conversationally. Then **skip directly to step 5 (Project Goals)**.
 
-Keep the welcome to 2-3 sentences after the banner. Don't over-explain the whole process yet.
+**If new builder:** A brief, warm welcome — something like: "Welcome! Over the course of this process, you're going to go from an idea to a working app — and you'll have a workflow you can reuse on any project. Let's start by getting to know each other." Keep it to 2-3 sentences. Don't over-explain the whole process yet.
 
 ### 2. Introduce Spec-Driven Development
 
@@ -61,6 +70,8 @@ Mention that the documents they create through this process are a real part of t
 
 ### 3. Get to Know the Builder
 
+**Skip this step if returning builder — their info is on file.**
+
 Ask who they are. This is a conversation, not a form. One question at a time, building on what they share.
 
 **What to learn:**
@@ -71,6 +82,8 @@ Ask who they are. This is a conversation, not a form. One question at a time, bu
 Keep this brief and natural. 1-2 questions, not an interrogation. The goal is to establish rapport and basic context.
 
 ### 4. Gauge Technical Experience
+
+**Skip this step if returning builder — their info is on file.**
 
 Ask about their coding background. Frame it warmly — this isn't gatekeeping, it's calibration so the rest of the process meets them where they are.
 
@@ -108,7 +121,9 @@ Take whatever they say at face value. This isn't a test. Note their answer for t
 
 ### 8. Mode Selection
 
-Now that you have a sense of their experience and what brings them here, introduce the two modes. Do this conversationally — not as a formal menu.
+**If returning builder with a mode preference on file:** Confirm rather than re-explain. "Last time you went with [mode] mode — same this time, or want to switch?" If they confirm, move on. If they switch, note it.
+
+**If new builder:** Introduce the two modes conversationally — not as a formal menu.
 
 "There are two ways we can run through this process together:"
 
@@ -146,6 +161,48 @@ Read the template at `skills/guide/templates/builder-profile-template.md`. Fill 
 This document is read by every downstream command. It should capture who the builder is, what they know, what they're building toward, and any design direction signals — all in a format that's quick for the agent to scan.
 
 Write it to `docs/builder-profile.md`.
+
+### 11. Update Global Profile
+
+After writing the per-project builder profile, create or update the persistent global profile. This is about the **person**, not the project — it carries across all future projects.
+
+1. Create the directory `~/.claude/plugins/data/app-project-readiness/` if it does not exist (`mkdir -p`).
+2. Write (or update) `~/.claude/plugins/data/app-project-readiness/user-profile.md` using the template below.
+3. If this is a **returning builder**, merge any new information from this session with the existing profile — don't overwrite blindly. Increment `Projects Started` by 1.
+4. If this is a **new builder**, populate from scratch. Set `Projects Started` to 1.
+5. Set `Last Updated` to today's date.
+
+**Global Profile Template:**
+
+```markdown
+# Builder Profile (Global)
+
+## Identity
+[Name, background, what they do.]
+
+## Technical Experience
+[Experience level: first-time / beginner / intermediate / experienced.]
+[Languages, frameworks, tools.]
+[AI coding agent experience.]
+
+## Preferences
+- Mode: [Learner / Builder]
+- Deepening rounds: [typically invests in extra rounds / moves quickly / no data yet]
+- Build mode: [step-by-step / autonomous / no data yet]
+- Communication style: [verbose / terse / uses speech-to-text / etc.]
+
+## Creative Sensibility
+[Design taste, aesthetic preferences, apps/sites they admire. Any recurring themes.]
+
+## History
+- Projects started: [count]
+- Projects completed: [count]
+- Last project: [brief description]
+- Last updated: [date]
+
+## Notes
+[Anything notable observed across sessions — patterns, preferences, working style.]
+```
 
 ## After Generating the Builder Profile
 

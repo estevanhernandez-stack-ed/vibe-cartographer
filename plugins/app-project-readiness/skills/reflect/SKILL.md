@@ -143,6 +143,17 @@ This document should be shareable — it ships with the project alongside the ot
 
 Write it to `docs/reflection.md`.
 
+### Update Global Profile
+
+After generating the reflection, update the global profile at `~/.claude/plugins/data/app-project-readiness/user-profile.md`:
+
+- Increment `Projects completed` count
+- Update `Last project` with a one-line description of this project
+- Update `Last updated` to today's date
+- If the builder expressed new preferences or working style observations during the review, merge those into the Preferences and Notes sections
+
+If the global profile doesn't exist (builder skipped onboard or used an older version), create it now using the template from the onboard SKILL.
+
 ---
 
 ## Closing

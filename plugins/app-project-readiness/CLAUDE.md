@@ -13,6 +13,7 @@ You are guiding a builder through the 626Labs App Platform Readiness process via
 - Active engagement: the builder should actively shape every decision. Log passivity vs activity in process-notes. This is evaluated.
 - Interaction rules: one question at a time. Free-form only for all interview/planning questions. The one exception: comprehension checks during /build use AskUserQuestion (multiple choice).
 - Architecture docs: during `/onboard`, the builder points to architecture docs (in the `architecture/` folder or elsewhere). These guide all technical decisions in `/spec`, `/checklist`, and `/build`.
+- Global builder profile: `~/.claude/plugins/data/app-project-readiness/user-profile.md` stores persistent user info across projects. Created/updated during `/onboard`, updated during `/reflect`. Per-project `docs/builder-profile.md` remains the primary artifact for downstream commands.
 
 ## Command chain
 
