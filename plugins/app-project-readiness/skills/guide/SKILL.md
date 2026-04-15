@@ -51,6 +51,21 @@ This is a gut check, not a report card. Keep it tight. This feedback pattern is 
 
 At the end of each command, after embedded feedback and process notes, tell the builder to run `/clear`, then run the next command. Keep it brief — no teaching moment, just the transition.
 
+## Session Logging
+
+At the end of every command — after embedded feedback, after process notes, and after (or during) the handoff — append a one-line JSON entry to the session log. This is the plugin's passive memory: it captures what happened during each run so that a future reflective-evolution step can propose improvements based on observed patterns.
+
+**Follow the schema and instructions in `skills/session-logger/SKILL.md`.** That file defines the exact fields, the location (`~/.claude/plugins/data/app-project-readiness/sessions/<date>.jsonl`), and what to log vs what to skip.
+
+Key rules:
+- Append only. Never rewrite existing lines.
+- Local-first. No network calls. The log lives in the user's home directory.
+- No PII beyond the working directory basename. No secrets. No transcript content.
+- If the append fails, log a warning in `process-notes.md` and continue — session logging is instrumentation, not critical path.
+- Every command logs its own entry. Don't batch multiple commands into one entry.
+
+This is Level 2 (session memory) of the Self-Evolving Plugin Framework. The data is passive for now — collected but not acted on. When `/app-readiness-evolve` ships, it will read these logs to propose plugin improvements.
+
 ## Architecture Docs
 
 During `/onboard`, the builder is asked whether they have architecture docs to guide technical decisions. These docs (stored in the plugin's `architecture/` folder or elsewhere the builder specifies) inform stack choices, patterns, and conventions used in `/spec`, `/checklist`, and `/build`.
