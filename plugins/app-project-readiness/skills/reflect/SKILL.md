@@ -143,16 +143,33 @@ This document should be shareable — it ships with the project alongside the ot
 
 Write it to `docs/reflection.md`.
 
-### Update Global Profile
+### Update Unified Builder Profile
 
-After generating the reflection, update the global profile at `~/.claude/plugins/data/app-project-readiness/user-profile.md`:
+After generating the reflection, update the **unified cross-plugin profile** at `~/.claude/profiles/builder.json`. This is the same file the onboard SKILL writes to — shared across all 626Labs plugins.
 
-- Increment `Projects completed` count
-- Update `Last project` with a one-line description of this project
-- Update `Last updated` to today's date
-- If the builder expressed new preferences or working style observations during the review, merge those into the Preferences and Notes sections
+**Read-merge-write procedure:**
 
-If the global profile doesn't exist (builder skipped onboard or used an older version), create it now using the template from the onboard SKILL.
+1. Read `~/.claude/profiles/builder.json` if it exists. If it doesn't exist (builder skipped onboard or used v0.4.0), create it now using the schema defined in the onboard SKILL.
+2. **Never touch other plugins' blocks.** You only write to `shared` (for genuinely new cross-plugin observations) and `plugins.app-project-readiness` (for this plugin's scoped data).
+3. Update these fields in `plugins.app-project-readiness`:
+   - `projects_completed` — increment by 1
+   - `last_project` — one-line description of this project
+   - `last_updated` — today's date
+   - `deepening_round_habits` — if you observed a pattern this session, update. Otherwise preserve.
+   - `notes` — if the reflection surfaced something notable about how this builder works with this plugin, append to or refine the existing notes. Keep it short — this isn't a journal.
+4. Update fields in `shared` **only if** the reflection surfaced genuinely new preferences or style observations:
+   - `preferences.tone` — if the builder expressed a clear tone shift
+   - `preferences.pacing` — if observed pacing diverged from what's on file
+   - `preferences.communication_style` — if a new pattern emerged
+   - Leave identity, experience, and creative sensibility alone unless the builder explicitly told you something new.
+5. Set `last_updated` (top level) and `plugins.app-project-readiness.last_updated` to today's date.
+6. Write back as pretty-printed JSON (2-space indent).
+7. Log the update in `process-notes.md` under the `/reflect` section: "Updated unified builder profile — [what changed]."
+
+**What NOT to do here:**
+- Don't rewrite the whole profile from scratch. Merge into what's there.
+- Don't touch `shared.name`, `shared.identity`, or `shared.technical_experience` during reflect. Those live in onboard's territory.
+- Don't write observations that are project-specific — those belong in `docs/reflection.md` and `process-notes.md`, not the cross-project profile.
 
 ---
 

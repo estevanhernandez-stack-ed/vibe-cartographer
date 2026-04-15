@@ -20,14 +20,76 @@ None. This is the entry point for the entire process.
 - **Read everything in `docs/` first.** Before doing anything else, open the `docs/` folder and read every file in it. This is critical — downstream commands depend on upstream artifacts, and the agent must have full context before starting any work. For /onboard this folder will usually be empty, but always check.
 - Create `process-notes.md` in the project root if it doesn't exist. Add a header: `# Process Notes` and a section: `## /onboard`.
 
-## Global Profile Check
+## Unified Builder Profile Check
 
-Before starting the flow, check if a persistent builder profile exists at `~/.claude/plugins/data/app-project-readiness/user-profile.md`.
+Before starting the flow, check the **unified builder profile** at `~/.claude/profiles/builder.json`. This is the shared cross-plugin profile — a single source of truth for builder identity and preferences that any 626Labs plugin can read.
 
-- If the file **exists**, read it. This is a **returning builder**. Their background, preferences, and history are on file.
-- If the file **does not exist**, this is a **new builder**. Run the full onboard interview.
+**Check order:**
 
-This check determines which path the flow takes below.
+1. Read `~/.claude/profiles/builder.json` if it exists.
+2. If it doesn't exist, check the **legacy location** `~/.claude/plugins/data/app-project-readiness/user-profile.md` (from v0.4.0 and earlier).
+3. If the legacy file exists, **migrate it** to the new unified format (see Migration below) and use the migrated data. The legacy file is renamed to `.bak` after successful migration — don't delete it outright.
+4. If neither exists, this is a **new builder**. Run the full onboard interview.
+
+If a profile is found, set `returning_builder = true`. Parse the JSON and extract the `shared` fields (identity, experience, preferences) and the plugin-scoped fields under `plugins.app-project-readiness`. Both inform the flow below.
+
+### Unified Profile Schema
+
+The file at `~/.claude/profiles/builder.json` has this shape:
+
+```json
+{
+  "schema_version": 1,
+  "last_updated": "2026-04-15",
+  "shared": {
+    "name": "Estevan",
+    "identity": "Builder and outsider. 626 exchange, Fort Worth roots. Runs 626Labs.",
+    "technical_experience": {
+      "level": "experienced",
+      "languages": ["TypeScript", "Python", "Go"],
+      "frameworks": ["Next.js", "React", "Node"],
+      "ai_agent_experience": "Deep. Builds Claude Code plugins."
+    },
+    "preferences": {
+      "tone": "terse and direct",
+      "pacing": "brisk",
+      "communication_style": "casual, no corporate speak"
+    },
+    "creative_sensibility": "Clean, functional, high-contrast. Values polish but not at the expense of shipping."
+  },
+  "plugins": {
+    "app-project-readiness": {
+      "mode": "builder",
+      "deepening_round_habits": "invests in extra rounds when the project is complex",
+      "build_mode_preference": "step-by-step",
+      "projects_started": 1,
+      "projects_completed": 0,
+      "last_project": "app-readinessplugin (plugin self-improvement)",
+      "last_updated": "2026-04-15",
+      "notes": "Prefers real retro feedback over classroom language."
+    }
+  }
+}
+```
+
+**Field ownership rules:**
+- The `shared` block is **cross-plugin**. Any plugin can read it. Only the onboard/reflect skills of this plugin write to it, and only through the explicit steps below. If another plugin needs to update a shared field, it should use its own `update_shared_profile` step — never stomp this plugin's schema.
+- The `plugins.app-project-readiness` block is **plugin-scoped**. Only this plugin reads/writes it. Other plugins should have their own `plugins.<name>` block.
+- `schema_version: 1` is the current version. When the schema changes, increment and add a migration path.
+
+### Migration from Legacy Path
+
+If `~/.claude/plugins/data/app-project-readiness/user-profile.md` exists but `~/.claude/profiles/builder.json` does not:
+
+1. Read the legacy markdown file.
+2. Parse its sections and map them into the unified schema:
+   - Identity / Technical Experience / Creative Sensibility → `shared.*`
+   - Mode, deepening round habits, build mode, project counts, last project, notes → `plugins.app-project-readiness.*`
+3. Set `schema_version: 1` and `last_updated` to today's date.
+4. Create `~/.claude/profiles/` directory if it doesn't exist (`mkdir -p`).
+5. Write the JSON file at `~/.claude/profiles/builder.json`.
+6. Rename the legacy file to `user-profile.md.bak` so the user can verify the migration if they want. Don't delete it.
+7. Log the migration in `process-notes.md`: "Migrated legacy builder profile from plugin-scoped to unified location."
 
 ## Flow
 
@@ -162,47 +224,47 @@ This document is read by every downstream command. It should capture who the bui
 
 Write it to `docs/builder-profile.md`.
 
-### 11. Update Global Profile
+### 11. Update Unified Builder Profile
 
-After writing the per-project builder profile, create or update the persistent global profile. This is about the **person**, not the project — it carries across all future projects.
+After writing the per-project builder profile, create or update the **unified cross-plugin profile** at `~/.claude/profiles/builder.json`. This is about the **person**, not the project — it carries across all future projects AND all other 626Labs plugins.
 
-1. Create the directory `~/.claude/plugins/data/app-project-readiness/` if it does not exist (`mkdir -p`).
-2. Write (or update) `~/.claude/plugins/data/app-project-readiness/user-profile.md` using the template below.
-3. If this is a **returning builder**, merge any new information from this session with the existing profile — don't overwrite blindly. Increment `Projects Started` by 1.
-4. If this is a **new builder**, populate from scratch. Set `Projects Started` to 1.
-5. Set `Last Updated` to today's date.
+**Write procedure:**
 
-**Global Profile Template:**
+1. Ensure the directory exists: `mkdir -p ~/.claude/profiles/`.
+2. If the file already exists (returning builder), read it first. You will **merge**, not overwrite:
+   - **Shared block:** Only update fields the builder explicitly confirmed or changed this session. Do not blindly overwrite identity, experience, or preferences unless the builder gave new information.
+   - **Plugin block (`plugins.app-project-readiness`):** Update project counts, last project, last updated, and any new notes. Don't touch other plugins' blocks.
+3. If this is a new builder, populate from scratch using the session conversation.
+4. Increment `plugins.app-project-readiness.projects_started` by 1 (or set to 1 if new).
+5. Set `last_updated` (top level) and `plugins.app-project-readiness.last_updated` to today's date.
+6. Set `schema_version: 1`.
+7. Write the file as pretty-printed JSON (2-space indent) so the user can inspect it manually.
 
-```markdown
-# Builder Profile (Global)
+**What to put in the shared block** (only fields you actually captured this session):
 
-## Identity
-[Name, background, what they do.]
+- `name` — their first name or preferred handle
+- `identity` — 1-2 sentences about who they are and what they do
+- `technical_experience.level` — `first-time` | `beginner` | `intermediate` | `experienced`
+- `technical_experience.languages` — array of languages they work in
+- `technical_experience.frameworks` — array of frameworks/tools
+- `technical_experience.ai_agent_experience` — short description of their AI coding agent history
+- `preferences.tone` — how they want you to talk (e.g., "terse and direct", "warm and explanatory")
+- `preferences.pacing` — "brisk", "measured", "unhurried", etc.
+- `preferences.communication_style` — anything notable about how they prefer to interact (free-form)
+- `creative_sensibility` — design taste, aesthetic preferences, apps/sites they admire
 
-## Technical Experience
-[Experience level: first-time / beginner / intermediate / experienced.]
-[Languages, frameworks, tools.]
-[AI coding agent experience.]
+**What to put in the plugin block** (`plugins.app-project-readiness`):
 
-## Preferences
-- Mode: [Learner / Builder]
-- Deepening rounds: [typically invests in extra rounds / moves quickly / no data yet]
-- Build mode: [step-by-step / autonomous / no data yet]
-- Communication style: [verbose / terse / uses speech-to-text / etc.]
+- `mode` — `learner` or `builder`
+- `deepening_round_habits` — will accrue over multiple projects; on first run set to `"no data yet"`
+- `build_mode_preference` — `step-by-step` | `autonomous` | `no data yet`
+- `projects_started` — integer, incremented this session
+- `projects_completed` — integer, only incremented by `/reflect` at end of a full run
+- `last_project` — brief description of this project
+- `last_updated` — today's date
+- `notes` — anything notable observed across sessions about how this builder works with this plugin
 
-## Creative Sensibility
-[Design taste, aesthetic preferences, apps/sites they admire. Any recurring themes.]
-
-## History
-- Projects started: [count]
-- Projects completed: [count]
-- Last project: [brief description]
-- Last updated: [date]
-
-## Notes
-[Anything notable observed across sessions — patterns, preferences, working style.]
-```
+**Do not fabricate fields.** If you didn't learn something this session, either preserve the existing value (returning builder) or use `null` / `"no data yet"` (new builder). Never invent preferences the user didn't express.
 
 ## After Generating the Builder Profile
 

@@ -72,13 +72,15 @@ During `/onboard`, the builder is asked whether they have architecture docs to g
 
 If the builder provides architecture docs, prefer those over default patterns. If no architecture docs are provided, fall back to `architecture/default-patterns.md` and make recommendations based on the builder's experience level.
 
-## Global Builder Profile
+## Unified Builder Profile
 
-A persistent user profile may exist at `~/.claude/plugins/data/app-project-readiness/user-profile.md`. This file tracks the builder across projects — their background, preferences, and history with this plugin.
+A persistent **unified builder profile** may exist at `~/.claude/profiles/builder.json`. This is the cross-plugin profile — a single source of truth for builder identity and preferences that any 626Labs plugin can read. It has a `shared` block (cross-plugin) and a `plugins.<plugin-name>` block (plugin-scoped).
 
-- During `/onboard`, this file is checked to determine whether the builder is new or returning. See the onboard SKILL for the branching logic.
-- During `/reflect`, this file is updated with project completion data and any new observations.
-- For all other commands, the per-project `docs/builder-profile.md` is the primary source of truth. Do not read or write the global profile outside of `/onboard` and `/reflect`.
+- **During `/onboard`:** the file is checked to determine whether the builder is new or returning. If a legacy `~/.claude/plugins/data/app-project-readiness/user-profile.md` exists, it is migrated to the new location. See the onboard SKILL for the full branching and migration logic.
+- **During `/reflect`:** the file is updated with project completion data and any new observations. Only the `plugins.app-project-readiness` block and (cautiously) the `shared.preferences` fields may be touched — never the other plugin blocks, never identity/experience.
+- **For all other commands:** the per-project `docs/builder-profile.md` is the primary source of truth. Do not read or write the unified profile outside of `/onboard` and `/reflect`.
+
+**Cross-plugin coordination rule:** If another 626Labs plugin also reads/writes `~/.claude/profiles/builder.json`, it owns its own `plugins.<name>` block and has shared-read access to `shared`. Never stomp another plugin's namespace. Never write fields the schema doesn't define without bumping `schema_version` and documenting the migration.
 
 ## Adapting to Experience Level
 
