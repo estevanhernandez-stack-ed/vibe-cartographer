@@ -1,6 +1,6 @@
 ---
 name: onboard
-description: "This skill should be used when the user says \"/onboard\" or wants to start the app readiness process. Entry point for the entire workflow."
+description: "This skill should be used when the user says \"/onboard\" or wants to start the Vibe Cartographer process. Entry point for the entire workflow — plot the course from idea to shipped app."
 ---
 
 # /onboard — Welcome and Meet the Builder
@@ -27,11 +27,11 @@ Before starting the flow, check the **unified builder profile** at `~/.claude/pr
 **Check order:**
 
 1. Read `~/.claude/profiles/builder.json` if it exists.
-2. If it doesn't exist, check the **legacy location** `~/.claude/plugins/data/app-project-readiness/user-profile.md` (from v0.4.0 and earlier).
-3. If the legacy file exists, **migrate it** to the new unified format (see Migration below) and use the migrated data. The legacy file is renamed to `.bak` after successful migration — don't delete it outright.
-4. If neither exists, this is a **new builder**. Run the full onboard interview.
+2. If it exists but contains a legacy `plugins.vibe-cartographer` block (from v0.5.0 and earlier), **migrate the namespace**: copy the block to `plugins.vibe-cartographer`, leave the old key in place for one release so other tools don't break, and note the migration in `process-notes.md`.
+3. If the unified profile doesn't exist at all, check the **deep legacy location** `~/.claude/plugins/data/app-project-readiness/user-profile.md` (from v0.4.0 and earlier). If present, migrate it directly into `plugins.vibe-cartographer` and rename the markdown file to `.bak`.
+4. If none of the above exist, this is a **new builder**. Run the full onboard interview.
 
-If a profile is found, set `returning_builder = true`. Parse the JSON and extract the `shared` fields (identity, experience, preferences) and the plugin-scoped fields under `plugins.app-project-readiness`. Both inform the flow below.
+If a profile is found, set `returning_builder = true`. Parse the JSON and extract the `shared` fields (identity, experience, preferences) and the plugin-scoped fields under `plugins.vibe-cartographer`. Both inform the flow below.
 
 ### Unified Profile Schema
 
@@ -58,13 +58,13 @@ The file at `~/.claude/profiles/builder.json` has this shape:
     "creative_sensibility": "Clean, functional, high-contrast. Values polish but not at the expense of shipping."
   },
   "plugins": {
-    "app-project-readiness": {
+    "vibe-cartographer": {
       "mode": "builder",
       "deepening_round_habits": "invests in extra rounds when the project is complex",
       "build_mode_preference": "step-by-step",
       "projects_started": 1,
       "projects_completed": 0,
-      "last_project": "app-readinessplugin (plugin self-improvement)",
+      "last_project": "vibe-cartographer (plugin self-improvement)",
       "last_updated": "2026-04-15",
       "notes": "Prefers real retro feedback over classroom language."
     }
@@ -74,22 +74,26 @@ The file at `~/.claude/profiles/builder.json` has this shape:
 
 **Field ownership rules:**
 - The `shared` block is **cross-plugin**. Any plugin can read it. Only the onboard/reflect skills of this plugin write to it, and only through the explicit steps below. If another plugin needs to update a shared field, it should use its own `update_shared_profile` step — never stomp this plugin's schema.
-- The `plugins.app-project-readiness` block is **plugin-scoped**. Only this plugin reads/writes it. Other plugins should have their own `plugins.<name>` block.
+- The `plugins.vibe-cartographer` block is **plugin-scoped**. Only this plugin reads/writes it. Other plugins should have their own `plugins.<name>` block.
 - `schema_version: 1` is the current version. When the schema changes, increment and add a migration path.
 
-### Migration from Legacy Path
+### Migration from Legacy Paths
 
-If `~/.claude/plugins/data/app-project-readiness/user-profile.md` exists but `~/.claude/profiles/builder.json` does not:
+Two legacy locations exist. Handle both in order.
+
+**Legacy namespace (v0.5.0 → v1.0.0 rename):** if `~/.claude/profiles/builder.json` exists and contains a `plugins.vibe-cartographer` block, copy it to `plugins.vibe-cartographer`, keep the old key in place for one release as a safety net, bump `last_updated`, and note the migration in `process-notes.md`: "Migrated `plugins.vibe-cartographer` → `plugins.vibe-cartographer` on builder profile."
+
+**Deep legacy path (v0.4.0 and earlier):** if neither the unified profile nor the legacy namespace exists, check `~/.claude/plugins/data/app-project-readiness/user-profile.md`. If present:
 
 1. Read the legacy markdown file.
 2. Parse its sections and map them into the unified schema:
    - Identity / Technical Experience / Creative Sensibility → `shared.*`
-   - Mode, deepening round habits, build mode, project counts, last project, notes → `plugins.app-project-readiness.*`
+   - Mode, deepening round habits, build mode, project counts, last project, notes → `plugins.vibe-cartographer.*`
 3. Set `schema_version: 1` and `last_updated` to today's date.
 4. Create `~/.claude/profiles/` directory if it doesn't exist (`mkdir -p`).
 5. Write the JSON file at `~/.claude/profiles/builder.json`.
 6. Rename the legacy file to `user-profile.md.bak` so the user can verify the migration if they want. Don't delete it.
-7. Log the migration in `process-notes.md`: "Migrated legacy builder profile from plugin-scoped to unified location."
+7. Log the migration in `process-notes.md`: "Migrated legacy markdown builder profile to unified JSON at plugins.vibe-cartographer."
 
 ## Flow
 
@@ -98,15 +102,11 @@ If `~/.claude/plugins/data/app-project-readiness/user-profile.md` exists but `~/
 Open with energy. Display this welcome banner **inside a code block** (triple backticks) exactly as shown — the code block is critical so the alignment renders correctly:
 
 ```
-   __   ___   __   _        _         
-  / /  |__ \ / /  | |   __ | |__  ___ 
- / /_     ) / /_  | |  / _`| '_ \/ __|
-| '_ \   / | '_ \ | |_| (_|| |_) \__ \
- \___|  / /  \___/ |____\__,|_.__/|___/
-       |__|                            
-                                       
-   App Platform Readiness
-   ━━━━━━━━━━━━━━━━━━━━━━
+   ◯───◯───◯
+   │ ╲ │ ╱ │
+   ◯───◯───◯       V I B E   C A R T O G R A P H E R
+   │ ╱ │ ╲ │        plot your course
+   ◯───◯───◯
 ```
 
 **If returning builder:** Welcome them back by name (from the global profile). Summarize what's on file — experience level, languages/frameworks, mode preference, number of projects completed. Then ask: "Has anything changed since last time, or are we good?" If they mention changes, update those fields conversationally. Then **skip directly to step 5 (Project Goals)**.
@@ -262,10 +262,10 @@ After writing the per-project builder profile, create or update the **unified cr
 1. Ensure the directory exists: `mkdir -p ~/.claude/profiles/`.
 2. If the file already exists (returning builder), read it first. You will **merge**, not overwrite:
    - **Shared block:** Only update fields the builder explicitly confirmed or changed this session. Do not blindly overwrite identity, experience, or preferences unless the builder gave new information.
-   - **Plugin block (`plugins.app-project-readiness`):** Update project counts, last project, last updated, and any new notes. Don't touch other plugins' blocks.
+   - **Plugin block (`plugins.vibe-cartographer`):** Update project counts, last project, last updated, and any new notes. Don't touch other plugins' blocks.
 3. If this is a new builder, populate from scratch using the session conversation.
-4. Increment `plugins.app-project-readiness.projects_started` by 1 (or set to 1 if new).
-5. Set `last_updated` (top level) and `plugins.app-project-readiness.last_updated` to today's date.
+4. Increment `plugins.vibe-cartographer.projects_started` by 1 (or set to 1 if new).
+5. Set `last_updated` (top level) and `plugins.vibe-cartographer.last_updated` to today's date.
 6. Set `schema_version: 1`.
 7. Write the file as pretty-printed JSON (2-space indent) so the user can inspect it manually.
 
@@ -283,7 +283,7 @@ After writing the per-project builder profile, create or update the **unified cr
 - `preferences.communication_style` — anything notable about how they prefer to interact (free-form)
 - `creative_sensibility` — design taste, aesthetic preferences, apps/sites they admire
 
-**What to put in the plugin block** (`plugins.app-project-readiness`):
+**What to put in the plugin block** (`plugins.vibe-cartographer`):
 
 - `mode` — `learner` or `builder`
 - `deepening_round_habits` — will accrue over multiple projects; on first run set to `"no data yet"`

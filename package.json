@@ -1,18 +1,30 @@
 {
-  "name": "@esthernandez/app-project-readiness",
-  "version": "0.5.0",
-  "description": "Spec-driven development from idea to working app — guides you through onboard, scope, PRD, spec, checklist, build, iterate, and reflect.",
+  "name": "@esthernandez/vibe-cartographer",
+  "version": "1.0.0",
+  "description": "Vibe Cartographer — plot your course from idea to shipped app. Spec-driven development workflow as a Claude Code plugin, delivered as eight slash commands (onboard, scope, prd, spec, checklist, build, iterate, reflect).",
   "author": "626Labs LLC",
   "license": "MIT",
+  "homepage": "https://github.com/estevanhernandez-stack-ed/vibe-cartographer#readme",
+  "bugs": "https://github.com/estevanhernandez-stack-ed/vibe-cartographer/issues",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/estevanhernandez-stack-ed/vibe-cartographer.git"
+  },
   "keywords": [
+    "vibe-cartographer",
+    "vibe-coding",
     "spec-driven",
     "app-readiness",
-    "project-readiness",
-    "claude-code-plugin"
+    "project-planning",
+    "claude-code-plugin",
+    "626labs"
   ],
   "files": [
     "plugins",
     ".claude-plugin",
-    "README.md"
+    "docs",
+    "README.md",
+    "INSTALL.md",
+    "CHANGELOG.md"
   ]
 }

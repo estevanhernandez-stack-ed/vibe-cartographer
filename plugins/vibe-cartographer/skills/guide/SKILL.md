@@ -55,7 +55,7 @@ At the end of each command, after embedded feedback and process notes, tell the 
 
 At the end of every command — after embedded feedback, after process notes, and after (or during) the handoff — append a one-line JSON entry to the session log. This is the plugin's passive memory: it captures what happened during each run so that a future reflective-evolution step can propose improvements based on observed patterns.
 
-**Follow the schema and instructions in `skills/session-logger/SKILL.md`.** That file defines the exact fields, the location (`~/.claude/plugins/data/app-project-readiness/sessions/<date>.jsonl`), and what to log vs what to skip.
+**Follow the schema and instructions in `skills/session-logger/SKILL.md`.** That file defines the exact fields, the location (`~/.claude/plugins/data/vibe-cartographer/sessions/<date>.jsonl`), and what to log vs what to skip.
 
 Key rules:
 - Append only. Never rewrite existing lines.
@@ -64,7 +64,7 @@ Key rules:
 - If the append fails, log a warning in `process-notes.md` and continue — session logging is instrumentation, not critical path.
 - Every command logs its own entry. Don't batch multiple commands into one entry.
 
-This is Level 2 (session memory) of the Self-Evolving Plugin Framework. The data is passive for now — collected but not acted on. When `/app-readiness-evolve` ships, it will read these logs to propose plugin improvements.
+This is Level 2 (session memory) of the Self-Evolving Plugin Framework. The data is passive for now — collected but not acted on. When `/vibe-cartographer-evolve` ships, it will read these logs to propose plugin improvements.
 
 ## Architecture Docs
 
@@ -76,8 +76,8 @@ If the builder provides architecture docs, prefer those over default patterns. I
 
 A persistent **unified builder profile** may exist at `~/.claude/profiles/builder.json`. This is the cross-plugin profile — a single source of truth for builder identity and preferences that any 626Labs plugin can read. It has a `shared` block (cross-plugin) and a `plugins.<plugin-name>` block (plugin-scoped).
 
-- **During `/onboard`:** the file is checked to determine whether the builder is new or returning. If a legacy `~/.claude/plugins/data/app-project-readiness/user-profile.md` exists, it is migrated to the new location. See the onboard SKILL for the full branching and migration logic.
-- **During `/reflect`:** the file is updated with project completion data and any new observations. Only the `plugins.app-project-readiness` block and (cautiously) the `shared.preferences` fields may be touched — never the other plugin blocks, never identity/experience.
+- **During `/onboard`:** the file is checked to determine whether the builder is new or returning. Legacy `plugins.app-project-readiness` blocks (from v0.5.0 and earlier) are migrated to `plugins.vibe-cartographer`, and deep-legacy `~/.claude/plugins/data/app-project-readiness/user-profile.md` files are migrated too. See the onboard SKILL for the full branching and migration logic.
+- **During `/reflect`:** the file is updated with project completion data and any new observations. Only the `plugins.vibe-cartographer` block and (cautiously) the `shared.preferences` fields may be touched — never the other plugin blocks, never identity/experience.
 - **For all other commands:** the per-project `docs/builder-profile.md` is the primary source of truth. Do not read or write the unified profile outside of `/onboard` and `/reflect`.
 
 **Cross-plugin coordination rule:** If another 626Labs plugin also reads/writes `~/.claude/profiles/builder.json`, it owns its own `plugins.<name>` block and has shared-read access to `shared`. Never stomp another plugin's namespace. Never write fields the schema doesn't define without bumping `schema_version` and documenting the migration.

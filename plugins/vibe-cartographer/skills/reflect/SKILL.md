@@ -150,8 +150,8 @@ After generating the reflection, update the **unified cross-plugin profile** at 
 **Read-merge-write procedure:**
 
 1. Read `~/.claude/profiles/builder.json` if it exists. If it doesn't exist (builder skipped onboard or used v0.4.0), create it now using the schema defined in the onboard SKILL.
-2. **Never touch other plugins' blocks.** You only write to `shared` (for genuinely new cross-plugin observations) and `plugins.app-project-readiness` (for this plugin's scoped data).
-3. Update these fields in `plugins.app-project-readiness`:
+2. **Never touch other plugins' blocks.** You only write to `shared` (for genuinely new cross-plugin observations) and `plugins.vibe-cartographer` (for this plugin's scoped data).
+3. Update these fields in `plugins.vibe-cartographer`:
    - `projects_completed` — increment by 1
    - `last_project` — one-line description of this project
    - `last_updated` — today's date
@@ -162,7 +162,7 @@ After generating the reflection, update the **unified cross-plugin profile** at 
    - `preferences.pacing` — if observed pacing diverged from what's on file
    - `preferences.communication_style` — if a new pattern emerged
    - Leave identity, experience, and creative sensibility alone unless the builder explicitly told you something new.
-5. Set `last_updated` (top level) and `plugins.app-project-readiness.last_updated` to today's date.
+5. Set `last_updated` (top level) and `plugins.vibe-cartographer.last_updated` to today's date.
 6. Write back as pretty-printed JSON (2-space indent).
 7. Log the update in `process-notes.md` under the `/reflect` section: "Updated unified builder profile — [what changed]."
 

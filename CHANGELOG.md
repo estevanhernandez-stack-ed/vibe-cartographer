@@ -1,3 +1,6 @@
+<!-- markdownlint-disable MD024 -->
+<!-- Keep-a-Changelog uses duplicate "Added / Changed / Fixed" headings per version by design. -->
+
 # Changelog
 
 All notable changes to this project are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
@@ -5,6 +8,35 @@ All notable changes to this project are documented here. The format follows [Kee
 ## [Unreleased]
 
 - Nothing yet.
+
+## [1.0.0] — 2026-04-15 — Rebrand to Vibe Cartographer
+
+The plugin formerly known as `@esthernandez/app-project-readiness` is now **Vibe Cartographer**. Same 8-command spec-driven workflow, same personas, same session memory — new name that actually says what the plugin does: *plot your course from idea to shipped app*.
+
+### Changed
+
+- **Package rename.** `@esthernandez/app-project-readiness` → `@esthernandez/vibe-cartographer`. The old package is deprecated on npm with a pointer to the new one; existing installs keep working but get a deprecation warning on next install.
+- **Plugin directory rename.** `plugins/app-project-readiness/` → `plugins/vibe-cartographer/`. Update any local pointers in Claude Desktop's Personal Plugins panel after upgrading.
+- **Unified profile namespace.** `plugins.app-project-readiness` → `plugins.vibe-cartographer` in `~/.claude/profiles/builder.json`. `/onboard` auto-migrates on first v1.0.0+ run; the old key is kept side-by-side for one release as a safety net.
+- **Session log path.** `~/.claude/plugins/data/app-project-readiness/sessions/` → `~/.claude/plugins/data/vibe-cartographer/sessions/`. Legacy logs are preserved untouched (append-only history doesn't migrate).
+- **ASCII banner.** Replaced the 626Labs FIGlet banner with a cleaner 5-line neural-network mesh + side-by-side text — cleaner alignment, more reproducible under the LLM's rendering.
+- **GitHub repository renamed.** `estevanhernandez-stack-ed/app-readinessplugin` → `estevanhernandez-stack-ed/vibe-cartographer`. GitHub auto-redirects the old URL, so existing clones keep working until you update the remote.
+
+### Migration
+
+On first `/onboard` with v1.0.0+, the plugin:
+
+1. Checks `~/.claude/profiles/builder.json` for a legacy `plugins.app-project-readiness` block
+2. Copies it to `plugins.vibe-cartographer`, leaving the old key in place for one release as a safety net
+3. Logs the migration in `process-notes.md`
+
+The deep-legacy markdown profile at `~/.claude/plugins/data/app-project-readiness/user-profile.md` (v0.4.x and earlier) still migrates the way it did in v0.5.0, just now into `plugins.vibe-cartographer` instead.
+
+### Why the rename
+
+"App Project Readiness" described what the plugin *technically* was but said nothing about the vibe. "Vibe Cartographer" captures the whole point: vibe coding with purpose and direction. Cartographers produce maps before expeditions — this plugin produces scope, PRD, spec, and checklist docs before you write any code. Pairs with [Vibe Doc](https://www.npmjs.com/package/@esthernandez/vibe-doc) in the 626Labs ecosystem: Doc writes the documentation you need, Cartographer plots the route you'll take.
+
+This is the "plugin has graduated from beta" moment. No new features — just the rename, the migration machinery, and a new banner.
 
 ## [0.5.0] — 2026-04-15
 
@@ -57,7 +89,7 @@ This plugin is maintained by [626Labs LLC](https://626labs.dev) (solo maintainer
 
 ### How to contribute
 
-1. **Fork** the repo on GitHub: [estevanhernandez-stack-ed/app-readinessplugin](https://github.com/estevanhernandez-stack-ed/app-readinessplugin).
+1. **Fork** the repo on GitHub: [estevanhernandez-stack-ed/vibe-cartographer](https://github.com/estevanhernandez-stack-ed/vibe-cartographer).
 2. **Branch** from `main` with a short, focused name (`fix/reflect-wording`, `feat/new-persona`, etc.).
 3. **Make the change** — most of this plugin is markdown (SKILL files and templates). No build step.
 4. **Test it locally** by installing from your fork (`git clone && point Claude Code at it`) or by pointing the plugin directory in your Claude Desktop Personal Plugins panel at your working copy.
@@ -68,12 +100,12 @@ This plugin is maintained by [626Labs LLC](https://626labs.dev) (solo maintainer
 There's no build, no package manager install, no test suite yet — just markdown:
 
 ```bash
-git clone https://github.com/estevanhernandez-stack-ed/app-readinessplugin
-cd app-readinessplugin
-# edit plugins/app-project-readiness/skills/**/SKILL.md directly
+git clone https://github.com/estevanhernandez-stack-ed/vibe-cartographer
+cd vibe-cartographer
+# edit plugins/vibe-cartographer/skills/**/SKILL.md directly
 ```
 
-Point Claude Desktop's Personal plugins at `plugins/app-project-readiness/` and iterate. Every change takes effect the next time you run a slash command.
+Point Claude Desktop's Personal plugins at `plugins/vibe-cartographer/` and iterate. Every change takes effect the next time you run a slash command.
 
 ### Proposing a change
 

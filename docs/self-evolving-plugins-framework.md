@@ -91,7 +91,7 @@ A catalog of concrete, implementable patterns. Each one is shippable by a single
 
 **Mechanism:** The plugin writes a single canonical profile file to a global location: `~/.claude/plugins/data/<plugin-name>/profile.json`. On plugin start, the SKILL reads this file *first*, before any onboarding. Holds durable facts: name, experience level, preferred stack, tone, pacing, and a `last_updated` timestamp. Onboarding questions are conditional: "if field X is missing or older than N months, ask; otherwise skip."
 
-**Example:** User runs `/app-readiness` on a new project. The plugin reads the profile, sees they're a senior builder who prefers terse output and TypeScript, and skips the 6-question onboarding. Greets them by name and jumps to the first real step.
+**Example:** User runs `/onboard` from Vibe Cartographer on a new project. The plugin reads the profile, sees they're a senior builder who prefers terse output and TypeScript, and skips the 6-question onboarding. Greets them by name and jumps to the first real step.
 
 **When to use / when not:** Use for stable facts that survive across projects. Don't use for project-specific state. Don't store secrets.
 
@@ -102,7 +102,7 @@ A catalog of concrete, implementable patterns. Each one is shippable by a single
 
 **Mechanism:** Each project gets a `.<plugin-name>/project.json` in the repo root. Holds project-specific state: detected stack, open blockers, last health score, decisions the user has made about *this* codebase. The SKILL reads project memory after the global profile and merges into a working context. Include `schema_version` for migrations.
 
-**Example:** The plugin remembers that on `app-readinessplugin` specifically, the user already answered "skip the LADDER intro" and flagged three known friction points. Next run loads those directly.
+**Example:** The plugin remembers that on the `vibe-cartographer` repo specifically, the user already answered "skip the LADDER intro" and flagged three known friction points. Next run loads those directly.
 
 **When to use / when not:** Use when project state is durable. Avoid for ephemeral session state.
 
@@ -199,9 +199,9 @@ A catalog of concrete, implementable patterns. Each one is shippable by a single
 **Pillar:** Self-teach, cross-plugin
 **Problem:** Every plugin maintaining its own profile means the user teaches the same fact (name, tone, experience) to every plugin independently.
 
-**Mechanism:** Designate a single canonical profile file (`~/.claude/profiles/builder.json`) as the **shared bus**. Plugins read shared fields but write to their own plugin-scoped namespace: `{shared: {name, tone, ...}, plugins: {app-readiness: {...}, reflect: {...}}}`. Shared fields only update through a named `update_shared_profile` step defined once and referenced by all plugins.
+**Mechanism:** Designate a single canonical profile file (`~/.claude/profiles/builder.json`) as the **shared bus**. Plugins read shared fields but write to their own plugin-scoped namespace: `{shared: {name, tone, ...}, plugins: {"vibe-cartographer": {...}, "vibe-doc": {...}}}`. Shared fields only update through a named `update_shared_profile` step defined once and referenced by all plugins.
 
-**Example:** User updates preferred tone to "terse" via the reflect plugin. Next run of app-readiness reads the same `shared.tone` and adapts immediately.
+**Example:** User updates preferred tone to "terse" via Vibe Doc. Next run of Vibe Cartographer reads the same `shared.tone` and adapts immediately.
 
 **When to use / when not:** Use when you have 2+ plugins with overlapping context. Plugin-specific state stays in `plugins.<name>`, never in `shared`. If two plugins disagree on a shared field, refuse the conflicting write and surface it.
 
@@ -212,7 +212,7 @@ A catalog of concrete, implementable patterns. Each one is shippable by a single
 
 **Mechanism:** Each plugin writes a **beacon** to `.626labs/beacons.jsonl` at the project level. Schema: `{timestamp, plugin, event, summary}`. High-signal events only: `run_completed`, `decision_logged`, `friction_detected`, `evolution_proposed`. Other plugins read last N beacons on startup for situational awareness. Flat append-only log — not pub/sub.
 
-**Example:** The commit plugin starts, reads beacons, sees that app-readiness flagged "three HIGH-risk items still open" two hours ago, mentions it in the pre-commit summary: "heads up, readiness has open HIGH items — sure you want to ship?"
+**Example:** The commit plugin starts, reads beacons, sees that Vibe Cartographer flagged "three HIGH-risk items still open" two hours ago, mentions it in the pre-commit summary: "heads up, the cartographer has open HIGH items — sure you want to ship?"
 
 **When to use / when not:** Use when plugins naturally share project context. Not for real-time coordination — this is a log, not a channel. Rotate weekly. Heavier coordination needs real infrastructure, out of scope.
 
@@ -298,20 +298,20 @@ A plugin that only captures explicit feedback learns slowly. Capture all three.
 
 **Bind to the 626Labs dashboard from day 1.** On session start, auto-bind via `manage_projects findByRepo`. Tag every session log with the project ID. Log meaningful decisions via `manage_decisions`. One pane of glass across every plugin.
 
-### Worked Example — app-readiness
+### Worked Example — Vibe Cartographer
 
-Current state: **Level 1**. Global builder profile exists; sessions don't feed back into behavior.
+Current state: **Level 2** (session memory + passive feedback capture). Global builder profile exists and session-logger skill appends per-command entries to `~/.claude/plugins/data/vibe-cartographer/sessions/<date>.jsonl`. Nothing reads the log back yet — that's L3.
 
-**Level 2.** Add a session-logger skill. At the end of each of the 8 commands (`onboard`, `scope`, `prd`, `spec`, `checklist`, `build`, `iterate`, `reflect`), append to `~/.claude/plugins/data/app-readiness/sessions/<date>.jsonl`: command, project ID, did the user push back, did they edit the artifact heavily. The existing `/reflect` command is already close — extend it to write to the session log, not just the conversation.
+**Level 2 (shipped).** Session-logger skill captures command, outcome, user pushback, friction notes, and key decisions at the end of every command. Local-first, append-only, no PII. The data is raw material for L3.
 
-**Level 3.** Add `/app-readiness-evolve` (or extend `/reflect`). Reads last 30 days of session logs, looks for patterns: "your PRDs get edited down 60% of the time — want shorter PRD output by default?" "you've onboarded 6 projects without ever using the risk-assessment block — want to drop it?" Each proposal shows before/after of the skill instruction change and writes to `overrides.json` only on explicit yes. Commands get a new first instruction: *"Read `overrides.json`. Apply any relevant behavior mods before proceeding."*
+**Level 3 (next).** Add `/vibe-cartographer-evolve` (or extend `/reflect`). Reads last 30 days of session logs, looks for patterns: "your PRDs get edited down 60% of the time — want shorter PRD output by default?" "you've onboarded 6 projects without ever using the risk-assessment block — want to drop it?" Each proposal shows before/after of the skill instruction change and writes to `overrides.json` only on explicit yes. Commands get a new first instruction: *"Read `overrides.json`. Apply any relevant behavior mods before proceeding."*
 
 **Specific file changes for L3:**
 - `skills/prd/SKILL.md` — add overrides check at top
 - `skills/onboard/SKILL.md` — add overrides check + profile reference
 - New: `skills/evolve/SKILL.md` — reflection/proposal logic
-- New: `~/.claude/plugins/data/app-readiness/overrides.json`
-- New: `~/.claude/plugins/data/app-readiness/overrides.history.jsonl`
+- New: `~/.claude/plugins/data/vibe-cartographer/overrides.json`
+- New: `~/.claude/plugins/data/vibe-cartographer/overrides.history.jsonl`
 
 **Level 4.** Policy file says the plugin can autonomously: reorder optional steps, adjust output length targets, skip confirmation on steps confirmed >5 times. It **cannot** autonomously: remove checkpoints, change the core 8-command structure, modify `/spec` (spec quality is load-bearing). On architectural proposals ("should we split `/build` into `/build` and `/verify`?"), the plugin bridges to The Architect via `bridge_context_to_architect` and waits for a strategic call.
 

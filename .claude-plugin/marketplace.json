@@ -1,20 +1,20 @@
 {
-  "name": "app-project-readiness",
+  "name": "vibe-cartographer",
   "owner": {
     "name": "626Labs LLC"
   },
   "metadata": {
-    "description": "626Labs App Project Readiness Tool — spec-driven development from idea to working app."
+    "description": "Vibe Cartographer — plot your course from idea to shipped app. Spec-driven development, delivered as eight slash commands."
   },
   "plugins": [
     {
-      "name": "app-project-readiness",
-      "source": "./plugins/app-project-readiness",
-      "description": "626Labs App Platform Readiness Plugin — guides you from idea to working app through spec-driven development, delivered as eight slash commands.",
+      "name": "vibe-cartographer",
+      "source": "./plugins/vibe-cartographer",
+      "description": "Vibe Cartographer — plot your course from idea to shipped app through spec-driven development, delivered as eight slash commands.",
       "author": {
         "name": "626Labs LLC"
       },
-      "keywords": ["spec-driven", "app-readiness", "project-readiness"],
+      "keywords": ["vibe-cartographer", "spec-driven", "app-readiness", "project-planning", "claude-code-plugin"],
       "category": "education"
     }
   ]
