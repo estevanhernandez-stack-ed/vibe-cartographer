@@ -8,42 +8,69 @@
 
 ## Install paths
 
-You only need one of these. Pick whichever matches how you're already running Claude Code.
+Pick whichever matches how you're running Claude Code. All three lead to the same plugin working.
 
-### Option 1: npm (recommended)
+### Option 1: Claude Desktop — Add marketplace (recommended)
+
+The cleanest path. Pulls from GitHub directly, supports `Sync` to update, no file downloads.
+
+1. Open Claude Desktop → **Personal plugins** panel (left sidebar)
+2. Click the **+** button → **Add marketplace**
+3. Enter: `estevanhernandez-stack-ed/vibe-cartographer`
+4. Click **Sync**
+
+Claude Desktop reads `.claude-plugin/marketplace.json` at the repo root, discovers the `vibe-cartographer` plugin inside `./plugins/vibe-cartographer`, and registers its slash commands. Updates propagate by clicking **Sync** again on the marketplace entry.
+
+### Option 2: Claude Code CLI — npm
+
+For users running Claude Code in a terminal, VS Code, or JetBrains.
 
 ```bash
 npm install -g @esthernandez/vibe-cartographer
 ```
 
-This drops the plugin files on your disk at your npm global root — typically `~/.npm-global/lib/node_modules/@esthernandez/vibe-cartographer/` on macOS/Linux or `%APPDATA%\npm\node_modules\@esthernandez\vibe-cartographer\` on Windows. You then need to tell Claude Code about them — see [Connecting to Claude Code](#connecting-to-claude-code) below.
+This drops the plugin files at:
 
-### Option 2: Claude Desktop — Personal plugin
+- **macOS/Linux:** `~/.npm-global/lib/node_modules/@esthernandez/vibe-cartographer/plugins/vibe-cartographer/`
+- **Windows:** `%APPDATA%\npm\node_modules\@esthernandez\vibe-cartographer\plugins\vibe-cartographer\`
 
-If you're on the Claude Desktop app and don't want an npm install:
+If your Claude Code CLI has a `plugin add <path>` command, point it at that path. Otherwise, use Option 1 (Add marketplace) — it works for CLI clients too because Claude Code reads marketplace entries from the global plugin config.
 
-1. Open **Personal plugins** in Claude Desktop (the panel in the left sidebar).
-2. Click the **+** button → **Create plugin**.
-3. Point it at a local clone of this repo (see Option 3 for the clone step).
-4. The plugin's slash commands become available immediately — no restart required.
+### Option 3: Claude Desktop — Upload plugin (for local iteration)
 
-### Option 3: Clone and reference locally
+For testing changes locally before pushing them to GitHub.
 
-```bash
-git clone https://github.com/estevanhernandez-stack-ed/vibe-cartographer ~/vibe-cartographer
-```
+1. Clone the repo:
 
-Then point Claude Code at `~/vibe-cartographer/plugins/vibe-cartographer/` as the plugin root. This is the same as Option 2 minus the Claude Desktop UI step — useful if you're on the Claude Code CLI directly.
+   ```bash
+   git clone https://github.com/estevanhernandez-stack-ed/vibe-cartographer
+   cd vibe-cartographer
+   ```
 
-## Connecting to Claude Code
+2. Build a `.plugin` bundle:
 
-After installing, Claude Code needs to know where the plugin lives. The exact steps depend on your client:
+   ```bash
+   python scripts/build-plugin.py
+   ```
 
-- **Claude Desktop** — use the **Personal plugins** panel (**+** button → **Create plugin** → point at the folder). Same flow for Option 1 (point at the npm install path) and Option 3 (point at your local clone).
-- **Claude Code CLI** — if your version has a plugin-add command, point it at the install path. Otherwise clone the repo and rely on Claude Code's plugin discovery for folders in its known marketplace list.
-- **VS Code / JetBrains** — Claude Code in your IDE reads from the same global plugin config as Claude Desktop. Install via Option 2 on Claude Desktop first and the IDE will pick it up on next launch.
+   This writes `bundles/vibe-cartographer-<version>.plugin` — a zip archive Cowork accepts directly. The script excludes `dist/`, `node_modules/`, `src/`, and other runtime/build artifacts per Cowork's plugin spec.
 
-**Pointing at the right folder matters.** The plugin root is the folder that contains `.claude-plugin/plugin.json` — in this repo that's `plugins/vibe-cartographer/`, not the repo root. Pointing at the repo root will not work.
+3. In Claude Desktop → **Personal plugins** → **+** → **Upload plugin**, pick the `.plugin` file.
+
+You can also download a pre-built `.plugin` file from the [GitHub releases page](https://github.com/estevanhernandez-stack-ed/vibe-cartographer/releases) — each tagged release ships a ready-to-upload asset.
+
+## Which option should I use?
+
+| Situation                                            | Option                                                                            |
+| ---------------------------------------------------- | --------------------------------------------------------------------------------- |
+| I use Claude Desktop and want the simplest install   | **Option 1** (Add marketplace)                                                    |
+| I use Claude Code CLI / VS Code / JetBrains          | **Option 2** (npm) — then use Option 1 in Claude Desktop if you also use it there |
+| I'm developing or testing plugin changes locally     | **Option 3** (Upload plugin)                                                      |
+| I want to install without an internet connection     | **Option 3** — download the `.plugin` from releases ahead of time                 |
+
+## Verifying the install
+
+**The plugin root is the folder that contains `.claude-plugin/plugin.json`.** In this repo that's `plugins/vibe-cartographer/`, not the repo root. Most install paths handle this automatically (marketplace manifest tells Claude Desktop where to look), but if you're troubleshooting, that's the folder to point at.
 
 ## Verification
 

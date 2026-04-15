@@ -54,40 +54,50 @@ See [`plugins/vibe-cartographer/architecture/`](plugins/vibe-cartographer/archit
 
 ## Install
 
-Requires [Claude Code](https://claude.ai/code) or Claude Desktop with plugin support.
+Requires [Claude Code](https://claude.ai/code) CLI or Claude Desktop with plugin support. Pick whichever path matches how you're running Claude Code — all three lead to the same plugin working inside a fresh project folder.
 
-### Option 1: npm (recommended)
+### Option 1: Claude Desktop — Add marketplace (recommended)
+
+The cleanest install. Pulls straight from GitHub, no file download, supports `Sync` to update.
+
+1. Open Claude Desktop → **Personal plugins** panel
+2. Click the **+** button → **Add marketplace**
+3. Enter: `estevanhernandez-stack-ed/vibe-cartographer`
+4. Click **Sync**
+
+Claude Desktop reads `.claude-plugin/marketplace.json` at the repo root, loads the `vibe-cartographer` plugin from inside `./plugins/vibe-cartographer`, and the slash commands (`/onboard`, `/scope`, `/prd`, etc.) become available.
+
+### Option 2: Claude Code CLI — npm
 
 ```bash
 npm install -g @esthernandez/vibe-cartographer
 ```
 
-Then in Claude Code / Claude Desktop, point your personal plugins at the installed path:
+The package ships the plugin files at `<npm-global>/node_modules/@esthernandez/vibe-cartographer/plugins/vibe-cartographer/`. If your Claude Code CLI has a plugin-add command, point it at that path; otherwise use Option 1 (Add marketplace) and the marketplace manifest will do the discovery for you.
 
-- macOS/Linux: `~/.npm-global/lib/node_modules/@esthernandez/vibe-cartographer/plugins/vibe-cartographer`
-- Windows: `%APPDATA%\npm\node_modules\@esthernandez\vibe-cartographer\plugins\vibe-cartographer`
+### Option 3: Claude Desktop — Upload plugin
 
-### Option 2: Claude Desktop personal plugin
+For local iteration before you push changes to GitHub.
 
-1. Open Claude Desktop's **Personal plugins** panel.
-2. Click **+ Create a plugin**.
-3. Point it to the `plugins/vibe-cartographer` folder from this repo (cloned or downloaded).
-4. The slash commands (`/onboard`, `/scope`, `/prd`, etc.) become available.
+1. Clone the repo: `git clone https://github.com/estevanhernandez-stack-ed/vibe-cartographer`
+2. Build a `.plugin` bundle:
 
-### Option 3: Clone and reference locally
+   ```bash
+   python scripts/build-plugin.py
+   ```
 
-```bash
-git clone https://github.com/estevanhernandez-stack-ed/vibe-cartographer ~/vibe-cartographer
-```
+   This writes `bundles/vibe-cartographer-<version>.plugin` — a zip archive Cowork accepts directly.
+3. In Claude Desktop → **Personal plugins** → **+** → **Upload plugin**, pick the `.plugin` file.
 
-Then point your Claude Code / Claude Desktop at `~/vibe-cartographer/plugins/vibe-cartographer`.
+Also available as a one-click download from the [GitHub releases page](https://github.com/estevanhernandez-stack-ed/vibe-cartographer/releases) — each release ships a pre-built `.plugin` file as a release asset.
 
 ### Migrating from `@esthernandez/app-project-readiness`
 
-Vibe Cartographer is the rename of what was previously `@esthernandez/app-project-readiness` (v0.5.0 and earlier). The migration is automatic:
+Vibe Cartographer is the rename of what was previously `@esthernandez/app-project-readiness` (v0.5.0 and earlier). Migration is automatic on first `/onboard` run:
 
-- Your unified builder profile at `~/.claude/profiles/builder.json` gets its `plugins.app-project-readiness` block copied to `plugins.vibe-cartographer` on first v1.0.0+ run.
-- The old `@esthernandez/app-project-readiness` npm package is deprecated. Run `npm install -g @esthernandez/vibe-cartographer` and uninstall the old one when you're ready.
+- Your unified builder profile at `~/.claude/profiles/builder.json` gets its `plugins.app-project-readiness` block copied to `plugins.vibe-cartographer` (old key preserved for one release as a safety net).
+- Deep-legacy markdown profiles at `~/.claude/plugins/data/app-project-readiness/user-profile.md` also migrate.
+- The old `@esthernandez/app-project-readiness` npm package is deprecated with a pointer. Run `npm install -g @esthernandez/vibe-cartographer` and uninstall the old one when you're ready.
 - Legacy session logs at `~/.claude/plugins/data/app-project-readiness/sessions/` are left in place — append-only history isn't touched.
 
 ### Start the workflow
