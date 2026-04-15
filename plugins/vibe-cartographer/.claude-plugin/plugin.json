@@ -1,6 +1,6 @@
 {
   "name": "vibe-cartographer",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Vibe Cartographer — plot your course from idea to shipped app. Spec-driven development delivered as eight slash commands: onboard, scope, prd, spec, checklist, build, iterate, reflect.",
   "author": {"name": "626Labs LLC"}
 }

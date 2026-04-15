@@ -9,6 +9,17 @@ All notable changes to this project are documented here. The format follows [Kee
 
 - Nothing yet.
 
+## [1.0.1] — 2026-04-15 — Install docs
+
+### Changed
+
+- **README and INSTALL rewritten** to document all three Claude Desktop install paths: **Add marketplace** (recommended — pulls from GitHub via `.claude-plugin/marketplace.json`), **npm install -g** (for Claude Code CLI / VS Code / JetBrains), and **Upload plugin** (for local iteration via `python scripts/build-plugin.py`).
+- Added a **"Which option should I use?"** decision table mapping situation → recommended install path.
+- Added a reproducible `scripts/build-plugin.py` build script that produces a `.plugin` bundle in `bundles/` for the upload-plugin path. Excludes `dist/`, `node_modules/`, `src/`, and other runtime/build artifacts per Cowork's plugin spec.
+- GitHub releases now ship a pre-built `.plugin` file as a release asset for one-click downloads.
+
+No behavior changes — this release exists so the npm-published README on `npmjs.com/package/@esthernandez/vibe-cartographer` reflects the marketplace install path.
+
 ## [1.0.0] — 2026-04-15 — Rebrand to Vibe Cartographer
 
 The plugin formerly known as `@esthernandez/app-project-readiness` is now **Vibe Cartographer**. Same 8-command spec-driven workflow, same personas, same session memory — new name that actually says what the plugin does: *plot your course from idea to shipped app*.
