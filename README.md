@@ -10,16 +10,16 @@ The plugin delivers a guided spec-driven development workflow as eight slash com
 
 **Command chain:** `/onboard` → `/scope` → `/prd` → `/spec` → `/checklist` → `/build` → `/iterate` → `/reflect`
 
-| Command | What It Does |
-|---------|-------------|
-| `/onboard` | Welcome, builder profiling, and architecture docs setup |
-| `/scope` | Brainstorm and refine your idea into a focused project scope |
-| `/prd` | Turn scope into detailed product requirements |
-| `/spec` | Translate PRD into a technical blueprint using your architecture |
-| `/checklist` | Break the spec into a sequenced, dependency-aware build plan |
-| `/build` | Build the app — autonomous or step-by-step mode |
-| `/iterate` | Optional polish pass after the core build |
-| `/reflect` | Quiz, qualitative feedback, and reflection |
+| Command      | What It Does                                                     |
+| ------------ | ---------------------------------------------------------------- |
+| `/onboard`   | Welcome, builder profiling, and architecture docs setup          |
+| `/scope`     | Brainstorm and refine your idea into a focused project scope     |
+| `/prd`       | Turn scope into detailed product requirements                    |
+| `/spec`      | Translate PRD into a technical blueprint using your architecture |
+| `/checklist` | Break the spec into a sequenced, dependency-aware build plan     |
+| `/build`     | Build the app — autonomous or step-by-step mode                  |
+| `/iterate`   | Optional polish pass after the core build                        |
+| `/reflect`   | Retro, peer-style feedback, and qualitative review               |
 
 The final checklist step is always **Documentation & Security Verification** — README, docs cleanup, secrets scan, dependency audit, and deployment security posture.
 
@@ -60,7 +60,7 @@ Then point your Claude Code / Claude Desktop at `~/app-readinessplugin/plugins/a
 
 Navigate to a **fresh, empty folder** for your project and run:
 
-```
+```text
 /onboard
 ```
 
@@ -68,7 +68,7 @@ The plugin lives separately from your project — install once and the slash com
 
 ## Project Structure
 
-```
+```text
 plugins/app-project-readiness/
 ├── .claude-plugin/plugin.json    # Plugin metadata
 ├── CLAUDE.md                     # Root agent behavior config

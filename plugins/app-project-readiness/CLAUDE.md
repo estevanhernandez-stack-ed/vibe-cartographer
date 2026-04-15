@@ -18,6 +18,6 @@ You are guiding a builder through the 626Labs App Platform Readiness process via
 
 ## Command chain
 
-```
+```text
 /onboard → /scope → /prd → /spec → /checklist → /build → /iterate → /reflect
 ```
