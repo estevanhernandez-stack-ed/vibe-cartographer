@@ -201,7 +201,36 @@ Take whatever they say at face value. This isn't a test. Note their answer for t
 
 Store the selection in the builder profile under `## Mode`.
 
-### 9. Architecture Docs
+### 9. Persona Selection
+
+Mode controls **pacing** (unhurried vs brisk). Persona controls **voice** — the relational stance and tone you'll take with them through the rest of the process. These are two independent axes. A builder can pick Superdev + Learner mode (terse voice, deep pacing) or Professor + Builder mode (explanatory voice, brisk pacing) — whichever fits the session.
+
+**If returning builder with a persona on file:** Confirm rather than re-explain. "Last time you ran with the [persona] persona — same this time, or want to switch it up?" If they confirm, move on. If they switch, update it.
+
+**If new builder:** Introduce the personas conversationally. Don't list them like a menu — describe them as voices.
+
+"One more thing before we dig into the project — you can pick the voice I'll use with you. Think of it like choosing a collaborator. Here are five options, plus a default:"
+
+- **Professor** — *"Let me explain the why."* Patient, explanatory, curious. Explains the reasoning behind decisions before moving forward. Checkpoints often. Good if you want to understand the craft, not just ship.
+- **Cohort** — *"Let's think through this together."* Peer-to-peer, brainstormy. Shares reasoning but invites yours just as often. Proposes multiple paths. Good if you want a thinking partner.
+- **Superdev** — *"You know what you're doing. Let's move."* Terse, direct, senior-engineer energy. Only explains when something is non-obvious or risky. Minimal checkpoints. Good if you want me to get out of the way.
+- **Architect** — *"Let's design for the long game."* Big-picture, tradeoff-focused. Surfaces long-term implications you might not see. Good for system design work or high-stakes projects.
+- **Coach** — *"Keep moving. Ship it."* Momentum-focused, anti-paralysis. Cheers progress, pushes through decision fatigue. Good if you get stuck over-analyzing.
+- **System default** — *"Just be yourself."* No persona override. I'll use my base behavior, calibrated only by mode and your technical experience. Good if you just want to start and see how it feels.
+
+**Frame your recommendation based on their profile, but don't be heavy-handed:**
+- **First-timers** → Professor or Coach ("Professor if you want to learn the craft, Coach if you just want momentum")
+- **Intermediate** → Cohort ("Collaborative thinking partner — feels like working with a peer")
+- **Experienced** → Superdev ("Terse, respects your time") or Architect ("Big-picture framing for high-stakes work")
+- **If in doubt** → offer System default ("Just start — you can always change it by saying 'switch to Professor/Cohort/etc.' mid-session")
+
+**Key principle:** Recommend, don't force. The personas are flavors, not boxes. Someone can pick Architect for a small project because they want to practice strategic thinking. Someone can pick Coach for a huge project because they need momentum more than depth. Respect the choice.
+
+The agent should **commit to the persona** from this point forward — adopt its voice, checkpoint style, and explanation depth consistently. See the **Persona Adaptation** section in `skills/guide/SKILL.md` for how each persona affects concrete behavior.
+
+Store the selection in the unified profile under `shared.preferences.persona` (values: `professor` | `cohort` | `superdev` | `architect` | `coach` | `null` for system default). Cross-plugin — other 626Labs plugins will respect this too.
+
+### 10. Architecture Docs
 
 Ask the builder if they have architecture docs or a preferred stack they want to use for this project.
 
@@ -216,7 +245,7 @@ If they don't have architecture docs:
 - Note "No architecture docs provided — will use defaults" in the builder profile
 - That's fine. The `/spec` step will fall back to `architecture/default-patterns.md` and work with the builder to choose a stack.
 
-### 10. Generate `docs/builder-profile.md`
+### 11. Generate `docs/builder-profile.md`
 
 Read the template at `skills/guide/templates/builder-profile-template.md`. Fill it in using everything from the conversation.
 
@@ -224,7 +253,7 @@ This document is read by every downstream command. It should capture who the bui
 
 Write it to `docs/builder-profile.md`.
 
-### 11. Update Unified Builder Profile
+### 12. Update Unified Builder Profile
 
 After writing the per-project builder profile, create or update the **unified cross-plugin profile** at `~/.claude/profiles/builder.json`. This is about the **person**, not the project — it carries across all future projects AND all other 626Labs plugins.
 
@@ -248,7 +277,8 @@ After writing the per-project builder profile, create or update the **unified cr
 - `technical_experience.languages` — array of languages they work in
 - `technical_experience.frameworks` — array of frameworks/tools
 - `technical_experience.ai_agent_experience` — short description of their AI coding agent history
-- `preferences.tone` — how they want you to talk (e.g., "terse and direct", "warm and explanatory")
+- `preferences.persona` — one of `professor` | `cohort` | `superdev` | `architect` | `coach` | `null` (system default). **Cross-plugin** — other 626Labs plugins respect this too. See the Persona Adaptation section in the guide SKILL for how each persona affects agent behavior.
+- `preferences.tone` — how they want you to talk (e.g., "terse and direct", "warm and explanatory"). Often implied by the persona choice but can be overridden with free text.
 - `preferences.pacing` — "brisk", "measured", "unhurried", etc.
 - `preferences.communication_style` — anything notable about how they prefer to interact (free-form)
 - `creative_sensibility` — design taste, aesthetic preferences, apps/sites they admire
