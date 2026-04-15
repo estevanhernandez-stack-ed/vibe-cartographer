@@ -97,6 +97,12 @@ This plugin is part of the **626Labs plugin ecosystem**. It runs standalone or a
 
 The unified profile is part of the [Self-Evolving Plugin Framework](docs/self-evolving-plugins-framework.md) — see that doc for the thesis, 12-pattern catalog, and the maturity ladder this plugin is working through. App-readiness is currently at **Level 2** (session memory + passive feedback capture).
 
+## Documentation
+
+- [INSTALL.md](INSTALL.md) — detailed install, verification, configuration, troubleshooting, and uninstall steps
+- [CHANGELOG.md](CHANGELOG.md) — release history and contributing guide
+- [docs/self-evolving-plugins-framework.md](docs/self-evolving-plugins-framework.md) — thesis and pattern catalog driving the plugin's architecture
+
 ## Credits
 
 - **Based on the Learning Hackathon spec-driven development plugin.** The 8-command workflow (onboard → scope → PRD → spec → checklist → build → iterate → reflect) is adapted from the hackathon's original spec-driven dev pattern. This plugin productionizes that workflow with builder-focused language, persistent memory, and a reflective retro.
