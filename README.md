@@ -2,6 +2,8 @@
 
 A spec-driven development plugin for [Claude Code](https://claude.ai/code). Takes you from idea spark to working app through eight structured commands — with documentation and security verification baked into the process.
 
+> **Based on the [Learning Hackathon spec-driven dev plugin](https://claude.ai/code).** This plugin extends and productionizes the spec-driven development approach introduced in the Learning Hackathon, rebuilt from the ground up as a builder-focused tool with persistent memory, cross-plugin profiles, and a reflective retro in place of the original classroom quiz. Credit to the Hackathon authors for the foundational workflow pattern.
+
 ## What It Does
 
 The plugin delivers a guided spec-driven development workflow as eight slash commands. Each command produces artifacts (scope doc, PRD, technical spec, build checklist, reflection) that downstream commands consume. The agent acts as a sharp, encouraging coach — interviewing you through each phase rather than waiting for prompts.
@@ -29,43 +31,40 @@ See [`plugins/app-project-readiness/architecture/`](plugins/app-project-readines
 
 ## Install
 
-Requires [Claude Code](https://claude.ai/code).
+Requires [Claude Code](https://claude.ai/code) or Claude Desktop with plugin support.
 
-**1. Store this repo somewhere on your system** (or use a git URL):
+### Option 1: npm (recommended)
 
-```
-# Clone it, download it, or just know where the folder is
-git clone <repo-url> ~/marcus-app-readiness
-```
-
-**2. Create a fresh, empty folder for your project** — this is where you'll build:
-
-```
-mkdir ~/my-new-app
-cd ~/my-new-app
+```bash
+npm install -g @esthernandez/app-project-readiness
 ```
 
-**3. Open Claude Code in that project folder** and install the plugin:
+Then in Claude Code / Claude Desktop, add the plugin directory to your marketplace and install from there.
 
-```
-claude
+### Option 2: Claude Desktop personal plugin
 
-# Inside Claude Code:
-/install-plugin ~/marcus-app-readiness/plugins/app-project-readiness
+1. Open Claude Desktop's **Personal plugins** panel.
+2. Click **+ Create a plugin**.
+3. Point it to the `plugins/app-project-readiness` folder from this repo (cloned or downloaded).
+4. The slash commands (`/onboard`, `/scope`, `/prd`, etc.) become available.
+
+### Option 3: Clone and reference locally
+
+```bash
+git clone https://github.com/estevanhernandez-stack-ed/app-readinessplugin ~/app-readinessplugin
 ```
 
-Or from a git URL:
-```
-/install-plugin https://github.com/<org>/<repo>/plugins/app-project-readiness
-```
+Then point your Claude Code / Claude Desktop at `~/app-readinessplugin/plugins/app-project-readiness`.
 
-**4. Start the workflow:**
+### Start the workflow
+
+Navigate to a **fresh, empty folder** for your project and run:
 
 ```
 /onboard
 ```
 
-The plugin lives separately from your project — you install it once and the slash commands (`/onboard`, `/scope`, `/prd`, etc.) become available. All project artifacts get created in your project folder under `docs/`.
+The plugin lives separately from your project — install once and the slash commands become available. All project artifacts get created in your project folder under `docs/`.
 
 ## Project Structure
 
@@ -91,6 +90,17 @@ plugins/app-project-readiness/
         ├── references/           # eval-rubric, prd-guide, spec-patterns
         └── templates/            # Output templates for each artifact
 ```
+
+## Works Independently or Together
+
+This plugin is part of the **626Labs plugin ecosystem**. It runs standalone or alongside other 626Labs plugins like [`@esthernandez/vibe-doc`](https://www.npmjs.com/package/@esthernandez/vibe-doc) — when both are installed, they share a **unified builder profile** at `~/.claude/profiles/builder.json` so you only onboard once across all 626Labs plugins.
+
+The unified profile is part of the [Self-Evolving Plugin Framework](docs/self-evolving-plugins-framework.md) — see that doc for the thesis, 12-pattern catalog, and the maturity ladder this plugin is working through. App-readiness is currently at **Level 2** (session memory + passive feedback capture).
+
+## Credits
+
+- **Based on the Learning Hackathon spec-driven development plugin.** The 8-command workflow (onboard → scope → PRD → spec → checklist → build → iterate → reflect) is adapted from the hackathon's original spec-driven dev pattern. This plugin productionizes that workflow with builder-focused language, persistent memory, and a reflective retro.
+- Built by [626Labs LLC](https://626labs.dev) — Fort Worth, TX.
 
 ## License
 
