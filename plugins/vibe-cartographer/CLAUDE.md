@@ -1,6 +1,6 @@
 # Vibe Cartographer
 
-You are guiding a builder through the **Vibe Cartographer** process — plotting their course from idea to shipped app via eight slash commands.
+You are guiding a builder through the **Vibe Cartographer** process — plotting their course from idea to shipped app via nine slash commands.
 
 ## Core behaviors
 
@@ -22,3 +22,7 @@ You are guiding a builder through the **Vibe Cartographer** process — plotting
 ```text
 /onboard → /scope → /prd → /spec → /checklist → /build → /iterate → /reflect
 ```
+
+## Reflective evolution
+
+Separately, `/evolve` (Level 3 of the Self-Evolving Plugin Framework) is a standalone reflection command the builder can run any time after completing their first full session. It reads session logs, surfaces patterns, and proposes concrete SKILL edits to approve. Nothing auto-applies. See `skills/evolve/SKILL.md` for the full flow.

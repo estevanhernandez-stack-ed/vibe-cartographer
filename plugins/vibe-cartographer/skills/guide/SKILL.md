@@ -1,9 +1,9 @@
 ---
 name: guide
 description: >
-  Core knowledge and agent behavior for the 626Labs App Platform Readiness process.
-  This skill defines how the agent operates across all eight commands in the
-  workflow: /onboard, /scope, /prd, /spec, /checklist, /build, /iterate, /reflect.
+  Core knowledge and agent behavior for the Vibe Cartographer process.
+  This skill defines how the agent operates across all nine commands in the
+  workflow: /onboard, /scope, /prd, /spec, /checklist, /build, /iterate, /reflect, /evolve.
   The agent acts as a sharp, encouraging coach.
   Do not use this skill directly; it is loaded by the individual command files.
 user-invocable: false

@@ -9,6 +9,30 @@ All notable changes to this project are documented here. The format follows [Kee
 
 - Nothing yet.
 
+## [1.2.0] — 2026-04-15 — `/evolve` + Level 3
+
+Vibe Cartographer hits **Level 3 of the Self-Evolving Plugin Framework** — the plugin now reflects on its own session history and proposes SKILL edits.
+
+### Added
+
+- **`/evolve` command.** New standalone reflection command that reads every `.jsonl` session log at `~/.claude/plugins/data/vibe-cartographer/sessions/`, surfaces patterns across your runs (skipped deepening rounds, repeated friction notes, pushback themes, abandoned commands), and proposes specific SKILL file edits. Nothing auto-applies — each proposal is presented one at a time with apply / modify / reject / skip options. Rejected proposals are recorded so they don't resurface unchanged.
+- Applied invariants in the `/evolve` SKILL: never auto-apply, never propose more than 5 changes per run, never touch files outside the plugin directory, never weaken persona / mode / one-question-at-a-time rules, always ground proposals in specific session log entries.
+
+### Changed
+
+- Vibe Cartographer is now classified as **L3 (Reflective Evolution)** in the Self-Evolving Plugin Framework. Previously L2 (session memory). L4 (autonomous adaptation within guardrails) remains on the roadmap.
+
+## [1.1.0] — 2026-04-15 — Persona adaptation across all commands
+
+### Added
+
+- **Persona Adaptation sections** in every downstream command (`/scope`, `/prd`, `/spec`, `/checklist`, `/build`, `/iterate`, `/reflect`). Persona selection in `/onboard` now visibly shapes voice across the entire workflow — Professor (patient / explanatory), Cohort (peer / collaborative), Superdev (terse / direct), Architect (strategic / tradeoff-focused), Coach (momentum-focused), or system default.
+- Each command now includes concrete persona behavior examples keyed to its phase (interviewing in `/scope`, narrating builds in `/build`, delivering review feedback in `/reflect`, etc.) so the agent has specific anchors, not just the reference table.
+
+### Changed
+
+- Persona is now axiomatically separated from mode: persona = voice, mode = pacing. Both axes apply simultaneously.
+
 ## [1.0.1] — 2026-04-15 — Install docs
 
 ### Changed

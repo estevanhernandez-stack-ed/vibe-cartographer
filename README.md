@@ -20,16 +20,17 @@ Vibe Cartographer delivers a guided spec-driven development workflow as eight sl
 
 **Command chain:** `/onboard` → `/scope` → `/prd` → `/spec` → `/checklist` → `/build` → `/iterate` → `/reflect`
 
-| Command      | What It Does                                                     |
-| ------------ | ---------------------------------------------------------------- |
-| `/onboard`   | Welcome, builder profiling, persona selection, architecture docs |
-| `/scope`     | Brainstorm and refine your idea into a focused project scope     |
-| `/prd`       | Turn scope into detailed product requirements                    |
-| `/spec`      | Translate PRD into a technical blueprint using your architecture |
-| `/checklist` | Break the spec into a sequenced, dependency-aware build plan     |
-| `/build`     | Build the app — autonomous or step-by-step mode                  |
-| `/iterate`   | Optional polish pass after the core build                        |
-| `/reflect`   | Retro, peer-style feedback, and qualitative review               |
+| Command      | What It Does                                                             |
+| ------------ | ------------------------------------------------------------------------ |
+| `/onboard`   | Welcome, builder profiling, persona selection, architecture docs         |
+| `/scope`     | Brainstorm and refine your idea into a focused project scope             |
+| `/prd`       | Turn scope into detailed product requirements                            |
+| `/spec`      | Translate PRD into a technical blueprint using your architecture         |
+| `/checklist` | Break the spec into a sequenced, dependency-aware build plan             |
+| `/build`     | Build the app — autonomous or step-by-step mode                          |
+| `/iterate`   | Optional polish pass after the core build                                |
+| `/reflect`   | Retro, peer-style feedback, and qualitative review                       |
+| `/evolve`    | **L3:** Plugin reads its own session logs and proposes self-improvements |
 
 The final checklist step is always **Documentation & Security Verification** — README, docs cleanup, secrets scan, dependency audit, and deployment security posture.
 
@@ -152,7 +153,7 @@ plugins/vibe-cartographer/
 
 Vibe Cartographer is part of the **626Labs plugin ecosystem**. It runs standalone or alongside other 626Labs plugins like [`@esthernandez/vibe-doc`](https://www.npmjs.com/package/@esthernandez/vibe-doc) — when both are installed, they share a **unified builder profile** at `~/.claude/profiles/builder.json` so you only onboard once across all 626Labs plugins. Persona, tone, experience, and preferences carry across.
 
-The unified profile is part of the [Self-Evolving Plugin Framework](docs/self-evolving-plugins-framework.md) — see that doc for the thesis, 12-pattern catalog, and the maturity ladder the plugin is working through. Vibe Cartographer is currently at **Level 2** (session memory + passive feedback capture); Level 3 (reflective evolution — the plugin proposes changes to itself based on observed usage) is on the roadmap.
+The unified profile is part of the [Self-Evolving Plugin Framework](docs/self-evolving-plugins-framework.md) — see that doc for the thesis, 12-pattern catalog, and the maturity ladder the plugin is working through. Vibe Cartographer is now at **Level 3** (reflective evolution via `/evolve`): the plugin reads its own session logs, surfaces patterns across your runs, and proposes concrete SKILL edits for you to approve. Nothing auto-applies — every change is one-at-a-time, with consent.
 
 ## Documentation
 
