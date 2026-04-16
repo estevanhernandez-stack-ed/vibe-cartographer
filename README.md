@@ -67,15 +67,27 @@ The cleanest install. Pulls straight from GitHub, no file download, supports `Sy
 
 Claude Desktop reads `.claude-plugin/marketplace.json` at the repo root, loads the `vibe-cartographer` plugin from inside `./plugins/vibe-cartographer`, and the slash commands (`/onboard`, `/scope`, `/prd`, etc.) become available.
 
-### Option 2: Claude Code CLI — npm
+### Option 2: Claude Code CLI — Plugin manager
+
+Use the built-in plugin manager from any Claude Code CLI or IDE terminal session.
+
+```text
+/plugin marketplace add estevanhernandez-stack-ed/app-readinessplugin
+/plugin install vibe-cartographer@app-readinessplugin
+/reload-plugins
+```
+
+After reload, type `/` and you'll see the Vibe Cartographer commands in autocomplete.
+
+### Option 3: Claude Code CLI — npm
 
 ```bash
 npm install -g @esthernandez/vibe-cartographer
 ```
 
-The package ships the plugin files at `<npm-global>/node_modules/@esthernandez/vibe-cartographer/plugins/vibe-cartographer/`. If your Claude Code CLI has a plugin-add command, point it at that path; otherwise use Option 1 (Add marketplace) and the marketplace manifest will do the discovery for you.
+The package ships the plugin files at `<npm-global>/node_modules/@esthernandez/vibe-cartographer/plugins/vibe-cartographer/`. If your Claude Code CLI has a plugin-add command, point it at that path; otherwise use Option 1 or 2 and the marketplace manifest will do the discovery for you.
 
-### Option 3: Claude Desktop — Upload plugin
+### Option 4: Claude Desktop — Upload plugin
 
 For local iteration before you push changes to GitHub.
 

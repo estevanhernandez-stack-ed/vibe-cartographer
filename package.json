@@ -19,9 +19,13 @@
     "claude-code-plugin",
     "626labs"
   ],
+  "scripts": {
+    "postinstall": "node scripts/postinstall.js"
+  },
   "files": [
     "plugins",
     ".claude-plugin",
+    "scripts/postinstall.js",
     "docs",
     "README.md",
     "INSTALL.md",
