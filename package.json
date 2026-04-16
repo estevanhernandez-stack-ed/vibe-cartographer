@@ -1,6 +1,6 @@
 {
   "name": "@esthernandez/vibe-cartographer",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "description": "Vibe Cartographer — plot your course from idea to shipped app. Spec-driven development workflow as a Claude Code plugin, delivered as eight slash commands (onboard, scope, prd, spec, checklist, build, iterate, reflect).",
   "author": "626Labs LLC",
   "license": "MIT",

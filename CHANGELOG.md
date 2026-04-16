@@ -9,6 +9,23 @@ All notable changes to this project are documented here. The format follows [Kee
 
 - Nothing yet.
 
+## [1.3.0] — 2026-04-15 — `/onboard` project origin + three-track `/evolve`
+
+First live `/evolve` run surfaced two applied changes, dogfooded and shipped the same night.
+
+### Added
+
+- **`/onboard` Step 6: Starting Point.** A new free-form question captures where the project is starting from — blank folder, existing repo being extended, no-code prototype (Bolt, Lovable, v0, Replit Agent) being escaped, or something else. Saved to `docs/builder-profile.md` under `## Project Origin`. Downstream commands adapt: greenfield gets the full scripted flow, no-code escape compresses `/scope` and `/prd` and focuses `/spec`/`/build` on translating the prototype into maintainable code, existing-repo pulls architecture from the codebase.
+- **`/evolve` three-track classification.** Every observation surfaced by `/evolve` is now classified up front into exactly one of three tracks before any proposal lands:
+  - **Plugin track** — universal patterns get SKILL file edits, shipped on next release to every user.
+  - **Personal track** — idiosyncratic preferences get written to `plugins.vibe-cartographer` in the unified profile, affecting only this builder's future sessions.
+  - **Community track (opt-in)** — signals the builder suspects might be universal get appended to `~/.claude/plugins/data/vibe-cartographer/community-signals.jsonl` on the local machine only. **Nothing is ever transmitted** — export is always builder-initiated.
+- **Community signals privacy contract** baked into the SKILL: local-only, opt-in per observation, no PII (no names, paths, or code content), transparent schema the builder can audit anytime.
+
+### Changed
+
+- `/evolve` now defaults to Personal-track classification when in doubt. Plugin-track is the exception, not the default — every Plugin edit is a public commitment to every future user.
+
 ## [1.2.0] — 2026-04-15 — `/evolve` + Level 3
 
 Vibe Cartographer hits **Level 3 of the Self-Evolving Plugin Framework** — the plugin now reflects on its own session history and proposes SKILL edits.

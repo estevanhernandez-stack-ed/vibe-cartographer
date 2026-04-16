@@ -197,7 +197,26 @@ Something like: "What's the end goal for this project? What would make it a succ
 
 This can be anything: shipping to users, building a portfolio piece, solving a personal problem, learning a new stack, validating an idea. Their answer gets captured in the builder profile and `/reflect` loops back to it at the end to see how they did.
 
-### 6. Design Direction
+### 6. Starting Point
+
+Where's this project starting from? This captures one of the most common realities of vibe coding in 2026 — a lot of builders arrive from no-code environments and use this plugin as the escape hatch into real code.
+
+Ask one question, free-form:
+
+"Where's this project starting from? A blank folder? An existing repo you're extending? A no-code prototype (Bolt, Lovable, v0, Replit Agent) you're trying to break out of? Or something else?"
+
+Save the answer to `docs/builder-profile.md` under a `## Project Origin` section. Capture what they said verbatim — the framing matters for downstream commands.
+
+**How downstream commands should use this:**
+
+- **Greenfield** (blank folder, starting fresh) → full `/scope → /prd → /spec → /checklist → /build` flow works well. The scripted pace matches the empty canvas.
+- **No-code escape** (Bolt/Lovable/v0/Replit Agent prototype) → `/scope` and `/prd` compress naturally because the user already has a working artifact to point at. `/spec` and `/build` focus on translating the prototype into maintainable code, not designing from scratch. Some deepening rounds may be redundant.
+- **Extending existing repo** → `/spec` pulls from the existing codebase's architecture, patterns, and conventions rather than treating it as greenfield. `/build` integrates into the existing structure.
+- **Something else** → whatever they said, capture it and downstream commands adapt accordingly.
+
+Keep this brief. One question, short answer, move on. The goal is signal, not a deep interview.
+
+### 7. Design Direction
 
 Ask about the app's intended look and feel. If the builder already has design docs (Figma files, mockups, mood boards, style guides), ask them to point to those — that's the strongest signal.
 
@@ -205,7 +224,7 @@ If no design docs exist, ask one question: "Do you have a vision for how this ap
 
 Keep this brief. Don't probe deeply. Take what they give you and move on. The goal is a signal about the app's design direction that can inform decisions in `/scope` and `/spec`. If they have nothing specific, that's fine — note "No strong signals — default to clean and functional" and move on.
 
-### 7. Gauge Prior SDD Knowledge
+### 8. Gauge Prior SDD Knowledge
 
 Before wrapping up, get a lightweight read on whether the builder already has experience with structured development processes. This helps `/reflect` calibrate its quiz — an experienced developer who already practices something like SDD should get different questions than someone encountering these ideas for the first time.
 
@@ -213,7 +232,7 @@ Ask something casual: "Have you ever done anything like this before — planning
 
 Take whatever they say at face value. This isn't a test. Note their answer for the profile.
 
-### 8. Mode Selection
+### 9. Mode Selection
 
 **If returning builder with a mode preference on file:** Confirm rather than re-explain. "Last time you went with [mode] mode — same this time, or want to switch?" If they confirm, move on. If they switch, note it.
 
@@ -233,7 +252,7 @@ Take whatever they say at face value. This isn't a test. Note their answer for t
 
 Store the selection in the builder profile under `## Mode`.
 
-### 9. Persona Selection
+### 10. Persona Selection
 
 Mode controls **pacing** (unhurried vs brisk). Persona controls **voice** — the relational stance and tone you'll take with them through the rest of the process. These are two independent axes. A builder can pick Superdev + Learner mode (terse voice, deep pacing) or Professor + Builder mode (explanatory voice, brisk pacing) — whichever fits the session.
 
@@ -262,7 +281,7 @@ The agent should **commit to the persona** from this point forward — adopt its
 
 Store the selection in the unified profile under `shared.preferences.persona` (values: `professor` | `cohort` | `superdev` | `architect` | `coach` | `null` for system default). Cross-plugin — other 626Labs plugins will respect this too.
 
-### 10. Architecture Docs
+### 11. Architecture Docs
 
 Ask the builder if they have architecture docs or a preferred stack they want to use for this project.
 
@@ -277,7 +296,7 @@ If they don't have architecture docs:
 - Note "No architecture docs provided — will use defaults" in the builder profile
 - That's fine. The `/spec` step will fall back to `architecture/default-patterns.md` and work with the builder to choose a stack.
 
-### 11. Generate `docs/builder-profile.md`
+### 12. Generate `docs/builder-profile.md`
 
 Read the template at `skills/guide/templates/builder-profile-template.md`. Fill it in using everything from the conversation.
 
@@ -285,7 +304,7 @@ This document is read by every downstream command. It should capture who the bui
 
 Write it to `docs/builder-profile.md`.
 
-### 12. Update Unified Builder Profile
+### 13. Update Unified Builder Profile
 
 After writing the per-project builder profile, create or update the **unified cross-plugin profile** at `~/.claude/profiles/builder.json`. This is about the **person**, not the project — it carries across all future projects AND all other 626Labs plugins.
 
