@@ -89,7 +89,7 @@ Provide 2-4 sentences using ✓/△ markers. Evaluate:
 - Whether ambiguities were genuinely surfaced and resolved
 ### Handoff
 
-"Run `/clear`, then run `/spec` when you're ready."
+"Run `/spec` when you're ready." *(Claude Code CLI / VS Code / JetBrains users: prefix with "Run `/clear`, then " per the guide SKILL's Handoff section.)*
 
 ### Process Notes
 

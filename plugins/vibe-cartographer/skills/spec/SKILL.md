@@ -105,7 +105,7 @@ Provide 2-4 sentences using ✓/△ markers. Evaluate:
 
 ### Handoff
 
-"That spec is the heart of spec-driven development — everything from here flows from it. Run `/clear`, then run `/checklist` when you're ready."
+"That spec is the heart of spec-driven development — everything from here flows from it. Run `/checklist` when you're ready." *(Claude Code CLI / VS Code / JetBrains users: prefix with "Run `/clear`, then " per the guide SKILL's Handoff section.)*
 
 ### Process Notes
 

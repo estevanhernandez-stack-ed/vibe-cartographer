@@ -100,7 +100,7 @@ Provide 2-4 sentences using ✓/△ markers. Evaluate:
 
 ### Handoff
 
-"Run `/clear`, then run `/prd` when you're ready."
+"Run `/prd` when you're ready." *(Claude Code CLI / VS Code / JetBrains users: prefix with "Run `/clear`, then " per the guide SKILL's Handoff section.)*
 
 ### Process Notes
 

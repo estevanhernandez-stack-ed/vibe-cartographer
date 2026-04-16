@@ -70,8 +70,8 @@ The file at `~/.claude/profiles/builder.json` has this shape:
   "schema_version": 1,
   "last_updated": "2026-04-15",
   "shared": {
-    "name": "Estevan",
-    "identity": "Builder and outsider. 626 exchange, Fort Worth roots. Runs 626Labs.",
+    "name": "Alex",
+    "identity": "Full-stack builder. Mix of client work and side projects. Ships fast.",
     "technical_experience": {
       "level": "experienced",
       "languages": ["TypeScript", "Python", "Go"],
@@ -156,7 +156,11 @@ Then name the full command chain: `/onboard` (that's now) → `/scope` → `/prd
 
 Mention that the documents they create through this process are a real part of their project — they're not throwaway scaffolding. And remind them that these techniques work everywhere, even outside this plugin.
 
-**Introduce `/clear` and context rot.** Tell them: "Remember context rot from the video? AI performance gets worse as conversations get longer. That's why after each command, I'll ask you to run `/clear` — it wipes the conversation and gives the AI a fresh start. Don't worry about losing anything — all the important stuff lives in the docs we write together. The AI reads those fresh each time. So the flow is: finish a command, run `/clear`, then run the next command."
+**Introduce context management.** Context management works differently depending on where the builder is running Claude. Check the environment you're running in and say the right thing:
+
+- **If in Claude Code CLI / VS Code / JetBrains:** "Remember context rot? AI performance gets worse as conversations get longer. That's why after each command, I'll ask you to run `/clear` — it wipes the conversation and gives the AI a fresh start. Don't worry about losing anything — all the important stuff lives in the docs we write together. The AI reads those fresh each time. So the flow is: finish a command, run `/clear`, then run the next command."
+- **If in Claude Desktop / Cowork:** "Context management works a bit differently here than in the terminal — Cowork handles it automatically as the conversation grows. You don't need to manually reset between commands. After each command, just run the next one when you're ready. All the important context lives in the docs we write together, which the AI reads fresh each time."
+- **If unsure which environment:** Default to the Cowork version. It's safe in both contexts.
 
 ### 3. Get to Know the Builder
 
@@ -334,7 +338,7 @@ If they shared something particularly interesting or specific, acknowledge it: "
 
 ### Handoff
 
-"Great — I've got everything I need. Run `/clear`, then run `/scope` — that's where we'll find your idea."
+"Great — I've got everything I need. Run `/scope` when you're ready — that's where we'll find your idea." *(If the builder is in Claude Code CLI / VS Code / JetBrains, prefix the handoff with "Run `/clear`, then " per the guide SKILL's Handoff section.)*
 
 ### Process Notes
 

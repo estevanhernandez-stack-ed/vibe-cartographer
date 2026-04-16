@@ -193,8 +193,8 @@ Provide 2-4 sentences using ✓/△ markers. Evaluate:
 
 ### Handoff
 
-- **If autonomous mode:** "Run `/clear`, then run `/build` when you're ready. I'll work through the whole checklist and pause at checkpoints for you to verify."
-- **If step-by-step mode:** "Run `/clear`, then run `/build` when you're ready — you'll run it once per checklist item. Run `/clear` between each item so the agent gets a fresh context. Each run picks up the next unchecked step."
+- **If autonomous mode:** "Run `/build` when you're ready. I'll work through the whole checklist and pause at checkpoints for you to verify." *(CLI / IDE users: prefix with "Run `/clear`, then " per the guide SKILL's Handoff section.)*
+- **If step-by-step mode:** "Run `/build` when you're ready — you'll run it once per checklist item. Each run picks up the next unchecked step." *(CLI / IDE users: run `/clear` between each item to fight context rot. Cowork users don't need to — context is managed automatically.)*
 
 ### Process Notes
 

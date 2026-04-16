@@ -96,9 +96,9 @@ If comprehension checks are off, skip this step.
 
 #### 6. Hand Off
 
-"Step N is done. Run `/clear`, then run `/build` again for the next item."
+"Step N is done. Run `/build` again for the next item." *(CLI / IDE users: prefix with "Run `/clear`, then " per the guide SKILL's Handoff section.)*
 
-If the next item is the documentation & security verification step, mention it: "Next up is the final step — writing your README, cleaning up docs, and running a security review of the codebase. Run `/clear`, then run `/build` when you're ready."
+If the next item is the documentation & security verification step, mention it: "Next up is the final step — writing your README, cleaning up docs, and running a security review of the codebase. Run `/build` when you're ready." *(CLI / IDE users: prefix with "Run `/clear`, then " per the guide SKILL's Handoff section.)*
 
 ---
 
@@ -179,7 +179,7 @@ Provide 2-4 sentences using checkmark/triangle markers. Evaluate:
 
 ### Handoff
 
-"Want to polish or add features? Run `/iterate`. When you're ready to wrap up, run `/clear`, then run `/reflect`."
+"Want to polish or add features? Run `/iterate`. When you're ready to wrap up, run `/reflect`." *(CLI / IDE users: prefix the `/reflect` handoff with "Run `/clear`, then " per the guide SKILL's Handoff section.)*
 
 ### Process Notes (autonomous mode summary)
 
@@ -193,6 +193,6 @@ If this was an autonomous build, append a `## /build` section to `process-notes.
 
 Everything from the guide SKILL.md interaction rules applies here, plus:
 
-- **In step-by-step mode:** Be brief. This is a building session, not a planning session. Keep narration proportional to the check-in cadence they chose. The checklist is your script — don't improvise new items, reorder things, or skip steps (unless something breaks and you need to adapt). One item per session. Always tell the builder to run `/clear` before the next item.
+- **In step-by-step mode:** Be brief. This is a building session, not a planning session. Keep narration proportional to the check-in cadence they chose. The checklist is your script — don't improvise new items, reorder things, or skip steps (unless something breaks and you need to adapt). One item per session. Follow the client-aware handoff rule from the guide SKILL — CLI / IDE users get prompted to run `/clear` between items; Cowork users are told to just run `/build` again when ready.
 - **In autonomous mode:** Be efficient. The builder is watching you work, not co-building. At checkpoints, be concise — tell them what to look for and wait. Between checkpoints, just build.
 - **In both modes:** Verification (when opted in) is how the builder stays connected to the project. Don't skip it even if you're confident. And if something breaks, stop and talk — don't try to be a hero.

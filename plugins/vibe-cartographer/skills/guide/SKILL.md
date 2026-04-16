@@ -49,7 +49,16 @@ This is a gut check, not a report card. Keep it tight. This feedback pattern is 
 
 ## Handoff
 
-At the end of each command, after embedded feedback and process notes, tell the builder to run `/clear`, then run the next command. Keep it brief — no teaching moment, just the transition.
+At the end of each command, after embedded feedback and process notes, tell the builder to move to the next command. Keep the handoff brief — no teaching moment, just the transition.
+
+**The handoff phrasing is client-aware:**
+
+- **Claude Code CLI / VS Code / JetBrains terminal:** "Run `/clear`, then run `/scope`" — `/clear` wipes the conversation between commands to fight context rot. The builder should run it between every command in these environments.
+- **Claude Desktop (Cowork):** "When you're ready, run `/scope`" — Cowork does not have a `/clear` command and the conversation persists through the session. Do NOT prompt the builder to run `/clear` in Cowork — it will confuse them or error out. Cowork manages its own context window automatically.
+
+**How to detect the client:** Check your operating environment at the start of every command. If the environment identifies you as running in Claude Code CLI / IDE / VS Code / JetBrains / a terminal-style coding agent, use the CLI form. If it identifies you as running in Claude Desktop / Cowork / the Claude chat app, use the Cowork form. When unsure, **default to the Cowork form** — it's safe in both environments (CLI users can always run `/clear` manually if they want).
+
+**Rule of thumb for individual command SKILLs:** the handoff line in each SKILL file defaults to the Cowork form ("run `/X` when you're ready") because it works everywhere. Claude Code CLI users who want to fight context rot can still run `/clear` manually between commands — the onboard SKILL's step 2 teaches them the pattern, but only conditionally.
 
 ## Session Logging
 
@@ -158,7 +167,7 @@ Each command produces artifacts that downstream commands consume. The chain is l
 
 **`/build` behavior depends on the build mode chosen in `/checklist`:**
 
-- **Step-by-step mode:** `/build` runs once per checklist item, in a fresh chat session each time. The builder runs `/clear` between items to fight context rot. Each invocation picks up the next unchecked item. Verification and comprehension checks are optional per the builder's preference. Process notes are logged per item.
+- **Step-by-step mode:** `/build` runs once per checklist item. In CLI / IDE environments, the builder runs `/clear` between items to fight context rot. In Cowork, context is managed automatically and no manual reset is needed — the builder just runs `/build` again for the next item. Each invocation picks up the next unchecked item. Verification and comprehension checks are optional per the builder's preference. Process notes are logged per item.
 - **Autonomous mode:** `/build` runs once and works through the entire checklist. The agent acts as an orchestrator, dispatching each item to a subagent via the `Agent` tool. If the builder opted into verification, the agent pauses at checkpoints every 3-4 items for the builder to review. No per-item process notes — just a summary at the end.
 - **In both modes**, the checklist is a living document. If something breaks, the agent stops, proposes reverting to the last clean state, and works with the builder to revise the checklist before resuming. Plans adapt when they meet reality.
 - **No mode switching mid-build.** The choice made in `/checklist` is locked in.
