@@ -22,6 +22,28 @@ This is Level 3 of the Self-Evolving Plugin Framework (see `docs/self-evolving-p
 - Read the unified profile at `~/.claude/profiles/builder.json` for baseline context (experience level, persona, preferences).
 - Read the plugin's own SKILL files (`skills/onboard/SKILL.md`, `skills/scope/SKILL.md`, etc.) so you can propose specific, accurate diffs.
 - **Read `process-notes.md` from recent projects when present.** This file is the richest source of friction evidence — the user writes "CRITICAL:", "builder refused all cuts twice", "this was rough" in plain English. Treat narrative-style entries with the same weight as session-log `friction_notes`. **Quote the source explicitly** in any observation you derive from process-notes (e.g., "From `c:/Users/estev/Projects/vibe-doc/process-notes.md`: …"). To stay bounded, read at most the most recent 5 projects' process-notes by `last_modified`.
+- **Friction triggers contract:** [`../guide/references/friction-triggers.md`](../guide/references/friction-triggers.md) — section `/evolve`. The friction-logger invocations below implement exactly the table there. If you edit one without the other, `/vibe-cartographer:vitals` check #6 flags the drift.
+- **Session logger interface:** [`../session-logger/SKILL.md`](../session-logger/SKILL.md) — `start(command, project_dir)` returns the sessionUUID for this run; terminal `end(entry)` takes it back in at command completion.
+- **Data contracts:** [`../guide/references/data-contracts.md`](../guide/references/data-contracts.md) — the "Friction log" and "Friction calibration" sections define the shapes of the two first-class inputs the Analyze phase now reads. `friction.jsonl` and `friction.calibration.jsonl` are both append-only JSONL streams under `~/.claude/plugins/data/vibe-cartographer/`; read line-by-line, silent-drop malformed lines (`/vitals` check #8 owns repair).
+
+## Session Logging
+
+At command start — before reading session logs, profile, or friction files — call `session-logger.start("evolve", <project_dir>)` to get the sessionUUID. Hold it in memory for the duration of this command. Pass it to every `friction-logger.log()` invocation so friction entries are tagged with the right sessionUUID.
+
+At command end — after all proposals have been processed (applied / rejected / deferred) and the summary has been shown — call the session-logger terminal-append procedure (`end(entry)`) with the **same sessionUUID** returned by `start()`. Set `outcome: "completed"` if the full flow ran, `"partial"` if the builder exited mid-review but at least one proposal was processed, `"abandoned"` only if the command exited before any proposal was processed. Populate `friction_notes`, `key_decisions` (e.g., "applied 2 Plugin-track, 1 Personal-track", "rejected complement-rejection proposal for superpowers:tdd"), `artifact_generated: null` (evolve writes to SKILL files and the profile, not a single artifact), and `complements_invoked` from what actually happened. This terminal entry is **in addition to** the legacy `/evolve` run-log entry described in step 7 below — both are written, with the same sessionUUID.
+
+## Friction Logging
+
+Reference: [`../guide/references/friction-triggers.md`](../guide/references/friction-triggers.md) — section `/evolve`. Invoke `friction-logger.log()` at exactly these triggers, with exactly these confidence levels:
+
+- **User chooses `[reject]` on a proposal** → `friction_type: "default_overridden"`, `confidence: "medium"`. Capture the proposal title in `symptom`. The fact that `/evolve` itself proposed the change is implicit — no `complement_involved`.
+- **User declines a Pattern #13 complement offer** (e.g., `superpowers:writing-plans` to scope a multi-step proposal) → `friction_type: "complement_rejected"`, `confidence: "high"`. Set `complement_involved`.
+- **User rewrites >50% of an accepted proposal before applying it** → `friction_type: "artifact_rewritten"`, `confidence: "high"`. Measured in-session — compare the proposed text against what actually got written to the SKILL file or profile.
+- **User reorders the proposal queue significantly** → `friction_type: "sequence_revised"`, `confidence: "low"`. Queue order is a soft default.
+
+Universal triggers from the top of `friction-triggers.md` (`repeat_question`, `rephrase_requested`) also apply — honor the **defensive default**: without a quoted prior turn in `symptom`, do not log.
+
+Every `log()` call passes the sessionUUID returned by `session-logger.start()` at the top of this command so entries cluster under this run.
 
 ## Flow
 
@@ -51,6 +73,55 @@ Aggregate across all session entries. Specifically look for:
 - **Artifact skip** — `artifact_generated: false` appearing for commands that should produce artifacts
 
 Target 2-5 genuine observations, not a laundry list. Quality over volume.
+
+#### 2a. Read friction.jsonl and friction.calibration.jsonl
+
+`friction.jsonl` and `friction.calibration.jsonl` are first-class inputs — same tier as session logs and process-notes. Read them both:
+
+1. **Read** `~/.claude/plugins/data/vibe-cartographer/friction.jsonl` line-by-line. Parse each as JSON; silently skip malformed lines (`/vitals` check #8 owns repair). Each entry is a `friction.schema.json`-shaped record with `timestamp`, `command`, `friction_type`, `confidence`, `symptom`, `complement_involved` (sometimes null), `sessionUUID`, `project_dir`.
+2. **Read** `~/.claude/plugins/data/vibe-cartographer/friction.calibration.jsonl` line-by-line. Same defensive parse. Each entry is a `friction-calibration.schema.json`-shaped record with `timestamp`, `friction_entry_ref: {timestamp, friction_type, sessionUUID}`, and `calibration: "false_positive" | "false_negative"`.
+3. **Build an in-memory calibration index.** Key each calibration entry by its `friction_entry_ref` triple — `(timestamp, friction_type, sessionUUID)` — so you can look up "was this friction entry calibrated?" in O(1) per lookup.
+
+#### 2b. Apply the weighting algorithm
+
+For every friction entry read in 2a, compute a weight. The weight is what drives pattern ranking in the rest of this phase — unweighted counts are never used. Algorithm:
+
+1. **Base weight from confidence:**
+   - `high` → `1.0`
+   - `medium` → `0.6`
+   - `low` → `0.3`
+2. **Calibration false-positive multiplier.** Look up this entry's `(timestamp, friction_type, sessionUUID)` triple in the calibration index. If any calibration entry exists for this triple with `calibration: "false_positive"` AND the calibration entry is **not past the decay TTL** (see 2c), multiply weight by `0.0`. This effectively removes the entry from ranking.
+3. **Complement-availability multiplier.** If the entry has a non-null `complement_involved` AND that complement is no longer in the agent's current available skills list (i.e., the builder removed that plugin, or it was renamed), multiply weight by `0.5`. The complement may still be signal, but it's weaker because the builder can't reject what isn't offered.
+4. **Record the final weight** alongside the entry in your in-memory working set. Use the **sum of weights** (not counts) when ranking patterns. A single `high` entry (1.0) outweighs two `low` entries (0.6 combined); three unchallenged `high` entries (3.0) outweigh three `low` entries (0.9).
+
+`false_negative` calibration entries are **additive signal, not multiplicative** — treat them as synthetic friction entries anchored to the referenced session and friction_type, with `confidence: "high"` (the builder explicitly flagged the miss), so they get weight `1.0` and feed into ranking normally.
+
+#### 2c. Calibration decay (180-day TTL)
+
+Calibration entries themselves age out. This prevents stale false-positive marks from permanently blinding `/evolve` to shifted habits — a builder who marked "declined TDD" as a false positive 9 months ago may have genuinely shifted away from TDD in the interim.
+
+- **TTL:** `calibration_ttl_days = 180` (hard-coded in this SKILL for v1.5.0; adjustable later if tuning data suggests different).
+- **Decay rule:** a calibration entry is **past the TTL** when `now - calibration.timestamp > 180 days`. Such entries are **ignored** — treat as if they never existed. The underlying friction entry gets its full base weight back.
+- **Apply the TTL check in step 2b.2 above.** Only calibrations within the last 180 days can zero out a friction entry's weight.
+- **Informational only, not destructive.** Do not delete decayed calibration entries from the file — they remain on disk as append-only history. The decay is purely a read-time filter.
+
+#### 2d. Rank patterns by weighted sum
+
+Group weighted friction entries by whatever grouping dimension you're analyzing (per-command, per-complement, per-friction-type) and sum the weights within each group. Use those weighted sums — not raw counts — to decide what crosses the "genuine pattern" threshold for step 3. Keep the "target 2-5 observations" cap from the bullet list above.
+
+#### 2e. Complement-rejection pattern surfacing (NEW PATTERN TYPE)
+
+After weighting, do a targeted pass for the most important signal `/evolve` 1.5.0 gains: complements that the builder keeps rejecting. The Pattern #13 anchored table in `guide/SKILL.md` offers specific complements at specific trigger points — when a complement is rejected enough, that's evidence the anchored offer is wrong (either for everyone or for this builder).
+
+**Threshold:** a complement surfaces as a candidate pattern when it has **3 or more `complement_rejected` friction entries** AND their **sum-weight is ≥ 2.4**. Three unchallenged `high`-confidence rejections (3 × 1.0 = 3.0) clear the threshold; three `medium`-confidence rejections (3 × 0.6 = 1.8) do not; three `high`-confidence rejections with one calibrated as false-positive (2 × 1.0 = 2.0) do not.
+
+For each complement that crosses the threshold, classify through the standard three-track rubric **before** surfacing it in step 3:
+
+- **Plugin track** — if the complement is anchored for **multiple commands** in the `guide/SKILL.md` Pattern #13 table AND the rejection pattern spans multiple commands (e.g., the builder declines `superpowers:tdd` on `/build` AND on `/iterate`), this is a structural issue with the anchored table itself. Propose removing (or softening from "anchored" to "surfaceable") the complement for the affected commands. Ships to every user on next release.
+- **Personal track** — if the complement is anchored for only one command, OR the rejection pattern is confined to this builder's data without matching any broader `community-signals.jsonl` entries, propose a per-builder skip. Write to `plugins.vibe-cartographer.complement_skip_list` (an array field on the profile) — downstream commands check this list and silently omit anchored offers for complements listed there for this builder only.
+- **Community track** — if the rejection is concentrated in a single command (not structural) and you suspect it might be universal but can't confirm, propose an opt-in community-signals entry per the standard opt-in protocol in 2b/4c. `observation_kind: "friction"`, `observation_summary` describes the rejected complement and command without naming the builder.
+
+Feed each complement-rejection candidate into step 3 as a distinct observation, tagged with its proposed track. The usual stop-and-confirm rhythm applies — builder can accept the track, reclassify, or reject the whole observation.
 
 ### 2a. Classify Each Observation — Three Tracks
 
@@ -315,6 +386,10 @@ Append a special session log entry for this `/evolve` invocation to `~/.claude/p
 - **Never transmit Community-track data.** The plugin never makes network calls to share signals. Export is always builder-initiated.
 - **Never auto-classify as Community to bypass the Personal-track default.** If you can't decide between Personal and Community, default to Personal. Community is for signals you genuinely believe might be universal.
 - **Never write to `community-signals.jsonl` without explicit per-observation `[log]` approval.** Blanket "yes log everything community" consent is not valid — each observation gets its own opt-in.
+- **Never propose a change based solely on a single friction entry.** Even a `high`-confidence entry with weight 1.0 is below the complement-rejection threshold (2.4) and well below what should count as "pattern." The minimum for any weighted observation is 3 entries + sum-weight evidence. One-off entries are noise, not signal.
+- **Never ignore calibration false-positive marks (within the 180-day TTL).** If a calibration entry zeros out a friction entry's weight, that entry does not exist for ranking purposes. Don't work around the calibration by double-counting elsewhere or inflating a related entry's weight.
+- **Never delete calibration entries from disk as part of decay.** The 180-day TTL is a read-time filter only — the file is append-only history. `/vitals` check #8 owns any structural repair of the calibration file; `/evolve` never edits it.
+- **Never use raw counts instead of weighted sums for ranking.** All pattern ranking in the Analyze phase uses sum-of-weights. An unweighted count misreads the signal — three `low`-confidence entries (0.9 total) are not the same strength as three `high`-confidence entries (3.0 total).
 
 ## Conversation Style
 
