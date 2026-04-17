@@ -21,7 +21,7 @@ This is Level 3 of the Self-Evolving Plugin Framework (see `docs/self-evolving-p
 - Read every `.jsonl` file in `~/.claude/plugins/data/vibe-cartographer/sessions/`. Each line is a JSON entry per the session-logger SKILL schema.
 - Read the unified profile at `~/.claude/profiles/builder.json` for baseline context (experience level, persona, preferences).
 - Read the plugin's own SKILL files (`skills/onboard/SKILL.md`, `skills/scope/SKILL.md`, etc.) so you can propose specific, accurate diffs.
-- Do NOT read `process-notes.md` from individual projects — sessions are the primary signal; project notes are too high-variance.
+- **Read `process-notes.md` from recent projects when present.** This file is the richest source of friction evidence — the user writes "CRITICAL:", "builder refused all cuts twice", "this was rough" in plain English. Treat narrative-style entries with the same weight as session-log `friction_notes`. **Quote the source explicitly** in any observation you derive from process-notes (e.g., "From `c:/Users/estev/Projects/vibe-doc/process-notes.md`: …"). To stay bounded, read at most the most recent 5 projects' process-notes by `last_modified`.
 
 ## Flow
 

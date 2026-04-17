@@ -9,6 +9,15 @@ All notable changes to this project are documented here. The format follows [Kee
 
 - Nothing yet.
 
+## [1.4.1] — 2026-04-16 — Sharpening from research swarm
+
+Two surgical fixes surfaced by a 4-agent research swarm conducted before a fresh `/scope` run.
+
+### Changed
+
+- **`/evolve` now reads `process-notes.md`** from recent projects when present, instead of treating them as out-of-bounds. The original ban kept evolve cheap and bounded, but it also starved the command of the richest friction signal — the user's plain-English "CRITICAL:", "builder refused all cuts twice", and "this was rough" notes that never get reduced to a 5-word `friction_notes` entry. Bounded to the most recent 5 projects' notes, with explicit source-quoting required in any derived observation.
+- **`/checklist` Builder-mode deepening rounds now default to "move on"** rather than "another round?". Adoption signal across multiple projects shows Builder-mode users invest in deepening on `/prd` and `/spec` but consistently skip it on `/checklist`. The framing now leads with the natural choice instead of asking the question that always gets the same answer.
+
 ## [1.4.0] — 2026-04-16 — Ecosystem-Aware Composition (Pattern #13)
 
 ### Added

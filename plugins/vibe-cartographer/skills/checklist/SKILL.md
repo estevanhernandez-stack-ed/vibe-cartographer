@@ -66,7 +66,7 @@ After the mandatory questions and initial checklist draft, offer the choice (see
 
 **Frame deepening rounds by mode:**
 - **Learner mode:** Encourage review. "It's worth checking whether any items could be split or reordered — want to do a round?"
-- **Builder mode:** Offer concisely. "Another round on the checklist, or good to go?"
+- **Builder mode:** Default to skipping. "Looks tight — should be good. Want a round of refinement, or move on?" Lead with moving on, not with the round. Builder-mode users have consistently chosen zero rounds on `/checklist` (different from `/prd` and `/spec`, where they invest in deepening).
 
 Good deepening questions for /checklist include:
 - Are any items too big? Could they be split into smaller, more atomic steps?
