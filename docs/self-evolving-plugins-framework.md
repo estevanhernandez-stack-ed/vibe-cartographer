@@ -234,6 +234,71 @@ The plugin **defers** — it doesn't try to swallow the complementary skill's be
 
 **Privacy note:** Discovery reads only the available-skills list the agent already has access to. Never enumerate the user's environment beyond what the agent's runtime exposes. Don't write the discovered skill list anywhere persistent — it's runtime context, not stored data.
 
+### 14. Signal Asymmetry Compensation
+
+**Pillar:** Self-teach, self-evolve
+**Problem:** Append-only logs capture friction, pushback, and errors loudly — working-as-designed runs leave no trace. A plugin that only reads friction data *literally cannot see success*. Over time, this biases self-evolution toward the squeaky wheel and away from the baseline behavior that's actually working. The plugin may propose "fixes" to things that are fine because the only signal it has is complaint.
+
+**Mechanism:** Compensate for signal asymmetry with three layered techniques, in order of intrusiveness.
+
+1. **Absence-of-friction inference.** When `/evolve` analyzes session logs, treat *commands that completed cleanly with no friction entries* as positive signal. Count them. If a command has shipped 20 sessions with 2 friction entries, the 18 clean runs are evidence the baseline works — weigh proposed changes to that command accordingly.
+2. **Explicit success markers at terminal-entry time.** When a command completes and the builder voices clear positive reaction ("that worked great", "exactly what I wanted", "ship it"), capture a `working_as_designed: true` marker on the terminal session entry. Conservative threshold — agent only sets this when the builder's reaction is unambiguous. False positives here are worse than false negatives (a falsely-marked success blocks /evolve from improving a mediocre command).
+3. **External validation capture.** When a builder shares evidence of the plugin working in the wild — a post-ship /iterate cold-load that adapted cleanly, a screenshot of a successful run, a testimonial — append a one-line entry to a new `wins.jsonl` sibling of friction.jsonl. `/evolve` reads this alongside friction data and weighs patterns against both streams.
+
+The goal isn't to make success as loud as friction — it's to keep /evolve honest about what's actually working so it doesn't propose changes to baselines that have earned their place.
+
+**Example:** Builder cold-loads `/vibe-cartographer:iterate` in a deployed-app session (no /onboard, no checklist.md). The SKILL degrades gracefully, produces three sharp options, builder says *"I am incredibly happy with how this skill performed cold loaded!!!!!!!"* That's a capture-worthy moment — agent appends `{event: "graceful_cold_load", command: "iterate", plugin_version: "1.3.0", context: "post-ship deployed app"}` to wins.jsonl. Next /evolve run sees this and treats the /iterate SKILL's prerequisite-ambiguity as a *feature* (permissive-interpretation works) rather than proposing to tighten it.
+
+**When to use / when not:** Use once a plugin ships L3 reflective evolution — before that, there's nothing consuming friction signal anyway. Don't use the explicit-success-marker technique if the agent has to guess at the builder's reaction — better to miss a win than fabricate one. Never auto-write to wins.jsonl from inference; it's builder-initiated or builder-confirmed only.
+
+### 15. Canonical Install Resolution
+
+**Pillar:** Self-repair, cross-plugin
+**Problem:** Agents starting cold in a new session often use ad-hoc file search (`find ... | head -N`, `ls -R`, grep) to locate a plugin's SKILL files. If multiple versions are cached locally (common with marketplace plugins that have been auto-updated across versions), the agent may load a stale version — pulling SKILL files from `cache/<plugin>/<plugin>/1.3.0/skills/iterate/SKILL.md` when `1.5.0` is the active install. The user gets behavior one or two versions behind what they actually have installed. No error, no warning, just silent drift.
+
+**Mechanism:** Every plugin publishes a canonical resolution path at a well-known location. Two options:
+
+1. **`.claude-plugin/active-path.json`** at the plugin root. Single field: `{active_install_path: "<absolute path to currently-active cached version>"}`. The plugin's own install/update hook writes this file on every version bump. Agents starting cold read this first, use the path it declares, and ignore whatever `find` might return.
+2. **`RESOLVE.md`** at the plugin root. A human-and-agent-readable doc titled *"How to find me correctly"* that explains: (a) read `~/.claude/plugins/installed_plugins.json` and find the entry for this plugin, (b) use its `installPath` — not whatever file search returns. This is the educational variant; it doesn't enforce anything but it documents the right pattern in the most-likely-looked-at location.
+
+For Claude Code plugins specifically, `installed_plugins.json` already exists and is authoritative. The pattern is: **agents should treat that file as the single source of truth for resolving which version of any plugin to load.** Plugins make this easier by documenting it prominently.
+
+**Example:** Builder runs `/vibe-cartographer:iterate` in a Claude Code session where the agent has no prior Cart context. Agent needs the iterate SKILL. Without this pattern, agent uses `find` and picks the oldest of the first 3 results. With this pattern, agent reads `~/.claude/plugins/installed_plugins.json`, sees `vibe-cartographer@vibe-cartographer` with `installPath: ".../1.5.0"`, loads from there. Always current, always consistent.
+
+**When to use / when not:** Use for any plugin with multi-version cache history (i.e., any mature plugin with marketplace distribution and auto-update). Don't skip this even for single-version plugins — adding the file now is cheap; adding it retroactively after a user hits the bug is expensive. The pattern is especially important for plugins that expect to be cold-loaded into foreign sessions (via `/plugin-name:command` without prior context).
+
+### 16. Permissive Prereq Interpretation
+
+**Pillar:** Self-repair
+**Problem:** SKILL prerequisites are often phrased as strict gates: *"ALL original checklist items in `docs/checklist.md` must be complete. If any are unchecked: [error]."* This language assumes a specific project state (built-from-scratch-with-cart). In the wild, commands get invoked in contexts the SKILL didn't anticipate — a post-ship app has no active checklist, a repo being extended already has mature artifacts, a cold-load session has no prior Cart run. A strict reading blocks legitimate usage. A permissive reading succeeds but does so by agent improvisation, which means the SKILL's intent lives in the agent's interpretation rather than in the SKILL file.
+
+**Mechanism:** Distinguish between **blocking prereqs** (command is invalid without X — e.g., `/build` requires checklist.md because there's nothing to build from) and **shaping prereqs** (command adapts based on X — e.g., `/iterate` flows differently when post-ship vs mid-build). Write the SKILL's Prerequisites section with both categories explicit.
+
+Template:
+
+```markdown
+## Prerequisites
+
+**Blocking prereqs** (command cannot run without these):
+- `docs/builder-profile.md` must exist. If missing: "Run `/onboard` first."
+
+**Shaping prereqs** (command flows differently based on these):
+- If `docs/checklist.md` exists with unchecked items: this is a mid-build
+  polish pass — reference the open items in the iteration plan.
+- If `docs/checklist.md` exists with all items checked: this is a
+  post-build iteration — treat the existing artifacts as the baseline
+  and propose polish from there.
+- If no `docs/checklist.md` exists: this is a post-ship or cold-load
+  run — do a quick review of the current app state, propose 2-3 small
+  polish options, adapt the flow to skip the checklist-append step.
+```
+
+This encodes the graceful-degradation explicitly. The SKILL becomes a behavior spec, not just a strict flowchart. An agent reading it knows exactly which path to take based on actual project state, and the plugin author can reason about all the paths explicitly at authoring time.
+
+**Example:** `/vibe-cartographer:iterate` SKILL gains three shaping branches. Cold-loaded into a post-ship Sanduhr session with no checklist.md, the agent reads the Prerequisites section, matches the "no checklist exists" branch, and executes that path cleanly. No improvisation required — the SKILL itself declared this is a supported mode. Working-as-designed, not working-despite-the-SKILL.
+
+**When to use / when not:** Use whenever a SKILL's strict prereq has ever triggered a "technically should block but we want to proceed" moment in practice. Each such moment is evidence that the prereq was under-specified. Don't overdo it — not every SKILL needs shaping prereqs. If the command is genuinely only valid in one context, keep the prereq strict. The signal: does the SKILL have multiple legitimate invocation contexts? If yes, encode them explicitly.
+
 ### Catalog-Wide Invariants
 
 - **The user is the final arbiter of self-evolution.** Patterns 10 and 11 have user-in-the-loop checkpoints for a reason.
