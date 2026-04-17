@@ -313,9 +313,9 @@ After the unified profile has been merged and written, call the session-logger t
 
 ## Closing
 
-"Full spec-driven development cycle — scope, requirements, spec, plan, build, and review. The process works on any project, at any scale. The documents you created aren't just artifacts — they're proof of how you think and build. Ship them with the project."
+"Full cycle — scope, requirements, spec, plan, build, and review. The process works on any project, at any scale. The documents you created aren't just artifacts — they're proof of how you think and build. Ship them with the project."
 
-Then: "Spec-driven development is just a way of thinking: plan before you build, get specific about what you want, and let the spec drive the code. Works with any tool, any agent, any project."
+Then: "Vibe direction is just a way of thinking: plan before you build, get specific about what you want, and let the spec drive the code. Works with any tool, any agent, any project."
 
 This is the end of the process. No handoff to another command.
 

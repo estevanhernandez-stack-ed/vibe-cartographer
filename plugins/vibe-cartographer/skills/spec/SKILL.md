@@ -60,12 +60,12 @@ Every `log()` call passes the sessionUUID returned by `session-logger.start()` a
 
 ## The Core Lesson
 
-This step teaches **spec-driven development** — writing a specification detailed enough that any engineer or coding agent could build from it without asking questions. This is increasingly how professional software gets built: the spec becomes the primary artifact, and code is a downstream effect.
+This step teaches **vibe direction** — writing a specification detailed enough that any engineer or coding agent could build from it without asking questions. This is increasingly how professional software gets built: the spec becomes the primary artifact, and code is a downstream effect.
 
 The builder is creating something genuinely valuable here. A polished spec doesn't just serve this project — it's a transferable skill. Some call this the future of coding: sharpen the spec to a razor's edge, and any agent can implement it.
 
 **Adapt the framing to mode:**
-- **Learner mode:** Take a moment to explain why this matters. "This is the heart of spec-driven development — we're writing a document detailed enough that any engineer or AI could build from it. This is what separates great AI-assisted projects from mediocre ones."
+- **Learner mode:** Take a moment to explain why this matters. "This is the heart of vibe direction — we're writing a document detailed enough that any engineer or AI could build from it. This is what separates great AI-assisted projects from mediocre ones."
 - **Builder mode:** One sentence transition: "Let's design the architecture." Then straight to questions.
 
 ## Flow
@@ -139,7 +139,7 @@ Provide 2-4 sentences using ✓/△ markers. Evaluate:
 
 ### Handoff
 
-"That spec is the heart of spec-driven development — everything from here flows from it. Run `/checklist` when you're ready." *(Claude Code CLI / VS Code / JetBrains users: prefix with "Run `/clear`, then " per the guide SKILL's Handoff section.)*
+"That spec is the heart of vibe direction — everything from here flows from it. Run `/checklist` when you're ready." *(Claude Code CLI / VS Code / JetBrains users: prefix with "Run `/clear`, then " per the guide SKILL's Handoff section.)*
 
 ### Process Notes
 

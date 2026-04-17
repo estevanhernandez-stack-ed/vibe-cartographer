@@ -10,13 +10,13 @@
    ◯───◯───◯
 ```
 
-A spec-driven development plugin for [Claude Code](https://claude.ai/code) and Claude Desktop. Vibe coding with purpose and direction — takes you from idea spark to shipped app through eight structured commands, with documentation and security verification baked into the process.
+A vibe direction plugin for [Claude Code](https://claude.ai/code) and Claude Desktop. Vibe coding with purpose and direction — takes you from idea spark to shipped app through eight structured commands, with documentation and security verification baked into the process.
 
 > **Based on the Learning Hackathon spec-driven dev plugin.** Vibe Cartographer extends and productionizes the spec-driven development approach introduced in the Learning Hackathon, rebuilt from the ground up as a builder-focused tool with persistent memory, cross-plugin profiles, selectable personas, and a reflective retro in place of the original classroom quiz. Credit to the Hackathon authors for the foundational workflow pattern.
 
 ## What It Does
 
-Vibe Cartographer delivers a guided spec-driven development workflow as eight slash commands. Each command produces artifacts (scope doc, PRD, technical spec, build checklist, reflection) that downstream commands consume. The agent acts as a sharp, encouraging collaborator — interviewing you through each phase rather than waiting for prompts, adapting its voice to the persona you pick.
+Vibe Cartographer delivers a guided vibe coding course correction workflow as eight slash commands. Each command produces artifacts (scope doc, PRD, technical spec, build checklist, reflection) that downstream commands consume. The agent acts as a sharp, encouraging collaborator — interviewing you through each phase rather than waiting for prompts, adapting its voice to the persona you pick.
 
 **Command chain:** `/onboard` → `/scope` → `/prd` → `/spec` → `/checklist` → `/build` → `/iterate` → `/reflect`
 

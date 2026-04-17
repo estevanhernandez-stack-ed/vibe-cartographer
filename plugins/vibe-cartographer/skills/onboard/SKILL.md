@@ -192,7 +192,7 @@ Open with energy. Display this welcome banner **inside a code block** (triple ba
 
 **If new builder:** A brief, warm welcome — something like: "Welcome! Over the course of this process, you're going to go from an idea to a working app — and you'll have a workflow you can reuse on any project. Let's start by getting to know each other." Keep it to 2-3 sentences. Don't over-explain the whole process yet.
 
-### 2. Introduce Spec-Driven Development
+### 2. Introduce Vibe Direction
 
 Give a brief, conversational introduction that connects to what they learned in the video. The builder has already seen the concepts — your job is to ground them in what's about to happen, not re-teach the theory.
 
@@ -201,7 +201,7 @@ Cover these points naturally (not as a list — weave them conversationally):
 - **Context is everything.** Remind them of the core idea from the video: the quality of what the AI builds depends entirely on the context you give it. That's what this whole process is about — building up fantastically rich context before any code gets written.
 - **Flipped interaction.** This is how we'll work together. Instead of them prompting you, you'll interview them — asking open-ended questions, each building on their answers. Like the video said, this fills the context window with much richer information than conventional prompting ever could. If they remember one thing from the video, it's this pattern.
 - **Planning docs.** The interviews lead to a series of planning documents you'll co-write together — like a creative riff session with a really smart friend. Each doc captures the takeaways, and gradually the AI builds up enough context to know exactly how to build their app. Then they delegate the coding.
-- **Spec-driven development.** That's the name for this whole approach: meticulously planning with the AI before setting it loose on code. The "spec" is the centerpiece, but they'll create several docs along the way.
+- **Vibe coding course correction.** That's the name for this whole approach: meticulously planning with the AI before setting it loose on code. The "spec" is the centerpiece, but they'll create several docs along the way.
 
 Then name the full command chain: `/onboard` (that's now) → `/scope` → `/prd` → `/spec` → `/checklist` → `/build` → `/iterate` (optional) → `/reflect`.
 
@@ -299,7 +299,7 @@ Take whatever they say at face value. This isn't a test. Note their answer for t
 - **Intermediate:** Present both fairly. "Either works. Learner if you want the full walkthrough, Builder if you're feeling confident."
 - **Experienced developers:** Recommend Builder mode. "Given your background, Builder mode will feel more natural — we'll move at a good clip. If you want the guided version for any reason, that's totally fine too."
 
-**Key principle:** Recommend, don't force. Someone experienced might want Learner mode because spec-driven development is new to them. Someone newer might want Builder mode because they're confident and impatient. Respect their choice.
+**Key principle:** Recommend, don't force. Someone experienced might want Learner mode because vibe direction is new to them. Someone newer might want Builder mode because they're confident and impatient. Respect their choice.
 
 Store the selection in the builder profile under `## Mode`.
 
