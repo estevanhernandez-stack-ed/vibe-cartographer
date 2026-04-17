@@ -32,6 +32,33 @@ Persona is voice. Mode (Learner/Builder) is pacing. The builder's explicit check
 - Pay special attention to `docs/checklist.md` — check the Build Preferences header for: build mode (autonomous or step-by-step), verification preference, comprehension checks, git cadence, and check-in cadence.
 - Note experience level from `docs/builder-profile.md`.
 - Read `process-notes.md` for continuity — especially if this isn't the first /build run.
+- **Friction triggers contract:** [`../guide/references/friction-triggers.md`](../guide/references/friction-triggers.md) — section `/build`. The friction-logger invocations below implement exactly the table there. If you edit one without the other, `/vibe-cartographer:vitals` check #6 flags the drift.
+- **Session logger interface:** [`../session-logger/SKILL.md`](../session-logger/SKILL.md) — `start(command, project_dir)` returns the sessionUUID for this run; terminal `end(entry)` takes it back in at command completion.
+
+## Session Logging
+
+At command start — **once per `/build` invocation, before the mode branch below** — call `session-logger.start("build", <project_dir>)` to get the sessionUUID. Hold it in memory for the duration of this command. Pass it to every `friction-logger.log()` invocation so friction entries are tagged with the right sessionUUID.
+
+**Autonomous mode note:** `start()` runs exactly ONCE at the top of the `/build` invocation, not once per checklist item. Every subagent dispatch, every verification checkpoint, and every friction event during the whole autonomous run share this same sessionUUID. Don't mint a new UUID per checklist item — the run is one session.
+
+**Step-by-step mode note:** `start()` still runs once per `/build` invocation even though each invocation handles a single checklist item. One invocation = one session = one UUID.
+
+At command end (whichever mode actually runs — end of the autonomous loop when the checklist is complete, or end of the step-by-step loop after the item's process-notes are written), call the session-logger terminal-append procedure with the **same sessionUUID** returned by `start()`. Include `outcome`, `friction_notes`, `key_decisions`, `artifact_generated: null` (build produces source code, not a single doc artifact), and `complements_invoked` as applicable.
+
+## Friction Logging
+
+Reference: [`../guide/references/friction-triggers.md`](../guide/references/friction-triggers.md) — section `/build`. Invoke `friction-logger.log()` at exactly these triggers, with exactly these confidence levels:
+
+- **User overrides the recommended autonomy mode** (agent recommends step-by-step, user picks autonomous, or vice versa) → `friction_type: "default_overridden"`, `confidence: "medium"`. Quote the recommendation and the override in `symptom`.
+- **User declines a Pattern #13 complement offer** (e.g., `superpowers:test-driven-development`, `superpowers:systematic-debugging`, `superpowers:verification-before-completion`) → `friction_type: "complement_rejected"`, `confidence: "high"`. Set `complement_involved`. Build is the single biggest complement-density command — expect multiple offers per session.
+- **User asks the agent to skip a checklist item, then later un-skips it and asks for it after all** → `friction_type: "sequence_revised"`, `confidence: "high"`. The skip was the wrong call — concrete reversal signal.
+- **User stops the build mid-checklist and re-runs `/checklist`** (signaling the plan was wrong, not the build) → `friction_type: "sequence_revised"`, `confidence: "medium"`. Detected by `/checklist` sentinel after a `/build` sentinel-without-terminal in the same project.
+- **Checklist is revised mid-build via the "When Something Breaks" protocol** → `friction_type: "sequence_revised"`, `confidence: "medium"`. See the protocol section below — the logger call is wired at step 6 of that protocol.
+- **User rewrites a generated source file (>50% line diff) within the same `/build` session before continuing** → `friction_type: "artifact_rewritten"`, `confidence: "medium"`. Build artifacts are noisy by nature — confidence stays medium.
+
+Universal triggers from the top of `friction-triggers.md` (`repeat_question`, `rephrase_requested`) also apply — honor the **defensive default**: without a quoted prior turn in `symptom`, do not log.
+
+Every `log()` call passes the sessionUUID returned by `session-logger.start()` at the top of this command so entries cluster under this run. In autonomous mode specifically, friction emitted from within a subagent dispatch still uses the orchestrator's sessionUUID — pass it into the subagent context if needed.
 
 If ALL items are checked, the build is complete. Skip to "When the Checklist Is Complete" below.
 
@@ -109,6 +136,10 @@ If comprehension checks are off, skip this step.
 
 #### 6. Hand Off
 
+Before handing off, call the session-logger terminal-append procedure (`end(entry)`) with the sessionUUID returned by `session-logger.start()` at the top of this invocation. This is the terminal entry for THIS `/build` session (one invocation = one session in step-by-step mode). Set `outcome: "completed"` if the item built cleanly, `"partial"` if verification surfaced issues that got fixed, `"error"` if the session ended in the "When Something Breaks" protocol without finishing the item. Populate `friction_notes`, `key_decisions`, `artifact_generated: null` (build produces source code, not a doc), and `complements_invoked` from what actually happened.
+
+Then:
+
 "Step N is done. Run `/build` again for the next item." *(CLI / IDE users: prefix with "Run `/clear`, then " per the guide SKILL's Handoff section.)*
 
 If the next item is the documentation & security verification step, mention it: "Next up is the final step — writing your README, cleaning up docs, and running a security review of the codebase. Run `/build` when you're ready." *(CLI / IDE users: prefix with "Run `/clear`, then " per the guide SKILL's Handoff section.)*
@@ -168,7 +199,9 @@ If an item fails and you can't fix it after a reasonable attempt — something i
 
 5. **Get the builder's agreement** before making any changes to the checklist. Then update `docs/checklist.md` with the revised plan.
 
-6. **Resume building** from the revised checklist.
+6. **Log the revision as friction.** Once the builder agrees and the checklist is updated, call `friction-logger.log()` with `friction_type: "sequence_revised"`, `confidence: "medium"`, and pass the current sessionUUID. In `symptom`, briefly capture what failed and what the revision changed (e.g., `"item 5 split into 5a/5b after the single-item approach broke at the API boundary"`). This is the wired trigger for the `sequence_revised` row in `friction-triggers.md > /build`. Don't block the resume on the log call — if the atomic-append fails, continue; `friction-logger.log()` surfaces errors to stderr but never blocks the command.
+
+7. **Resume building** from the revised checklist.
 
 The checklist is a living document. Plans meet reality and adapt. This is normal and worth naming: "This is what happens in real development — you make a plan, you hit something unexpected, you adjust the plan. The plan is still valuable because it gave us a structure to adapt from."
 
@@ -201,6 +234,14 @@ If this was an autonomous build, append a `## /build` section to `process-notes.
 - Whether the checklist was revised during the build and why
 - Any checkpoint observations from the builder
 - Overall impressions
+
+### Session Logging — Terminal Entry
+
+After the handoff (and after autonomous process notes are written, if applicable), call the session-logger terminal-append procedure (`end(entry)`) with the sessionUUID returned by `session-logger.start()` at the top of this invocation. This is the terminal entry for THIS `/build` session — whether the session ran all remaining items in autonomous mode, finished the last item in step-by-step mode, or entered with an already-complete checklist and skipped straight here.
+
+Set `outcome: "completed"` if the build finished cleanly. Set `"partial"` if some items got revised mid-build via the "When Something Breaks" protocol but the checklist ultimately completed. Populate `friction_notes`, `key_decisions` (revisions, mode choices, checkpoint verdicts), `artifact_generated: null`, and `complements_invoked` from what actually happened across the run.
+
+Only ONE terminal entry per invocation — whichever mode ran, its handoff is the single end() call.
 
 ### Conversation Style
 

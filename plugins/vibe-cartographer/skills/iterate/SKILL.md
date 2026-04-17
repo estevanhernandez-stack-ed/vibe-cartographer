@@ -35,6 +35,29 @@ ALL original checklist items in `docs/checklist.md` must be complete. If any are
 - Read `process-notes.md` — what happened during the build? Any issues, surprises, or things the builder mentioned wanting to fix?
 - Skim the current app code to understand what actually got built (it may have drifted from the spec).
 - Append a `## /iterate` section to `process-notes.md` (or `## Iteration N` if this isn't the first run).
+- **Friction triggers contract:** [`../guide/references/friction-triggers.md`](../guide/references/friction-triggers.md) — section `/iterate`. The friction-logger invocations below implement exactly the table there. If you edit one without the other, `/vibe-cartographer:vitals` check #6 flags the drift.
+- **Session logger interface:** [`../session-logger/SKILL.md`](../session-logger/SKILL.md) — `start(command, project_dir)` returns the sessionUUID for this run; terminal `end(entry)` takes it back in at command completion.
+
+## Session Logging
+
+`/iterate` is optional and runs after the main build — it starts its OWN session, independent of any `/build` session that came before it.
+
+At command start, call `session-logger.start("iterate", <project_dir>)` to get the sessionUUID. Hold it in memory for the duration of this command. Pass it to every `friction-logger.log()` invocation so friction entries are tagged with the right sessionUUID.
+
+At command end (after the mini-checklist is appended to `docs/checklist.md` and the `## /iterate` / `## Iteration N` section of `process-notes.md` is populated, before the handoff to `/build`), call the session-logger terminal-append procedure with the outcome and this same sessionUUID. Include `friction_notes`, `key_decisions`, `artifact_generated: "docs/checklist.md"` (the iteration items were appended to the existing checklist — this is the artifact touched this run), and `complements_invoked` as applicable.
+
+## Friction Logging
+
+Reference: [`../guide/references/friction-triggers.md`](../guide/references/friction-triggers.md) — section `/iterate`. Invoke `friction-logger.log()` at exactly these triggers, with exactly these confidence levels:
+
+- **User declines a Pattern #13 complement offer** (e.g., `simplify`, `frontend-design:frontend-design` for polish) → `friction_type: "complement_rejected"`, `confidence: "high"`. Set `complement_involved`.
+- **User overrides the recommended iteration scope** (agent recommends "tighten errors", user picks "polish UI") → `friction_type: "default_overridden"`, `confidence: "low"`. Iteration-scope picks are taste calls — confidence stays low so `/evolve` doesn't over-react.
+- **User rewrites >50% of code the agent iterated on within the same session** → `friction_type: "artifact_rewritten"`, `confidence: "medium"`. Use commit-diff or live-buffer-diff at session end. Measured at `/reflect` time; log call references this run's sessionUUID.
+- **User abandons `/iterate` mid-flow without producing a terminal entry** → no direct log here. Caught by the universal `command_abandoned` path via `friction-logger.detect_orphans()` at the next `/onboard` startup or `/vitals` auto-fix `(b)`.
+
+Universal triggers from the top of `friction-triggers.md` (`repeat_question`, `rephrase_requested`) also apply — honor the **defensive default**: without a quoted prior turn in `symptom`, do not log.
+
+Every `log()` call passes the sessionUUID returned by `session-logger.start()` at the top of this command so entries cluster under this run.
 
 ## Flow
 
