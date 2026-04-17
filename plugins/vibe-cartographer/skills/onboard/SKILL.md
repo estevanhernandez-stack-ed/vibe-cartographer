@@ -47,6 +47,31 @@ This is a nice-to-have, not load-bearing. If it's too noisy or breaks in practic
 - Create `docs/` folder if it doesn't exist.
 - **Read everything in `docs/` first.** Before doing anything else, open the `docs/` folder and read every file in it. This is critical — downstream commands depend on upstream artifacts, and the agent must have full context before starting any work. For /onboard this folder will usually be empty, but always check.
 - Create `process-notes.md` in the project root if it doesn't exist. Add a header: `# Process Notes` and a section: `## /onboard`.
+- **Friction triggers contract:** [`../guide/references/friction-triggers.md`](../guide/references/friction-triggers.md) — section `/onboard`. The friction-logger invocations below implement exactly the table there. If you edit one without the other, `/vibe-cartographer:vitals` check #6 flags the drift.
+- **Session logger interface:** [`../session-logger/SKILL.md`](../session-logger/SKILL.md) — `start(command, project_dir)` returns the sessionUUID for this run; terminal `end(entry)` takes it back in at command completion.
+
+## Session Logging
+
+At command start, call `session-logger.start("onboard", <project_dir>)` to get the sessionUUID. Hold it in memory for the duration of this command. Pass it to every `friction-logger.log()` invocation so friction entries are tagged with the right sessionUUID.
+
+At command end (after `docs/builder-profile.md` is written, the unified profile is updated, and the `## /onboard` section of `process-notes.md` is populated), call the session-logger terminal-append procedure with the outcome and this same sessionUUID. Include `friction_notes`, `key_decisions`, `artifact_generated: "docs/builder-profile.md"`, and `complements_invoked` as applicable.
+
+**Order at command start (once all pieces are wired): version check → session-logger.start() → decay check → rest of onboard.** The session-logger sentinel must be on disk before the decay check runs so `friction-logger.detect_orphans()` can pair a sentinel to a terminal for this run.
+
+Also invoke `friction-logger.detect_orphans()` once at startup (after session-logger.start() writes the sentinel, before the decay check). Any sentinels from prior runs older than 24h without a matching terminal get emitted as `command_abandoned` friction entries. This is the out-of-band orphan sweep — do not attempt to also log `command_abandoned` from inside the regular friction trigger table.
+
+## Friction Logging
+
+Reference: [`../guide/references/friction-triggers.md`](../guide/references/friction-triggers.md) — section `/onboard`. Invoke `friction-logger.log()` at exactly these triggers, with exactly these confidence levels:
+
+- **User explicitly chooses opposite of recommended persona based on stored profile** (e.g., decay prompt offers "still superdev?" and they switch) → `friction_type: "default_overridden"`, `confidence: "low"`. Capture the prior persona and the chosen new persona in `symptom`.
+- **User says "no" or "skip" when offered to create the standard `docs/` folder structure** → `friction_type: "default_overridden"`, `confidence: "medium"`. Capture their choice in `symptom`.
+- **User declines a Pattern #13 complement offered during onboarding** (e.g., `superpowers:brainstorming` for project ideation) → `friction_type: "complement_rejected"`, `confidence: "high"`. Set `complement_involved` to the complement identifier (e.g., `"superpowers:brainstorming"`).
+- **User abandons mid-onboarding, picks back up later, but skips the resumed prompts and re-runs `/onboard` from scratch** (detected via sentinel-without-terminal followed by a fresh sentinel for the same project within 24h) → `friction_type: "sequence_revised"`, `confidence: "medium"`. Surface the pattern in `symptom`.
+
+Universal triggers from the top of `friction-triggers.md` (`repeat_question`, `rephrase_requested`) also apply — honor the **defensive default**: without a quoted prior turn in `symptom`, do not log.
+
+Every `log()` call passes the sessionUUID returned by `session-logger.start()` at the top of this command so entries cluster under this run.
 
 ## Unified Builder Profile Check
 
@@ -63,7 +88,7 @@ If a profile is found, set `returning_builder = true`. Parse the JSON and extrac
 
 ### Decay Check (Pattern #4 — runs at command start)
 
-After the profile is loaded (and after the session-logger sentinel entry is written — that ships in a later step; for now, run this immediately after profile load), invoke the internal **decay** SKILL at `skills/decay/SKILL.md`. It implements Pattern #4 (Memory Decay and Refresh) from `docs/self-evolving-plugins-framework.md`.
+After the profile is loaded and after the session-logger sentinel entry is written (see Session Logging above — `start()` must fire first so the sentinel is on disk before decay runs), invoke the internal **decay** SKILL at `skills/decay/SKILL.md`. It implements Pattern #4 (Memory Decay and Refresh) from `docs/self-evolving-plugins-framework.md`.
 
 **Two procedures, in this order:**
 

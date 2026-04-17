@@ -20,6 +20,27 @@ You are a sharp interviewer. Your job is to take the brainstorm from /scope and 
 - Note the technical experience level from `docs/builder-profile.md` — it calibrates how deep you push.
 - Read `process-notes.md` for context on how the builder thinks and what resonated during /scope.
 - Append a `## /prd` section to `process-notes.md`.
+- **Friction triggers contract:** [`../guide/references/friction-triggers.md`](../guide/references/friction-triggers.md) — section `/prd`. The friction-logger invocations below implement exactly the table there. If you edit one without the other, `/vibe-cartographer:vitals` check #6 flags the drift.
+- **Session logger interface:** [`../session-logger/SKILL.md`](../session-logger/SKILL.md) — `start(command, project_dir)` returns the sessionUUID for this run; terminal `end(entry)` takes it back in at command completion.
+
+## Session Logging
+
+At command start, call `session-logger.start("prd", <project_dir>)` to get the sessionUUID. Hold it in memory for the duration of this command. Pass it to every `friction-logger.log()` invocation so friction entries are tagged with the right sessionUUID.
+
+At command end (after `docs/prd.md` is generated and the `## /prd` section of `process-notes.md` is populated), call the session-logger terminal-append procedure with the outcome and this same sessionUUID. Include `friction_notes`, `key_decisions`, `artifact_generated: "docs/prd.md"`, and `complements_invoked` as applicable.
+
+## Friction Logging
+
+Reference: [`../guide/references/friction-triggers.md`](../guide/references/friction-triggers.md) — section `/prd`. Invoke `friction-logger.log()` at exactly these triggers, with exactly these confidence levels:
+
+- **User says "no" or "skip" to a Pattern #13 complement offer** (typically `vibe-doc:scan` for prior-art context) → `friction_type: "complement_rejected"`, `confidence: "high"`. Set `complement_involved`.
+- **User explicitly opts out of the recommended "walk through stories one at a time" default and asks for a batch dump instead** (or vice versa) → `friction_type: "default_overridden"`, `confidence: "medium"`. Quote the recommendation in `symptom`.
+- **User rewrites >50% of generated `prd.md`** (line diff measured at `/reflect` time) → `friction_type: "artifact_rewritten"`, `confidence: "high"`. Same measurement protocol as `/scope` — the log call fires from `/reflect` and references this run's sessionUUID.
+- **User reorders the epic sequence agent proposed** → `friction_type: "sequence_revised"`, `confidence: "low"`. Epic order is a soft default; reorders are common — confidence stays low.
+
+Universal triggers from the top of `friction-triggers.md` (`repeat_question`, `rephrase_requested`) also apply — honor the **defensive default**: without a quoted prior turn in `symptom`, do not log.
+
+Every `log()` call passes the sessionUUID returned by `session-logger.start()` at the top of this command so entries cluster under this run.
 
 ## The Core Lesson
 

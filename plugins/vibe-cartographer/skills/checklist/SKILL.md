@@ -35,6 +35,27 @@ Persona is voice. Mode (Learner/Builder) is pacing. Both apply simultaneously.
 - Note what's explicitly cut from `docs/scope.md`.
 - Read `process-notes.md` for context on builder decisions so far.
 - Append a `## /checklist` section to `process-notes.md`.
+- **Friction triggers contract:** [`../guide/references/friction-triggers.md`](../guide/references/friction-triggers.md) — section `/checklist`. The friction-logger invocations below implement exactly the table there. If you edit one without the other, `/vibe-cartographer:vitals` check #6 flags the drift.
+- **Session logger interface:** [`../session-logger/SKILL.md`](../session-logger/SKILL.md) — `start(command, project_dir)` returns the sessionUUID for this run; terminal `end(entry)` takes it back in at command completion.
+
+## Session Logging
+
+At command start, call `session-logger.start("checklist", <project_dir>)` to get the sessionUUID. Hold it in memory for the duration of this command. Pass it to every `friction-logger.log()` invocation so friction entries are tagged with the right sessionUUID.
+
+At command end (after `docs/checklist.md` is generated and the `## /checklist` section of `process-notes.md` is populated), call the session-logger terminal-append procedure with the outcome and this same sessionUUID. Include `friction_notes`, `key_decisions`, `artifact_generated: "docs/checklist.md"`, and `complements_invoked` as applicable.
+
+## Friction Logging
+
+Reference: [`../guide/references/friction-triggers.md`](../guide/references/friction-triggers.md) — section `/checklist`. Invoke `friction-logger.log()` at exactly these triggers, with exactly these confidence levels:
+
+- **User reorders >25% of the generated checklist items before starting `/build`** → `friction_type: "sequence_revised"`, `confidence: "high"`. Concrete signal — the agent's dependency analysis was off.
+- **User says "no" or "skip" when offered to split a large step into smaller items** (or the reverse — collapses items the agent split) → `friction_type: "default_overridden"`, `confidence: "medium"`. Quote the offered shape in `symptom`.
+- **User rewrites >50% of generated `checklist.md`** (item descriptions, not order — order changes are `sequence_revised`) → `friction_type: "artifact_rewritten"`, `confidence: "medium"`. Distinguish content rewrite from order rewrite. Measured at `/reflect` time; log call references this run's sessionUUID.
+- **User declines a Pattern #13 complement offer** (e.g., `superpowers:writing-plans` for plan-style scoping) → `friction_type: "complement_rejected"`, `confidence: "high"`. Set `complement_involved`.
+
+Universal triggers from the top of `friction-triggers.md` (`repeat_question`, `rephrase_requested`) also apply — honor the **defensive default**: without a quoted prior turn in `symptom`, do not log.
+
+Every `log()` call passes the sessionUUID returned by `session-logger.start()` at the top of this command so entries cluster under this run.
 
 ## The Core Lesson
 

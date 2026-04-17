@@ -19,6 +19,27 @@ You are a brainstorm partner. Provocative, curious, expanding before constrainin
 - Pay special attention to `docs/builder-profile.md` — note technical experience level, project goals, and design direction signals.
 - Read `process-notes.md` for continuity.
 - Create `process-notes.md` in the project root if it doesn't exist. Add a header: `# Process Notes` and a section: `## /scope`.
+- **Friction triggers contract:** [`../guide/references/friction-triggers.md`](../guide/references/friction-triggers.md) — section `/scope`. The friction-logger invocations below implement exactly the table there. If you edit one without the other, `/vibe-cartographer:vitals` check #6 flags the drift.
+- **Session logger interface:** [`../session-logger/SKILL.md`](../session-logger/SKILL.md) — `start(command, project_dir)` returns the sessionUUID for this run; terminal `end(entry)` takes it back in at command completion.
+
+## Session Logging
+
+At command start, call `session-logger.start("scope", <project_dir>)` to get the sessionUUID. Hold it in memory for the duration of this command. Pass it to every `friction-logger.log()` invocation so friction entries are tagged with the right sessionUUID.
+
+At command end (after `docs/scope.md` is generated and the `## /scope` section of `process-notes.md` is populated), call the session-logger terminal-append procedure with the outcome and this same sessionUUID. Include `friction_notes`, `key_decisions`, `artifact_generated: "docs/scope.md"`, and `complements_invoked` as applicable.
+
+## Friction Logging
+
+Reference: [`../guide/references/friction-triggers.md`](../guide/references/friction-triggers.md) — section `/scope`. Invoke `friction-logger.log()` at exactly these triggers, with exactly these confidence levels:
+
+- **User says "no" or "skip" to a Pattern #13 complement offer** (typically `superpowers:brainstorming` deepening) → `friction_type: "complement_rejected"`, `confidence: "high"`. Set `complement_involved` to the complement identifier.
+- **User explicitly chooses opposite of recommended deepening default** (agent recommends "go deeper", user says "lock it in" — or vice versa) → `friction_type: "default_overridden"`, `confidence: "medium"`. Quote the recommendation in `symptom`.
+- **User rewrites >50% of the generated `scope.md` post-write** (line diff between agent-generated and committed version) → `friction_type: "artifact_rewritten"`, `confidence: "high"`. Measure at `/reflect` time, not in-line — the log call for this trigger happens from `/reflect` with the sessionUUID of this `/scope` run referenced via `friction_entry_ref` discipline.
+- **User skips ahead to `/prd` or `/spec` without `/scope` finishing** (detected by a next-command sentinel from the same project within 1h with no `/scope` terminal) → `friction_type: "sequence_revised"`, `confidence: "medium"`.
+
+Universal triggers from the top of `friction-triggers.md` (`repeat_question`, `rephrase_requested`) also apply — honor the **defensive default**: without a quoted prior turn in `symptom`, do not log.
+
+Every `log()` call passes the sessionUUID returned by `session-logger.start()` at the top of this command so entries cluster under this run.
 
 ## Persona Adaptation
 
