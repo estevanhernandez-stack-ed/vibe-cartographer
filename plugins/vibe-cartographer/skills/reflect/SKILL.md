@@ -44,6 +44,28 @@ If any are missing, list what's missing and point to the relevant command. Revie
   - `docs/checklist.md` — the build plan and what was completed
 - Read `process-notes.md` — the full record of the builder's decisions, pushback, comprehension check answers, deepening rounds, and engagement
 - Skim the app code itself — does it match what the spec and PRD described?
+- **Friction triggers contract:** [`../guide/references/friction-triggers.md`](../guide/references/friction-triggers.md) — section `/reflect`. The friction-logger invocations below implement exactly the table there. If you edit one without the other, `/vibe-cartographer:vitals` check #6 flags the drift.
+- **Session logger interface:** [`../session-logger/SKILL.md`](../session-logger/SKILL.md) — `start(command, project_dir)` returns the sessionUUID for this run; terminal `end(entry)` takes it back in at command completion.
+- **Data contracts:** [`../guide/references/data-contracts.md`](../guide/references/data-contracts.md) — the "Friction log" and "Friction calibration" sections define the shapes read and written during the calibration check-in. `friction.jsonl` is the read source; `friction.calibration.jsonl` is the write target. Both use `node scripts/atomic-append-jsonl.js`.
+
+## Session Logging
+
+At command start — before reading `docs/` or running Part A — call `session-logger.start("reflect", <project_dir>)` to get the sessionUUID. Hold it in memory for the duration of this command. Pass it to every `friction-logger.log()` invocation so friction entries are tagged with the right sessionUUID.
+
+At command end — after `docs/reflection.md` has been written, after the unified profile has been updated, and after the closing message — call the session-logger terminal-append procedure (`end(entry)`) with the **same sessionUUID** returned by `start()`. Set `outcome: "completed"` if the full Part A + Part B + calibration + generation flow ran, `"partial"` if the builder opted out mid-flow but reflection.md still got written, `"abandoned"` only in the rare case the command exited without producing reflection.md. Populate `friction_notes`, `key_decisions` (e.g., "builder skipped calibration check-in", "marked 4 entries false_positive"), `artifact_generated: "docs/reflection.md"`, and `complements_invoked` (e.g., `superpowers:requesting-code-review`) from what actually happened.
+
+## Friction Logging
+
+Reference: [`../guide/references/friction-triggers.md`](../guide/references/friction-triggers.md) — section `/reflect`. Invoke `friction-logger.log()` at exactly these triggers, with exactly these confidence levels:
+
+- **User declines the calibration check-in** (`[skip]` to "want to mark false positives?") → `friction_type: "default_overridden"`, `confidence: "low"`. The check-in is itself optional — declines are expected. Confidence stays low so it doesn't pollute the calibration signal or trigger `/evolve` noise.
+- **User declines a Pattern #13 complement offer** (e.g., `superpowers:requesting-code-review`) → `friction_type: "complement_rejected"`, `confidence: "high"`. Set `complement_involved`.
+- **User rewrites >50% of generated `reflection.md`** → `friction_type: "artifact_rewritten"`, `confidence: "medium"`. Reflections are personal — confidence stays medium. Measured at the *next* `/reflect` or `/evolve` read time, not in-line; the log call at that future read references this run's sessionUUID.
+- **User marks 3+ entries `false_positive` during the calibration check-in** → **no friction entry.** Calibration is its own signal channel — `/reflect` never logs friction-about-friction. Calibration entries go to `friction.calibration.jsonl`, not `friction.jsonl`.
+
+Universal triggers from the top of `friction-triggers.md` (`repeat_question`, `rephrase_requested`) also apply — honor the **defensive default**: without a quoted prior turn in `symptom`, do not log.
+
+Every `log()` call passes the sessionUUID returned by `session-logger.start()` at the top of this command so entries cluster under this run.
 
 ---
 
@@ -92,6 +114,29 @@ If their answers suggest they missed a key concept, note it — you'll address i
 ### Read and Reason
 
 For each of the five dimensions below, review the relevant artifacts and form observations. Cite specific evidence — quote or reference exact passages. The reasoning structure from `references/eval-rubric.md` guides your thinking, but your output is observations, not scores.
+
+**Cross-doc `artifact_rewritten` measurement** (runs silently during this review phase, before presenting feedback — implements the "measured at /reflect time" rows from `friction-triggers.md` for /scope, /prd, /spec, /checklist):
+
+For each of `docs/scope.md`, `docs/prd.md`, `docs/spec.md`, and `docs/checklist.md` that exists:
+
+1. **Find the originating session.** Scan `~/.claude/plugins/data/vibe-cartographer/sessions/*.jsonl` for the terminal entry whose `artifact_generated` matches this file and `command` matches the corresponding command (scope → /scope, prd → /prd, etc.). If multiple runs touched the same file, use the most recent one before this `/reflect`. Capture its `sessionUUID` and `timestamp` — those tag the forthcoming log call.
+2. **Get the original agent-generated version.** Preferred: `git log --diff-filter=A --follow -- <path>` to find the first commit that introduced the file, then `git show <hash>:<path>` to retrieve its contents. Fall back order if git history is unavailable:
+   - (a) Check `process-notes.md` for an inline snapshot or timestamped reference; if the builder pasted the generated version there, diff against that.
+   - (b) If neither git history nor process-notes contains the original, **skip** this file's measurement. Do not guess, and do not log based on partial evidence.
+3. **Compute the line diff.** Compare the original agent-generated version against the current `docs/<file>`. Let `changed_lines = |added| + |removed|` and `baseline = max(original_lines, current_lines)`. `diff_pct = changed_lines / baseline`.
+4. **If `diff_pct > 0.5`**, call `friction-logger.log()` with:
+   - `friction_type: "artifact_rewritten"`
+   - `command: "<originating command>"` (e.g., `"scope"` — not `"reflect"`; the friction is attributed to the run that produced the artifact, not this review)
+   - `project_dir: <current project_dir>`
+   - `sessionUUID: <originating session's UUID>` (from step 1 — NOT this `/reflect`'s sessionUUID)
+   - `timestamp`: now (captured by `log()` — this records when the measurement fired, while `sessionUUID` preserves the attribution)
+   - `confidence: "high"` for /scope and /prd; `"high"` for /spec; `"medium"` for /checklist (per the triggers table — /checklist distinguishes content rewrite from order rewrite, and this measurement only catches content).
+   - `symptom: "<diff_pct rounded to nearest 5%> rewrite of <file> between agent generation (<originating timestamp>) and /reflect time"`
+5. **Order rewrites on /checklist specifically.** The /checklist triggers table distinguishes `artifact_rewritten` (content rewrite) from `sequence_revised` (order rewrite). The line-diff above catches both together. If nearly all the diff is line reordering rather than content edits (you can tell because `git diff --stat` shows balanced +/- counts with similar line bodies), log as `sequence_revised` with `confidence: "high"` instead.
+6. **If fewer than 4 files yielded measurements** (e.g., scope was never committed), that's fine — log what you can, skip what you can't. The evidence is concrete when it exists and absent when it doesn't; don't manufacture it.
+
+This measurement is instrumentation — it runs silently, doesn't block the review, and surfaces any atomic-append errors to stderr without interrupting the conversation. The builder sees the results only as part of the calibration check-in below (where they can mark false positives).
+
 
 Read the builder's technical background and goals from `docs/builder-profile.md`.
 
@@ -148,6 +193,82 @@ Two questions, one at a time:
 
 **2. Open reflection.** "Looking back at the whole process — scoping through shipping — what surprised you most?" If their reflection is sharp, build on it. If they're stuck, offer an observation: "I noticed you got more decisive during the spec phase — your questions got sharper and you were making calls faster. That kind of momentum carries."
 
+### Calibration check-in
+
+This is the last step of Part B. It's a quick loop that lets the builder correct the plugin's friction detector — marking false positives so `/evolve` doesn't act on noise, and describing false negatives the logger missed. Pattern #6 (Friction Log) pairs with this check-in: the logger captures conservatively during commands, and this loop recovers missed signal while scrubbing false positives. Data contract: [`../guide/references/data-contracts.md`](../guide/references/data-contracts.md) — "Friction calibration" section.
+
+**Step 1 — Read this project's friction entries.**
+
+Read `~/.claude/plugins/data/vibe-cartographer/friction.jsonl` line-by-line. Parse each as JSON; silently skip malformed lines (`/vitals` check #8 owns repair). Filter to entries matching this project's session window:
+
+- `project_dir` equals the current project_dir.
+- AND EITHER:
+  - The entry was written after the previous `/reflect` terminal entry for this project_dir (look back through the last ~30 days of session files for a prior `/reflect` terminal entry in this project; the timestamp of that entry is the window start).
+  - OR, if no prior `/reflect` terminal exists, the entry is within the last 14 days.
+
+Also pull the cross-doc `artifact_rewritten` entries just written above — those are part of the same project window by construction.
+
+**Step 2 — If no entries match, silently skip this section entirely.** Do not mention it. Proceed straight to "Generate `docs/reflection.md`". Nothing to calibrate.
+
+**Step 3 — If entries exist, present the check-in.**
+
+Group entries by `friction_type`. For each group, list entries as numbered items with their timestamp (shortened to MM-DD HH:MM local), the originating command, and the `symptom` (or a short summary if symptom is absent). Keep the display compact — this is a single-prompt interface, not a formal UI.
+
+Say something like:
+
+> "I captured **N** friction notes during this project. Want to look through them and mark any false positives or flag stuff I missed?
+>
+> **complement_rejected (3)**
+>   1. [04-10 14:22] /build — declined superpowers:test-driven-development
+>   2. [04-11 09:15] /spec — declined claude-api
+>   3. [04-14 16:40] /iterate — declined simplify
+>
+> **artifact_rewritten (2)**
+>   4. [04-12 11:00] /scope — 65% rewrite of scope.md between agent generation and /reflect time
+>   5. [04-13 19:30] /prd — 52% rewrite of prd.md between agent generation and /reflect time
+>
+> **default_overridden (1)**
+>   6. [04-10 13:50] /build — chose autonomous when I recommended step-by-step
+>
+> Reply with `fp <number>` for any that were false positives, or describe any friction I missed in free text. Or `skip` to move on."
+
+Adapt tone to persona. Learner mode: explain what each group means if the builder seems unsure ("complement_rejected means you said 'no' when I offered to bring in another skill"). Builder mode: just the list.
+
+**Step 4 — Handle the builder's response.**
+
+- **If the builder says `skip`, `pass`, `looks fine`, or similar:** no writes. Proceed to "Generate `docs/reflection.md`".
+- **If the builder replies with `fp <number>` markings:** for each marked entry, append ONE line to `friction.calibration.jsonl` via `node scripts/atomic-append-jsonl.js ~/.claude/plugins/data/vibe-cartographer/friction.calibration.jsonl`. Schema:
+  ```json
+  {
+    "schema_version": 1,
+    "timestamp": "<now ISO datetime with timezone offset>",
+    "plugin_version": "<from plugin.json>",
+    "friction_entry_ref": {
+      "timestamp": "<original entry's timestamp>",
+      "friction_type": "<original entry's friction_type>",
+      "sessionUUID": "<original entry's sessionUUID>"
+    },
+    "calibration": "false_positive",
+    "builder_note": "<optional free text from the builder, if they explained why>"
+  }
+  ```
+  Each mark is one append. Validate against `friction-calibration.schema.json` before writing; silent-drop on validation failure (same defensive default as `friction-logger.log()`).
+- **If the builder describes free-text friction you missed** (e.g., "I felt friction when you suggested X but I didn't push back"): append a `false_negative` calibration entry. Because there is no exact matching friction.jsonl line, anchor `friction_entry_ref` to the nearest relevant session entry — ideally the terminal entry of the command the builder is describing (its `(timestamp, friction_type: <best-fit enum>, sessionUUID)` triple). If no clean anchor exists, use this `/reflect`'s sessionUUID and the entry's timestamp, with `friction_type` picked from the seven canonical types based on what the builder described. Put the builder's description in `builder_note`.
+- **If markings are ambiguous** (e.g., `fp` with no number, or a number out of range): ask a single clarifying question, then proceed. Don't spiral.
+
+**Step 5 — Acknowledge and move on.**
+
+After writes complete, one short line: "Logged N marks — that'll feed into `/evolve` next time you run it. Let's pull together your reflection."
+
+If the builder declined (`skip`), that itself is a `default_overridden` friction entry per the /reflect trigger table — log it now via `friction-logger.log()` with `friction_type: "default_overridden"`, `confidence: "low"`, and pass this `/reflect`'s sessionUUID. Confidence stays low because declining the check-in is expected behavior — this is a weak signal, not a complaint about the check-in itself.
+
+**Defensive behaviors:**
+
+- The calibration interface NEVER writes to `friction.jsonl` — only to `friction.calibration.jsonl`. These are distinct streams. `/reflect` never logs friction-about-friction (per the /reflect triggers table).
+- If `atomic-append-jsonl.js` exits non-zero, surface the stderr and continue. Don't block the handoff.
+- Don't prompt more than once. If the builder engaged once, one pass of markings, then close.
+- Don't summarize or score the friction entries. The list is already the summary.
+
 ### Generate `docs/reflection.md`
 
 Read the template at `skills/guide/templates/reflection-template.md`. Fill it in using the observations and reflection.
@@ -183,6 +304,10 @@ After generating the reflection, update the **unified cross-plugin profile** at 
 - Don't rewrite the whole profile from scratch. Merge into what's there.
 - Don't touch `shared.name`, `shared.identity`, or `shared.technical_experience` during reflect. Those live in onboard's territory.
 - Don't write observations that are project-specific — those belong in `docs/reflection.md` and `process-notes.md`, not the cross-project profile.
+
+### Session Logging — Terminal Entry
+
+After the unified profile has been merged and written, call the session-logger terminal-append procedure (`end(entry)`) with the sessionUUID returned by `session-logger.start()` at the top of this command. Set `outcome: "completed"` if the full flow ran, `"partial"` if the builder opted out mid-flow but reflection.md still got written. Populate `friction_notes`, `key_decisions`, `artifact_generated: "docs/reflection.md"`, and `complements_invoked` from what actually happened. This is the terminal entry for THIS `/reflect` session — exactly one `end()` call per invocation.
 
 ---
 
