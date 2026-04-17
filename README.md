@@ -20,17 +20,19 @@ Vibe Cartographer delivers a guided vibe coding course correction workflow as ei
 
 **Command chain:** `/onboard` → `/scope` → `/prd` → `/spec` → `/checklist` → `/build` → `/iterate` → `/reflect`
 
-| Command      | What It Does                                                             |
-| ------------ | ------------------------------------------------------------------------ |
-| `/onboard`   | Welcome, builder profiling, persona selection, architecture docs         |
-| `/scope`     | Brainstorm and refine your idea into a focused project scope             |
-| `/prd`       | Turn scope into detailed product requirements                            |
-| `/spec`      | Translate PRD into a technical blueprint using your architecture         |
-| `/checklist` | Break the spec into a sequenced, dependency-aware build plan             |
-| `/build`     | Build the app — autonomous or step-by-step mode                          |
-| `/iterate`   | Optional polish pass after the core build                                |
-| `/reflect`   | Retro, peer-style feedback, and qualitative review                       |
-| `/evolve`    | **L3:** Plugin reads its own session logs and proposes self-improvements |
+| Command      | What It Does                                                                    |
+| ------------ | ------------------------------------------------------------------------------- |
+| `/onboard`   | Welcome, builder profiling, persona selection, architecture docs                |
+| `/scope`     | Brainstorm and refine your idea into a focused project scope                    |
+| `/prd`       | Turn scope into detailed product requirements                                   |
+| `/spec`      | Translate PRD into a technical blueprint using your architecture                |
+| `/checklist` | Break the spec into a sequenced, dependency-aware build plan                    |
+| `/build`     | Build the app — autonomous or step-by-step mode                                 |
+| `/iterate`   | Optional polish pass after the core build                                       |
+| `/reflect`   | Retro, peer-style feedback, and qualitative review                              |
+| `/evolve`    | **L3:** Plugin reads its own session logs and proposes self-improvements        |
+| `/vitals`    | **L3.5:** Self-diagnostic health check across profile, logs, and complements    |
+| `/friction`  | **L3.5:** Capture real-time friction signal with calibration for future evolve  |
 
 The final checklist step is always **Documentation & Security Verification** — README, docs cleanup, secrets scan, dependency audit, and deployment security posture.
 

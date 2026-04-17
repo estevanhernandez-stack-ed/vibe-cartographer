@@ -1,5 +1,13 @@
 .DS_Store
 *.swp
 *.swo
+.env
+.env.*
+!.env.example
 node_modules/
 .gitnexus
+
+# Cart's own dogfood artifacts — should not ship with the plugin
+.vibe-doc/
+.claude/
+process-notes.md

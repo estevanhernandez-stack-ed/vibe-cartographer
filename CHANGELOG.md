@@ -9,6 +9,34 @@ All notable changes to this project are documented here. The format follows [Kee
 
 - Nothing yet.
 
+## [1.5.0] — 2026-04-17 — L3.5: Patterns #4, #6, #8 + #13 integrations
+
+Vibe Cartographer advances to **Level 3.5** of the Self-Evolving Plugin Framework — faster feedback loops, calibrated signal, and self-diagnostic health checks layered on top of the existing L3 reflective evolution. Three new framework patterns (#4, #6, #8) ship in this release, with Pattern #13 (Ecosystem-Aware Composition) gaining first-class integrations across all of them.
+
+### Added
+
+- **Pattern #4 — Memory Decay.** The unified profile and session state now track `_meta.last_seen_complements` so the plugin can tell when the ecosystem around it has changed (new / removed MCPs, skills, plugins). Stale environment fingerprints are flagged during `/vitals` check #4 so the complements table doesn't rot silently between sessions.
+- **Pattern #6 — Friction Log + calibration.** New `/friction` command captures real-time friction signal with a lightweight calibration pass — severity, phase, trigger, and suggested category are recorded to a structured log and used to calibrate future proposals in `/evolve`. Friction complements rejections without replacing them: rejections record a no, friction records a "this was rough even though we pushed through" (Pattern #13 integration — the two signals are additive, not redundant).
+- **Pattern #8 — `/vitals` self-diagnostic.** New `/vitals` command runs a one-shot health check across the plugin's own runtime state: (1) unified profile schema validity, (2) session log append integrity, (3) friction log structure, (4) complements-table staleness vs `_meta.last_seen_complements`, (5) script presence and permissions. Reports pass/warn/fail per check with fix guidance.
+- **New commands:** `/vitals` and `/friction` join the command chain. Both are additive — the original 8-command flow (`/onboard` → `/reflect`) is unchanged; `/vitals` and `/friction` are callable anytime a signal arises.
+- **Two new Node scripts** in `scripts/`: `atomic-write-json.js` (lock-and-swap JSON writes for the unified profile and schema-governed files) and `atomic-append-jsonl.js` (crash-safe append for session logs and the new friction log). Both operate without any new runtime dependencies — Node's built-in `fs` primitives only.
+- **Four new JSON schemas** under `plugins/vibe-cartographer/skills/guide/schemas/`: `builder-profile.schema.json`, `friction.schema.json`, `friction-calibration.schema.json`, and `session-log.schema.json`. `/vitals` check #1 and check #3 consume these.
+- **Two new reference docs** under `plugins/vibe-cartographer/skills/guide/references/`: `data-contracts.md` (authoritative contract for every file the plugin reads or writes — paths, ownership, atomicity guarantees, schema ref) and `friction-triggers.md` (the trigger taxonomy `/friction` uses to suggest a category).
+
+### Changed
+
+- **Language reframe: "course correction matches what we actually do."** The plugin's surface copy now consistently describes what it does as *vibe coding course correction* — a sharper framing than earlier generations of "spec-driven development" or "app readiness." The old descriptors still map cleanly (the 8-command flow is unchanged), but the framing now matches the builder's lived experience. Touched both root and plugin manifests, the onboard banner, the README opener, and internal SKILL prose.
+- **Pattern #13 (Ecosystem-Aware Composition) gains concrete integrations with the new patterns.** `/vitals` check #4 uses the complements table and `_meta.last_seen_complements` to detect table rot (a Pattern #13 + Pattern #4 combo). `/friction` complements rejection logging in `/evolve` rather than duplicating it (Pattern #13: defer to and compose with adjacent signal rather than absorbing it).
+- `/evolve` now reads the friction log in addition to session logs when surfacing patterns across runs — friction is a stronger signal than inference-from-session-outcome.
+
+### Fixed
+
+- Nothing yet — this is a capability release, not a bugfix release.
+
+### Security
+
+- **No new runtime dependencies.** `package.json` `dependencies` and `devDependencies` are unchanged vs `1.4.1`. The two new Node scripts rely on Node built-ins (`fs`, `path`) only. Secrets scan run pre-release came back clean (matches present only as framework doc prose describing credential-handling patterns — no literal secret values).
+
 ## [1.4.1] — 2026-04-16 — Sharpening from research swarm
 
 Two surgical fixes surfaced by a 4-agent research swarm conducted before a fresh `/scope` run.

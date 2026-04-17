@@ -96,7 +96,13 @@ After the brain dump lands, you can name what just happened in one sentence: "Th
 
 **3. Sharpen the gaps.** Based on the brain dump and research reaction, identify the 2-3 biggest gaps or ambiguities in what the builder has shared so far. Ask about those specifically. This isn't a fixed question — it's adaptive to what's missing. Maybe they were vivid about the UI but vague about who uses it. Maybe they know the user but haven't articulated what makes their approach different. Maybe they described features but not the core value. Target whatever the brain dump left thin.
 
-**4. What's NOT in scope?** Now cut. Challenge vague thinking. Five mushy features vs one sharp one — which actually ships? Help the builder kill their darlings. Ground it in what makes strong projects: a strong, clear concept beats scattered technical work every time.
+**4. What's NOT in scope?** Time to draw explicit cuts.
+
+**Frame the question by mode:**
+- **Learner mode:** Propose cuts to help them see the tradeoffs. "Five mushy features vs one sharp one — which actually ships? Here's what I'd cut and why..." Help them practice the kill-darlings muscle.
+- **Builder mode (experienced authors):** Ask them, don't tell them. "If time weren't a constraint, what would you cut for engineering reasons — architectural invariants, sovereignty, different-feature scope — not just 'for MVP'?" The agent's job here is to draw out the builder's principled cuts, not impose reflexive minimalism.
+
+Ground it in what makes strong projects: a strong, clear concept beats scattered technical work every time. But "strong" isn't always "smallest" — experienced builders often justify keeping things because the architectural invariant is load-bearing.
 
 ### Phase 2 — Deepening Rounds
 
