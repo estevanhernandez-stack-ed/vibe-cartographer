@@ -117,6 +117,62 @@ Read `shared.preferences.persona` from `~/.claude/profiles/builder.json` at the 
 - **Combine with mode thoughtfully:** Professor + Builder mode = patient voice but brisk pace (no unnecessary deepening rounds). Superdev + Learner mode = terse voice but still offers extra rounds proactively. Both axes apply.
 - **If null (system default):** just use your base behavior. No override. Calibrate only by mode and technical experience level.
 
+## Ecosystem-Aware Composition
+
+Vibe Cartographer is one plugin in a richer environment. The builder may have other plugins, MCPs, or skills installed that overlap with phases of this workflow. **Don't reinvent capabilities the user already has — defer to the specialist when one is present.**
+
+This is Pattern #13 (Ecosystem-Aware Composition) from the Self-Evolving Plugin Framework. See `docs/self-evolving-plugins-framework.md` for the full pattern.
+
+### Two layers of discovery
+
+**Layer 1 — Anchored complements (curated table below).** At command start, check the agent's available skills/tools list for any of these known complements. If present, announce the deferral once at the top of the command, then hand off the specific phase when you reach it.
+
+**Layer 2 — Live discovery (judgment-based).** Beyond the anchored table, scan the available skills/tools list for unknown-but-useful matches using the heuristics in this section. Be conservative — false positives (announcing a complement that doesn't fit) are more damaging than false negatives.
+
+### Anchored complements table
+
+| Complement | When it's installed, defer at... | What to say at deferral |
+|------------|-----------------------------------|--------------------------|
+| `superpowers:brainstorming` | `/scope` brain dump phase (Question 1) | "I see you have `superpowers:brainstorming` installed — using it for the brain dump so we get the full divergent-then-convergent pass before I pull the threads together." |
+| `superpowers:writing-plans` | `/spec` and `/checklist` proposal phases | "Bringing in `superpowers:writing-plans` for the architecture proposal — it'll structure the plan-doc and surface gaps I might miss." |
+| `superpowers:test-driven-development` | `/build` step execution (every item) | "You have `superpowers:test-driven-development` — I'll defer to it on each build step so we ship behavior-tested code, not just code that runs." |
+| `superpowers:systematic-debugging` | `/build` when a step fails or behavior is unexpected | "Triggering `superpowers:systematic-debugging` to root-cause this before I patch over it." |
+| `superpowers:dispatching-parallel-agents` | Autonomous-mode `/build` orchestration | "Routing autonomous build dispatch through `superpowers:dispatching-parallel-agents` for cleaner parallelization." |
+| `superpowers:verification-before-completion` | `/build` verification step (when opted in) | "Using `superpowers:verification-before-completion` to make verification rigorous instead of vibes-based." |
+| `superpowers:requesting-code-review` | `/reflect` Part B project review | "Bringing in `superpowers:requesting-code-review` for the project review — gives the retro independent-reviewer rigor." |
+| `claude_ai_Figma` MCP | `/spec` design-direction conversation | "I see the Figma MCP is connected — if you have a Figma file for this project, drop the URL and I'll pull design tokens, screenshots, and component structure directly into the spec." |
+| `mcp__plugin_playwright_playwright__*` | Future Vibe Test integration; in `/spec` if E2E flows are critical | "Playwright MCP is available — for spec'd E2E flows we can prototype the test harness during `/spec`." |
+| GitHub `gh` CLI | `/checklist` final docs/security item; `/reflect` reflection-publishing | "`gh` CLI is available — happy to open issues for any deferred items or push the reflection doc as a release note." |
+
+### Live-discovery heuristics
+
+Beyond the anchored table, scan the available skills/tools list at command start. Surface a complement to the builder if it matches:
+
+- **Test-related skill** (`*test*`, `*tdd*`, `*verify*`, `*quality*`) — relevant during `/build` and `/reflect`
+- **Doc-related skill** (`*doc*`, `*readme*`, `*adr*`, `*spec-writer*`) — relevant during `/spec` and `/reflect`
+- **Code-review skill** (`*review*`, `*audit*`, `*lint*`) — relevant during `/build` (per-item) and `/reflect`
+- **Planning skill** (`*plan*`, `*decompose*`, `*breakdown*`) — relevant during `/checklist`
+- **Design-related MCP** (Figma, design-system tools) — relevant during `/spec`
+- **Browser automation MCP** (Playwright, Puppeteer) — relevant during `/build` for UI verification
+
+When in doubt, **don't** announce. Only surface a complement when you can articulate the specific phase it fits and the value it adds.
+
+### Composition rules
+
+- **Defer, don't absorb.** When a complement is invoked, hand off the phase to it. Resume the Vibe Cartographer flow once the complement returns. Don't try to wrap or reimplement its behavior.
+- **Announce once, at command start.** Mention all relevant complements in the command's opening — don't pop them up surprise-style mid-flow.
+- **Builder can decline.** "Want me to use `superpowers:test-driven-development` for the build steps, or skip it this run?" The builder is the final arbiter; never force a complement.
+- **Log it.** When a complement is invoked, capture it in the session-logger entry under a new field: `complements_invoked: ["superpowers:test-driven-development", ...]`. Useful signal for `/evolve` to see which complements actually get accepted.
+- **Privacy:** Only read what's already in the agent's runtime context (the available skills/tools list). Never enumerate the user's filesystem or Claude config to discover plugins. Never persist the discovered list anywhere durable — it's runtime-only.
+- **Don't break composition mid-command.** If a complement isn't available mid-flow (was available at start, isn't now — rare but possible), fall back to Vibe Cartographer's own flow gracefully. Don't error.
+
+### When NOT to defer
+
+- **Persona, mode, and core flow logic** — these are Vibe Cartographer's own load-bearing behaviors. Don't defer to a complement that would override them.
+- **Document artifacts** — Vibe Cartographer owns the scope/PRD/spec/checklist/reflection format. Complements augment the *thinking* that goes into them, but the final artifact format is the plugin's contract with downstream commands.
+- **Session logging and unified profile writes** — Vibe Cartographer's data contract. Don't let a complement write to those.
+- **The one-question-at-a-time rule** — non-negotiable across the whole workflow. Don't defer to a complement that would bundle questions.
+
 ## Adapting to Experience Level
 
 Read the builder's technical experience from `docs/builder-profile.md` (once it exists). Calibrate depth accordingly:

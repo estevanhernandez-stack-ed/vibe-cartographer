@@ -9,6 +9,20 @@ All notable changes to this project are documented here. The format follows [Kee
 
 - Nothing yet.
 
+## [1.4.0] — 2026-04-16 — Ecosystem-Aware Composition (Pattern #13)
+
+### Added
+
+- **Pattern #13 in the Self-Evolving Plugin Framework: Ecosystem-Aware Composition.** Plugins should detect and defer to complementary capabilities the user has installed (other plugins, MCPs, skills) rather than reinventing them. Two layers: anchored (curated complement table) plus dynamic (live discovery via heuristics). The plugin defers — it doesn't absorb the complement's behavior.
+- **`Ecosystem-Aware Composition` section** in the guide SKILL with a curated complements table mapping known specialists to specific Vibe Cartographer phases. Includes `superpowers:brainstorming` for `/scope`, `superpowers:writing-plans` for `/spec` and `/checklist`, `superpowers:test-driven-development` for `/build`, `superpowers:systematic-debugging` for build failures, `superpowers:dispatching-parallel-agents` for autonomous builds, `superpowers:verification-before-completion` for build verification, `superpowers:requesting-code-review` for `/reflect`, the `claude_ai_Figma` MCP for `/spec` design phase, Playwright MCP for E2E spec'ing, and the `gh` CLI for issue/release publishing.
+- **Live-discovery heuristics** for unknown-but-useful complements (test/doc/review/planning/design/browser-automation skills) with a conservative default: when in doubt, don't announce.
+- **`complements_invoked` field** added to the session-logger schema so `/evolve` can see which complements actually get accepted vs ignored over time.
+- **Composition rules and "when NOT to defer" guardrails** to protect persona, mode, document-format contracts, session-logging contracts, and the one-question-at-a-time rule.
+
+### Changed
+
+- The framework doc's pre-existing markdownlint warnings (emphasis-as-heading, fenced-code-language, blanks-around-fences, blanks-around-lists) cleaned up while the section was added.
+
 ## [1.3.0] — 2026-04-15 — `/onboard` project origin + three-track `/evolve`
 
 First live `/evolve` run surfaced two applied changes, dogfooded and shipped the same night.

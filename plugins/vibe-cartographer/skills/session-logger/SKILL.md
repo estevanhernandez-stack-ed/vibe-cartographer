@@ -37,7 +37,8 @@ Each entry is a single JSON line with this shape:
   "user_pushback": false,
   "friction_notes": [],
   "key_decisions": ["builder chose Builder mode", "provided architecture docs at ./architecture/"],
-  "artifact_generated": "docs/builder-profile.md"
+  "artifact_generated": "docs/builder-profile.md",
+  "complements_invoked": ["superpowers:brainstorming"]
 }
 ```
 
@@ -72,6 +73,7 @@ Each entry is a single JSON line with this shape:
   - `"provided architecture docs at ./architecture/"`
   - `"cut feature X from scope"`
 - **artifact_generated** — relative path to the doc this command produced, or `null` if no artifact. E.g., `"docs/scope.md"`, `"docs/prd.md"`, `"docs/reflection.md"`.
+- **complements_invoked** — array of complement plugin/MCP/skill names that the command actually deferred to during this run. Format: `"<source>:<name>"` (e.g., `"superpowers:brainstorming"`, `"mcp:claude_ai_Figma"`). Only include complements that were *actually used* — not just present in the environment. Empty array if none were invoked. Used by `/evolve` to surface which complements get accepted vs ignored, informing Pattern #13 (Ecosystem-Aware Composition) over time.
 
 ## How to Append
 

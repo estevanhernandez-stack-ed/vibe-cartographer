@@ -2,7 +2,7 @@
 
 **A thesis and playbook for building AI plugins that get better every time you use them.**
 
-*626Labs — Estevan Hernandez*
+> 626Labs — Estevan Hernandez
 
 ---
 
@@ -216,6 +216,24 @@ A catalog of concrete, implementable patterns. Each one is shippable by a single
 
 **When to use / when not:** Use when plugins naturally share project context. Not for real-time coordination — this is a log, not a channel. Rotate weekly. Heavier coordination needs real infrastructure, out of scope.
 
+### 13. Ecosystem-Aware Composition
+
+**Pillar:** Self-teach, cross-plugin
+**Problem:** A plugin that ignores the rest of the user's installed environment reinvents capabilities the user already has — and worse, displaces them. The user installs `superpowers:test-driven-development` because they value TDD discipline; then a plugin's `/build` step runs without ever invoking it. Or the user has the Figma MCP wired up; then a `/spec` step asks them to describe the design verbally instead of pulling it. The plugin is locally optimal, ecosystem-blind.
+
+**Mechanism:** Two layers — anchored discovery plus dynamic discovery.
+
+- **Anchored layer (curated):** The plugin's guide SKILL maintains a "Plays well with" table mapping known complementary plugins/MCPs to specific phases of its own commands. When the SKILL knows a complement exists in the user's environment (visible in the available skills list), it announces deferral at the relevant moment: *"I see you have `superpowers:brainstorming` installed — using it for the brain-dump phase of `/scope`."* The anchored list is hand-curated, easy to audit, and updated whenever a useful complement appears.
+- **Dynamic layer (live discovery):** At command startup, the SKILL instructs the agent to scan the available skills list for unknown-but-useful matches. Heuristic guidance lives in the guide SKILL: *"If you see any skill matching the patterns `*test*`, `*tdd*`, `*verify*` and you're in `/build`, surface it to the builder before running."* The agent uses judgment but has anchors to constrain.
+
+The plugin **defers** — it doesn't try to swallow the complementary skill's behavior. If `superpowers:brainstorming` is present, the Vibe Cartographer `/scope` SKILL hands off the brain-dump phase to that skill, then resumes its own flow once the complement returns. Composition, not absorption.
+
+**Example:** User runs `/vibe-cartographer:build` on a project. Vibe Cartographer's guide SKILL has `superpowers:test-driven-development` in its anchored list as a complement to the build phase. At command start, the agent confirms it's available, then announces: *"You have `superpowers:test-driven-development` installed — I'll defer to it during the build loop. Each step gets a TDD pass before I move on."* The plugin's own build instructions still apply, but the TDD discipline is enforced by the specialist skill.
+
+**When to use / when not:** Use whenever your plugin has a phase that overlaps a known specialist skill or capability the user might have installed. Don't over-defer — the plugin still owns its own workflow; complements augment, they don't replace. Be conservative on dynamic discovery: false positives (announcing a complement that doesn't actually fit) are more damaging than false negatives. When in doubt, don't announce.
+
+**Privacy note:** Discovery reads only the available-skills list the agent already has access to. Never enumerate the user's environment beyond what the agent's runtime exposes. Don't write the discovered skill list anywhere persistent — it's runtime context, not stored data.
+
 ### Catalog-Wide Invariants
 
 - **The user is the final arbiter of self-evolution.** Patterns 10 and 11 have user-in-the-loop checkpoints for a reason.
@@ -265,7 +283,8 @@ Start with lowest-friction changes. Don't touch execution paths first — touch 
 Designing from scratch means you can bake the data contract in before any command exists.
 
 **Folder layout (day 1):**
-```
+
+```text
 <plugin>/
   CLAUDE.md                    # persistent plugin-level behavior
   commands/                    # slash command definitions
@@ -277,7 +296,8 @@ Designing from scratch means you can bake the data contract in before any comman
 ```
 
 **At `~/.claude/plugins/data/<plugin>/`:**
-```
+
+```text
 profile.json                   # stable user facts
 overrides.json                 # user-confirmed behavior mods
 overrides.history.jsonl        # every change, reversible
@@ -290,6 +310,7 @@ sessions/<YYYY-MM-DD>.jsonl    # per-day session logs
 **Checkpoint design.** Every command gets an explicit reflection checkpoint. Bake them in before the command logic gets complicated.
 
 **Feedback touchpoints — three categories:**
+
 - **Explicit** — user said "skip this," "I hate this step"
 - **Implicit** — user abandoned the command, re-ran, asked twice
 - **Outcome** — did the shipped artifact actually work?
@@ -307,6 +328,7 @@ Current state: **Level 2** (session memory + passive feedback capture). Global b
 **Level 3 (next).** Add `/vibe-cartographer-evolve` (or extend `/reflect`). Reads last 30 days of session logs, looks for patterns: "your PRDs get edited down 60% of the time — want shorter PRD output by default?" "you've onboarded 6 projects without ever using the risk-assessment block — want to drop it?" Each proposal shows before/after of the skill instruction change and writes to `overrides.json` only on explicit yes. Commands get a new first instruction: *"Read `overrides.json`. Apply any relevant behavior mods before proceeding."*
 
 **Specific file changes for L3:**
+
 - `skills/prd/SKILL.md` — add overrides check at top
 - `skills/onboard/SKILL.md` — add overrides check + profile reference
 - New: `skills/evolve/SKILL.md` — reflection/proposal logic
