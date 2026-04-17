@@ -61,6 +61,32 @@ Before starting the flow, check the **unified builder profile** at `~/.claude/pr
 
 If a profile is found, set `returning_builder = true`. Parse the JSON and extract the `shared` fields (identity, experience, preferences) and the plugin-scoped fields under `plugins.vibe-cartographer`. Both inform the flow below.
 
+### Decay Check (Pattern #4 — runs at command start)
+
+After the profile is loaded (and after the session-logger sentinel entry is written — that ships in a later step; for now, run this immediately after profile load), invoke the internal **decay** SKILL at `skills/decay/SKILL.md`. It implements Pattern #4 (Memory Decay and Refresh) from `docs/self-evolving-plugins-framework.md`.
+
+**Two procedures, in this order:**
+
+1. **Fresh-stamp migration (1.4.x → 1.5.0).** If the loaded profile has no `shared._meta` block, run the silent migration described in `skills/decay/SKILL.md`: stamp every shared decay-eligible field that's actually present in the profile with today's date and the default TTL. No user prompt, no console output. Atomic-write the profile back. If the write fails, log the error in `process-notes.md` and skip the decay check for this run.
+2. **`check_decay()`.** Walk every namespace's `_meta` block, in-memory mark any past-TTL entry stale, and return the highest-priority stale field path (e.g., `shared.preferences.persona`) or `null`. Honor `decay_disabled: true` as an unconditional opt-out — return `null` without scanning.
+
+**If `check_decay()` returns a field path:**
+
+- Embed a gentle confirmation question in the welcome message. Tone is casual and conversational — slip it into the banter, don't make it a ceremony. Examples (one prompt only — even if multiple fields are stale, only the highest-priority one gets surfaced this run):
+  - `shared.preferences.persona` → "Last time persona was [current value] — still right, or want to switch it up?"
+  - `shared.technical_experience.level` → "Last time you were on file as [level] — still tracking? It's been a while."
+  - `shared.preferences.tone` → "Tone last time was '[current value]' — still the vibe?"
+  - `shared.preferences.pacing` → "Pacing was set to '[current value]' last we checked — still good?"
+  - `shared.technical_experience.languages` / `frameworks` → "Stack on file: [comma-joined list]. Anything to add or drop?"
+- After the user responds:
+  - If they confirm (no change) — call `stamp(field_path)` to refresh `last_confirmed` to today.
+  - If they update the value — write the new value into the profile **first**, then call `stamp(field_path)`. The stamp does not modify field values; only `/onboard` writes the new value.
+  - If they say "skip" or punt — do not stamp. The field stays past-TTL and `stale: true` will surface again next run.
+
+**If `check_decay()` returns `null`:** proceed without surfacing anything. This is the common case (fresh profile, recently-stamped fields, or `decay_disabled: true`).
+
+**Returning-builder flow integration:** the decay prompt belongs at the same beat as the existing "Has anything changed since last time?" question — the welcome banter naturally absorbs it. If both are about to fire, the decay prompt subsumes the generic check.
+
 ### Unified Profile Schema
 
 The file at `~/.claude/profiles/builder.json` has this shape:
