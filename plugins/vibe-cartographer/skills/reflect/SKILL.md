@@ -81,15 +81,17 @@ Frame it straight: "Before we dig into the project, I want to talk through a few
 - **Learner mode:** Spend more time on each question. If their answer is surface-level, push: "Say more about that — how did it actually play out in what we built?" This is where concepts click.
 - **Builder mode:** Keep it quick. Ask, take the answer, move. If they nail it, "exactly" is enough. Only push if something is significantly off.
 
-**Questions (aligned with the companion video's core concepts):**
+**Questions about what actually happened on this project:**
 
-1. **Context.** "The video said 'context is everything.' Now that you've shipped — what does that actually mean to you? How did context show up in what we did?" — The builder should connect the planning work (docs, interviews, PRD specificity) to the quality of the build. They don't need to say "context window" but they should see that all the upfront work was about giving the AI enough to work with.
+These reflect on *what the builder did*, not on abstract principles. Each question references a real artifact or moment from this specific run. Pull from `docs/`, `process-notes.md`, and the session log to make the questions concrete.
 
-2. **Flipped interaction.** "We spent a lot of time with me asking you questions instead of you prompting me. Why do you think we did it that way?" — Some version of "I gave better information when I was being interviewed than I would have just typing prompts." Bonus if they connect it to speech-to-text or mention discovering ideas they wouldn't have found otherwise.
+1. **Most load-bearing artifact.** "Of the planning docs we produced — scope, PRD, spec, checklist — which one did you reach back to most when something needed to change mid-build? Which felt like dead weight?" — Surfaces which artifacts were doing real work and which were ceremony. Real answer beats the polite answer here.
 
-3. **Structural problems.** "The video talked about problems when people jump straight to building — chatbot amnesia, context rot. Do you feel like the process addressed any of those? How?" — Clearing chat between commands fights context rot. The planning docs fight amnesia (the AI reads them fresh each session). The structure keeps you from shipping code you don't understand.
+2. **Pushback moments.** "Were there points where you pushed back on my first answer and the conversation got better because of it? Or moments you wish you had pushed back?" — Reflects on active shaping vs passive acceptance. Pull a specific example from `process-notes.md` if you can quote one.
 
-4. **Hindsight.** "What's one thing you'd do differently next time?" — Genuine reflection. The value is in the thinking.
+3. **What the process caught vs missed.** "What did the workflow catch that you would have missed working solo? What did it miss that you wish it had caught?" — Honest both-sides. Pull specifics: friction notes the agent flagged, edge cases surfaced during deepening rounds, things `/iterate` had to clean up that `/build` shipped, etc.
+
+4. **Hindsight on the workflow itself.** "If you ran another project tomorrow with this same workflow, what's one thing you'd do differently — about how YOU showed up, not what the plugin should change?" — The plugin-improvement reflection happens in `/evolve`. This question is about the builder's own practice. The agent should resist the temptation to redirect to "what should the plugin do better."
 
 ### After the check-in
 
