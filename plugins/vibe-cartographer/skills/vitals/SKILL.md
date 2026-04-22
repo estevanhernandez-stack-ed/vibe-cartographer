@@ -51,7 +51,7 @@ Vitals is a diagnostic, not a conversation. Persona still applies to the one int
 - **Professor:** "Running a structural integrity sweep — here's what each check looks at and what it found."
 - **Cohort:** "Let's see what shook loose. Eight checks incoming."
 - **Superdev:** "Running vitals."
-- **Architect:** "Structural sweep — eight checks across SKILLs, schemas, logs, and runtime context."
+- **Architect:** "Structural sweep — nine checks across SKILLs, schemas, logs, and runtime context."
 - **Coach:** "Time to look under the hood. Eight checks, here we go."
 - **System default:** "Running vitals."
 
@@ -95,7 +95,7 @@ Write the persona-adapted opening line. If `--full`, append the runtime warning.
 
 Read `plugin.json`'s `"version"` field. Fall back to `"unknown"` on parse failure. Capture the current local ISO datetime for the banner.
 
-### 3. Run the eight checks
+### 3. Run the nine checks
 
 Run checks #1 through #8 **in order**. Each check independently succeeds, warns, or fails. A failure in one check never aborts the next check — the report always includes all eight sections.
 
@@ -299,6 +299,27 @@ There is no ✗ fail state for this check — `.tmp` files are debris, not corru
 
 **(d) Fail-soft.** Schema file unreadable → report ✗ fail with the same install-integrity message as check #3's (d). File present but zero bytes → ✓ pass (valid empty log).
 
+### Check #9 — Session-log coverage (orchestrator-gap detection)
+
+**Purpose.** Detect when Cart commands were executed via narrative orchestration (e.g., one chat session running multiple Cart commands as a chain, or an agent invoking Cart's SKILLs from outside Cart's own runtime context) without the session-logger SKILL firing. Symptom: `process-notes.md` across recent projects records command invocations that have no matching entry in `~/.claude/plugins/data/vibe-cartographer/sessions/<date>.jsonl`. Without this check, `/evolve` reads incomplete data and proposes against a partial picture.
+
+**(a) Inputs.**
+- Session log files at `~/.claude/plugins/data/vibe-cartographer/sessions/*.jsonl` (last 14 days by file mtime).
+- `process-notes.md` files across the most recent 5 projects by `last_modified` (same set the `/evolve` SKILL pulls per its "Read process-notes.md from recent projects" rule).
+
+**(b) Procedure.**
+1. Build an index of every session-log entry: `(command, project_dir, ISO_date)` → entry.
+2. For each `process-notes.md`, scan for `## /<command>` section headers (one per Cart command run). Capture the project_dir from the file's parent path and the date from the section's first timestamp/date marker if present, else the file's mtime date.
+3. For each `(command, project_dir, date)` tuple found in process-notes but absent from the session-log index, count it as a missed run.
+4. **Threshold:** ≥3 missed runs across any single project_dir within the 14-day window triggers the warn case. Single-digit gaps across multiple projects indicate normal Cowork-mode runs (no /clear → fewer session resets) and are not a gap signal.
+
+**(c) Report.**
+- ✓ pass: no project has ≥3 unmatched command invocations.
+- ⚠ warn: list each project with missed runs as `<project_dir>: <N> Cart commands in process-notes without session-log entries (suggests orchestrator-level invocation outside Cart's runtime — session-logger SKILL never fired).` Suggest: *"A future `/vitals` release will offer auto-fix (g) to backfill synthetic session-log entries from process-notes summaries. For now, the data gap means `/evolve` reads partial signal — known limitation."*
+- ✗ fail: structural failure reading process-notes (missing files, parse error). Treat as install-integrity issue per check #3's pattern.
+
+**(d) Fail-soft.** No process-notes files present → ✓ pass with body text *"No process-notes scanned — first-run state."* Session log dir empty → ⚠ warn (this is a session-logger setup issue, not a coverage gap; reuse check #5's empty-log message pattern).
+
 ## Output Format
 
 The report is rendered as markdown. Color is conveyed via emoji (✓ / ⚠ / ✗); box drawing uses Unicode characters evoking the Vibe Doc CLI banner aesthetic. Everything below is agent output — the evaluator emits it verbatim (with computed values substituted) after the checks run.
@@ -326,7 +347,7 @@ Then one blank line before the first check.
 
 ### Per-check boxed section
 
-Each of the eight checks renders as its own box. Use Unicode box-drawing characters. Inside the box, the first line is the check status + title, and subsequent lines are findings.
+Each of the nine checks renders as its own box. Use Unicode box-drawing characters. Inside the box, the first line is the check status + title, and subsequent lines are findings.
 
 ```
   ┌──────────────────────────────────────────────────────────────────┐
