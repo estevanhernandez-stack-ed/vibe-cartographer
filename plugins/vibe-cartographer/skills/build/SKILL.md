@@ -183,6 +183,32 @@ Don't log per-item process notes during autonomous builds. The subagents handle 
 
 ---
 
+## Build-config hygiene (shared-root flags vs per-project flags)
+
+When scaffolding a project or adding build-time flags mid-build, be strict about scope. The shared-root config file (`Directory.Build.props`, root `pyproject.toml` `[tool.*]`, root `package.json`, Rust workspace `Cargo.toml [profile]`, etc.) cascades into EVERY project in the repo — including projects added hours or days later that you can't predict yet.
+
+**Vibe coders won't declare "I'm building an AOT CLI plus a WPF app plus a C++ DLL."** They'll ask you to ship the thing. The rule has to live on your side:
+
+**Only these flags belong in shared-root config:**
+
+- Language version (`LangVersion`, `target-version`, ES target)
+- Nullable / strict-mode toggles that are genuinely repo-wide
+- Warnings-as-errors, lint baselines
+- Code-style / formatting enforcement
+- Company / copyright metadata
+- Version / assembly-version when all projects ship together
+
+**Everything else goes in the specific project's config file**, even when it "feels" universal today. Examples of flags that LOOK universal but aren't:
+
+- **.NET:** `PublishAot`, `InvariantGlobalization`, `TrimMode`, `IlcOptimizationPreference`, `DebuggerSupport`, `EventSourceSupport`, `UseSystemResourceKeys`. Each changes CLR bootstrap behavior in ways that break WPF / WinForms / Xamarin / gRPC.
+- **Python:** `[tool.pytest.ini_options]`, `[tool.mypy]` strict bumps, `[tool.ruff]` per-rule exceptions — fine if every project is a lib of the same shape; traps when one sub-package is a CLI and another is a notebook collection.
+- **TypeScript:** `compilerOptions.strict`, `moduleResolution`, `jsx` — traps when a Node server lives alongside a React app in the same monorepo.
+- **Rust:** `[profile.release]` overrides, `[workspace.lints]` — traps when a proc-macro crate and a no_std crate share a workspace.
+
+**Heuristic when in doubt:** ask "if I add a project of a different type to this repo tomorrow, does this flag still make sense for it?" No → per-project. Yes → shared is fine.
+
+**Observed trap (RTClickPng, 2026-04):** `InvariantGlobalization=true` was added to `Directory.Build.props` during item 2 for the .NET 9 Native AOT Engine. At item 9, a WPF Settings project was added; WPF requires ICU at startup and failed silently without it. Hours of debugging chased symptoms of a flag set days earlier. The fix was a one-line override in `Settings.csproj` to flip it back to `false`. The prevention: the flag should have lived in `Engine.csproj` from the start.
+
 ## When Something Breaks (Both Modes)
 
 If an item fails and you can't fix it after a reasonable attempt — something in the spec doesn't work as planned, a dependency is broken, or the approach needs rethinking — **stop immediately.**

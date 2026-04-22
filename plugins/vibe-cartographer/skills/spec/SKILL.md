@@ -84,7 +84,25 @@ This follows the two-phase deepening rounds pattern described in `guide/SKILL.md
 - **Learner mode:** More explanation around recommendations. Frame trade-offs in accessible language. "I'm recommending React here because it has the biggest ecosystem for what you're building — lots of examples to learn from and components you can reuse."
 - **Builder mode:** Lead with the trade-offs, assume they understand the concepts. "Options: React (biggest ecosystem, most examples), Svelte (lighter, faster dev), Vue (middle ground). I'd go React for this scope. Thoughts?"
 
-**2. Deployment.** "Where do you want to run this? Local only, or do you want a deployed URL?" Most builders run locally with screenshots — that's fine. Note their answer.
+**2. Deployment — Identity & Signing.** Read `plugins.vibe-cartographer.deployment_target` from the unified profile (set during `/onboard` step 11b). Three modes:
+
+- **Target is null / "not sure yet" / "internal only":** "Where do you want to run this? Local only, or do you want a deployed URL?" Most builders run locally with screenshots — that's fine. Note their answer. No drill-down.
+- **Target is named (GitHub release / Microsoft Store / npm / PyPI / Docker Hub / Cloudflare Pages / Vercel / other):** drill into the target's identity / signing / secret contract. Use the lookup below. These fields land in `docs/spec.md` under a new `## Deployment — Identity & Signing` heading that `/checklist` consumes for release-related items.
+- **Pattern #13 handoff (GitHub releases + `superpowers:vibe-launch` installed):** *"Your `vibe-launch` plugin can drive the release details — should we let it take over this section?"* Builder accepts → capture only target name in spec and yield to vibe-launch at `/build` time; declines → gather the full GitHub row below.
+
+**Per-target field lookup (ask the row that matches the builder's target):**
+
+| Target | Fields to capture |
+| --- | --- |
+| Microsoft Store | Publisher CN (exact `CN=...` from Partner Center), Package Family Name (`<Name>_<PublisherHash>`), signing cert chain / PFX path (dev + CI), CI secret names, Identity.Version policy (e.g., 4-part with revision=0) |
+| GitHub release | Repo slug (`owner/repo`), release tag scheme (`v<semver>`?), signing cert / sigstore flag, `GITHUB_TOKEN` scope for release-create, release-asset upload paths |
+| npm | Scope (`@scope/name`), access level (public / restricted), `NPM_TOKEN` secret path, 2FA-for-publish policy |
+| PyPI | Project slug, trusted-publisher config or `PYPI_API_TOKEN` path, classifier list |
+| Docker Hub | Repo slug (`owner/image`), tag scheme (`latest` + semver?), `DOCKERHUB_TOKEN` secret path |
+| Cloudflare Pages / Vercel | Project ID, deploy-hook URL, env-var scope (production / preview), custom domain if any |
+| Other | Free-form: ask the builder to name the fields the target needs at release time |
+
+**Rule:** only expand the one row matching the builder's target. Not every project ships — `/spec` stays lean.
 
 **3. Research the stack.** Before proposing anything, web search for current docs on the tools, libraries, and APIs being considered. Check: actively maintained? Current version? Known issues? For external APIs: pricing, rate limits, quickstart docs. Share findings and links with the builder.
 

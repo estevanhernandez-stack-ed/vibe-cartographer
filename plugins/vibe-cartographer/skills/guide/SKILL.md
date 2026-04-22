@@ -72,6 +72,19 @@ Key rules:
 - No PII beyond the working directory basename. No secrets. No transcript content.
 - If the append fails, log a warning in `process-notes.md` and continue — session logging is instrumentation, not critical path.
 - Every command logs its own entry. Don't batch multiple commands into one entry.
+- **Orchestrator heads-up.** When `session-logger.start()` returns null / unresolvable
+  (the runtime isn't wired in this environment — typical for multi-command-in-one-chat
+  orchestrator runs), emit a ONE-TIME heads-up banner the first time it's detected in
+  this chat:
+
+  > **Heads-up — session-logger isn't wired in this environment.** Your
+  > `process-notes.md` in the project is the durable record for this run.
+  > The backfill recipe lives in `skills/session-logger/SKILL.md#reconnect-procedure`;
+  > a future `/vibe-cartographer:reconnect` command will implement it.
+
+  Only surface this banner once per chat — don't repeat on every command. Detection is
+  the return value of `start()`, not timestamp math (which false-positives on the first
+  command of any given day).
 
 This is Level 2 (session memory) of the Self-Evolving Plugin Framework. The data is passive for now — collected but not acted on. When `/vibe-cartographer-evolve` ships, it will read these logs to propose plugin improvements.
 

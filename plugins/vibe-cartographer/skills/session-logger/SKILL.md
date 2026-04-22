@@ -240,3 +240,52 @@ The **sentinel pattern** (Story 2.2) lets `friction-logger.detect_orphans()` dis
 The **`last_seen_complements` snapshot** (Story 4.2) gives `/evolve` and `/vitals` a way to detect material environment shifts. When two or more complements appear or disappear between runs, `notable_change_at` gets stamped — `/evolve` uses this to reweight complement-rejection patterns (the user may have rejected a complement because a better one just became available, not because the complement is bad).
 
 See `docs/self-evolving-plugins-framework.md` for the full framework context and `docs/spec.md > Key Technical Decisions` for the sessionUUID and namespace-isolation rationale.
+
+## Reconnect procedure
+
+Orchestrator-context runs (multi-command in a single chat, invoked outside Cart's
+runtime) can't call `start()` / `end()` in-process. Those runs produce a rich
+`process-notes.md` at the project level but no session-log entries, leaving `/evolve`
+blind to arguably the richest use case of the plugin. The runtime-not-wired banner
+(see `skills/guide/SKILL.md > Session Logging`) surfaces this to the builder at
+command start. This section specifies the backfill recipe a future
+`/vibe-cartographer:reconnect` slash command will implement.
+
+**Input:** project root directory containing `process-notes.md`.
+
+**Parse:** walk top-level headings of the form `## /<command>` (e.g. `## /onboard`,
+`## /scope`, ...). For each heading, extract:
+
+- `timestamp`: ISO8601 from the `**Date:**` bullet immediately under the heading.
+  Default to midday local time when no clock time is given.
+- `command`: the heading's slash-command name.
+- `project_dir`: basename of the project root.
+- `outcome`: `"completed"` unless the heading body contains `abandoned`, `blocked`,
+  or a `Deferred to` stanza covering the whole output — then `"partial"` or
+  `"abandoned"` per those signals.
+- `friction_notes`: bullets collected under sub-headings matching
+  `/(Friction|Pushback|Course corrections?)/i`.
+- `key_decisions`: bullets collected under sub-headings matching
+  `/(Load-bearing decisions?|What landed|Decisions)/i`.
+- `artifact_generated`: if the `**Outcome:**` line names a doc path (`docs/scope.md`
+  etc.), use that; otherwise null.
+- `sessionUUID`: deterministic from `sha1(project_dir + command + timestamp)`. The
+  determinism makes reconnect idempotent — re-running against the same
+  `process-notes.md` produces no duplicate entries.
+
+**Output:** one sentinel + one terminal entry per parsed heading (same schema as
+native runs), appended via `atomic-append-jsonl.js` to today's session file. The
+sentinel's timestamp is the parsed `**Date:**`; the terminal's timestamp is
+`parsed + 1 second` so the pair round-trips through the standard orphan-pairing
+logic.
+
+**Opt-in + read-only.** Reconnect never edits `process-notes.md`. It shows a diff
+preview of what would be appended, waits for builder confirmation, then writes.
+
+**Conflict behavior:** if a terminal entry with the computed `sessionUUID` already
+exists in any session file, skip that heading — reconnect has already run
+against this `process-notes.md` before.
+
+**Not yet implemented as a slash command.** The backfill is specified here so the
+contract is stable before implementation. When demand warrants, a
+`skills/reconnect/SKILL.md` companion lands and implements exactly this recipe.

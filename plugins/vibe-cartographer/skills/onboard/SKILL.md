@@ -209,7 +209,7 @@ Mention that the documents they create through this process are a real part of t
 
 **Introduce context management.** Context management works differently depending on where the builder is running Claude. Check the environment you're running in and say the right thing:
 
-- **If in Claude Code CLI / VS Code / JetBrains:** "Remember context rot? AI performance gets worse as conversations get longer. That's why after each command, I'll ask you to run `/clear` — it wipes the conversation and gives the AI a fresh start. Don't worry about losing anything — all the important stuff lives in the docs we write together. The AI reads those fresh each time. So the flow is: finish a command, run `/clear`, then run the next command."
+- **If in Claude Code CLI / VS Code / JetBrains:** "Remember context rot? AI performance gets worse as conversations get longer. Even with Claude Code's auto-compaction, dense planning sessions like this one accumulate tokens and slow each command down — compaction handles overflow but doesn't replace a clean reset. That's why after each command, I'll ask you to run `/clear` — it wipes the conversation completely instead of compacting it, giving each command a fresh start with maximum context budget. Nothing's lost — the docs we write together are the source of truth, and each command reads them fresh. Flow: finish a command, run `/clear`, then run the next command."
 - **If in Claude Desktop / Cowork:** "Context management works a bit differently here than in the terminal — Cowork handles it automatically as the conversation grows. You don't need to manually reset between commands. After each command, just run the next one when you're ready. All the important context lives in the docs we write together, which the AI reads fresh each time."
 - **If unsure which environment:** Default to the Cowork version. It's safe in both contexts.
 
@@ -346,6 +346,26 @@ If they provide architecture docs:
 If they don't have architecture docs:
 - Note "No architecture docs provided — will use defaults" in the builder profile
 - That's fine. The `/spec` step will fall back to `architecture/default-patterns.md` and work with the builder to choose a stack.
+
+### 11b. Deployment Target
+
+Most projects ship somewhere eventually, and each target has an identity / signing
+/ secret contract that's load-bearing at release time. Asking now (free-form, one
+question) lets `/spec` drill into the target's Identity & Signing fields later
+instead of surfacing them as ship-time surprises.
+
+"Where does this ship? Common answers: GitHub release, Microsoft Store, Cloudflare
+Pages, Vercel, npm, PyPI, Docker Hub, internal only, or 'not sure yet'. One
+sentence is fine."
+
+Capture on the unified profile as `plugins.vibe-cartographer.deployment_target`
+(string; `null` when the builder says "not sure yet" or "internal only").
+
+- If the builder names a target, `/spec` will surface a target-specific
+  `## Deployment — Identity & Signing` sub-section that asks for the fields
+  that target needs (Publisher CN + PFN for MS Store; repo slug + token scope
+  for GitHub; scope + NPM_TOKEN for npm; etc.).
+- If "not sure yet" / "internal only" / null, `/spec` skips the drill-down.
 
 ### 12. Generate `docs/builder-profile.md`
 
