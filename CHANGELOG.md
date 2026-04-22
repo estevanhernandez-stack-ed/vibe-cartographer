@@ -7,7 +7,35 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
-- Nothing yet.
+### Backlog
+
+- **Quick Build pacing mode.** A third build mode alongside step-by-step and autonomous. After the interview phase (`/onboard` → `/checklist`), Quick Build skips all checkpoints, verification pauses, and git pushes — just executes checklist items sequentially with auto-commits. At the start of a Quick Build run, the agent checks whether Claude's **auto mode** is active. If it is, proceed. If not, remind the builder: "Quick Build works best with auto mode enabled — press `Shift+Tab` to cycle to it. Auto mode lets Claude handle tool permissions automatically so the build can run uninterrupted." Wait for confirmation before starting. No `git push` until the builder explicitly triggers one post-build. Designed for experienced builders who trust the plan and want maximum velocity from spec to working code.
+
+## [1.6.0] — 2026-04-22 — Orchestrator heads-up + deployment target + build-config hygiene
+
+Additive rule-layer release. Five new SKILL edits sourced from `/evolve 2026-04-22` (the Right Click PNG retrospective), plus a carryover `/vitals` check from `/evolve 2026-04-18` (Vibe Test retrospective). No schema changes, no breaking changes — existing profiles and session logs continue to work unchanged.
+
+### Added
+
+- **`/onboard` step 11b — Deployment Target.** One free-form question captured on the unified profile as `plugins.vibe-cartographer.deployment_target`. Common answers: GitHub release, Microsoft Store, Cloudflare Pages, Vercel, npm, PyPI, Docker Hub, internal only, or "not sure yet". Lets `/spec` drill into target-specific identity/signing contracts instead of surfacing them as ship-time surprises. Null for "not sure yet" / "internal only" skips the drill-down.
+- **`/spec` Phase 1 question 2 — Deployment Identity & Signing lookup.** Upgraded from the single "local or deployed URL?" question to a per-target field lookup table (Microsoft Store → Publisher CN + PFN + cert chain; GitHub release → repo slug + tag scheme + `GITHUB_TOKEN` scope; npm → scope + `NPM_TOKEN`; PyPI → trusted-publisher config; Docker Hub → repo + token; Cloudflare Pages / Vercel → project ID + deploy hook). Only the one matching row gets expanded — `/spec` stays lean. **Pattern #13 handoff** baked in: when target is GitHub releases AND `superpowers:vibe-launch` is installed, Cart offers to yield the section to vibe-launch instead of capturing the fields itself.
+- **`/build` — Build-config hygiene section.** Rule: project-type-specific flags (`PublishAot`, `InvariantGlobalization`, `TrimMode`, `compilerOptions.strict`, `[tool.mypy]` strict bumps, `[profile.release]` overrides, etc.) live in the specific project's config file, never in shared-root config (`Directory.Build.props`, root `pyproject.toml`, root `package.json`, Rust workspace root). Per-ecosystem trap examples included for .NET, Python, TypeScript, Rust. Anchored to a real incident: `InvariantGlobalization=true` set in a `Directory.Build.props` for an AOT CLI cascaded into a later-added WPF project and caused hours of silent-startup-exit debugging. Vibe coders won't declare their project-type mix; the rule lives on the agent's side.
+- **`/guide` Session Logging — orchestrator-runtime heads-up.** When `session-logger.start()` returns null / unresolvable (the runtime isn't wired — typical for multi-command-in-one-chat orchestrator runs), a one-time heads-up banner fires to tell the builder their `process-notes.md` is the durable record for this session and point at the Reconnect procedure spec. Detection is binary (`start()` return), not timestamp math.
+- **`session-logger` — Reconnect procedure spec.** New section specifies the `process-notes.md` → `sessions/<date>.jsonl` backfill recipe a future `/vibe-cartographer:reconnect` slash command will implement. Deterministic `sessionUUID` from `sha1(project_dir + command + timestamp)` makes reconnect idempotent. Opt-in and read-only against `process-notes.md`. Contract-stable before implementation lands — when demand warrants, a `skills/reconnect/SKILL.md` companion implements exactly this recipe.
+- **`/vitals` Check #9 — Session-log coverage.** Detects orchestrator-level Cart runs where commands were executed via narrative orchestration and the session-logger SKILL never fired. Builds an index of recent session-log entries and compares against `process-notes.md` across the five most recent projects. Warns when a project has ≥3 unmatched command invocations within a 14-day window. Signals when `/evolve` is reading incomplete data — known limitation until `/reconnect` ships. (Carryover from `/evolve 2026-04-18`.)
+
+### Changed
+
+- **`/onboard` step 2 — context-management copy sharpened.** The /clear rationale now explicitly names the auto-compaction trade-off: "even with Claude Code's auto-compaction, dense planning sessions accumulate tokens and slow each command down — compaction handles overflow but doesn't replace a clean reset." No behavioral change; copy clarity only.
+- `/evolve` continues to read session logs + friction log as first-class inputs; it now also reads `process-notes.md` (per the 1.5.0 spec) which surfaces richer qualitative signal than session-log entries alone when the runtime-gap check #9 fires.
+
+### Fixed
+
+- Nothing yet — this is a rule-layer release, not a bugfix release.
+
+### Security
+
+- **No new runtime dependencies.** `package.json` `dependencies` and `devDependencies` are unchanged vs `1.5.0`. No new scripts, no new schemas. All edits are SKILL prose + one CHANGELOG entry.
 
 ## [1.5.0] — 2026-04-17 — L3.5: Patterns #4, #6, #8 + #13 integrations
 
