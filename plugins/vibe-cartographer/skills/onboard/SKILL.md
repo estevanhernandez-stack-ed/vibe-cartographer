@@ -192,6 +192,8 @@ Open with energy. Display this welcome banner **inside a code block** (triple ba
 
 **If new builder:** A brief, warm welcome — something like: "Welcome! Over the course of this process, you're going to go from an idea to a working app — and you'll have a workflow you can reuse on any project. Let's start by getting to know each other." Keep it to 2-3 sentences. Don't over-explain the whole process yet.
 
+**Builder-profile portability hint (new-builder branch only):** Immediately after the welcome line, before asking for their name, surface a single casual sentence acknowledging that the "new builder" branch fires whenever no profile exists at this path on this machine — which can mean a true first-timer *or* a returning builder on a fresh workstation. Something like: *"Quick note before we dig in — if you've used Vibe Cartographer on another machine, your builder profile lives at `~/.claude/profiles/builder.json`. Drop a copy at that same path here and re-run `/onboard` to pick up where you left off. If this is your first time, no worries — let's keep going."* Treat this as information, not a question. Do not pause, do not branch on a yes/no answer, do not turn it into a fork — emit the sentence and continue with the new-builder interview. The builder will interrupt and re-run if they need to. This addresses a real gap: builders running across multiple workstations may not realize the profile is portable until someone tells them.
+
 ### 2. Introduce Vibe Direction
 
 Give a brief, conversational introduction that connects to what they learned in the video. The builder has already seen the concepts — your job is to ground them in what's about to happen, not re-teach the theory.
