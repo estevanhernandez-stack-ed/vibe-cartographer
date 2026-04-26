@@ -76,6 +76,7 @@ Cuts grounded in real engineering or scope-ownership reasons (not "MVP for the s
 - **Pattern #14 (Background Monitor Lifecycle), #15 (Cross-Plugin Task Handoff), #16 (Session-Scoped Feature Flags).** Each is a separate scope. #14 needs Anthropic's manifest `monitors:[]` primitive — focused future cycle. #15 waits on Cowork mailbox docs. #16 is a nice-to-have L3.1 follow-up.
 - **`@626labs/plugin-core` extraction.** Phase 2 of the monorepo migration — separate work that begins after L3.5 stabilizes.
 - **Vibe Doc / Vibe Sec / Vibe Test pattern adoptions.** Each plugin gets its own `/scope` run when its time comes. This scope is Cart-only.
+- **Quick Build pacing mode.** Third build mode (alongside step-by-step and autonomous) — after interview, no checkpoints, no pushes, just task execution with auto-commits. Pairs with Claude's native auto mode (`Shift+Tab`) for zero-friction execution — no plugin-side approval gate needed. Future scope.
 
 ## Loose Implementation Notes
 
