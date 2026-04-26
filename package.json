@@ -8,7 +8,7 @@
   "bugs": "https://github.com/estevanhernandez-stack-ed/vibe-cartographer/issues",
   "repository": {
     "type": "git",
-    "url": "https://github.com/estevanhernandez-stack-ed/vibe-cartographer.git"
+    "url": "git+https://github.com/estevanhernandez-stack-ed/vibe-cartographer.git"
   },
   "keywords": [
     "vibe-cartographer",
