@@ -11,6 +11,30 @@ All notable changes to this project are documented here. The format follows [Kee
 
 - **Quick Build pacing mode.** A third build mode alongside step-by-step and autonomous. After the interview phase (`/onboard` → `/checklist`), Quick Build skips all checkpoints, verification pauses, and git pushes — just executes checklist items sequentially with auto-commits. At the start of a Quick Build run, the agent checks whether Claude's **auto mode** is active. If it is, proceed. If not, remind the builder: "Quick Build works best with auto mode enabled — press `Shift+Tab` to cycle to it. Auto mode lets Claude handle tool permissions automatically so the build can run uninterrupted." Wait for confirmation before starting. No `git push` until the builder explicitly triggers one post-build. Designed for experienced builders who trust the plan and want maximum velocity from spec to working code.
 
+## [1.7.0] — 2026-04-26 — Cross-machine portability hint + four-modes framework + invite-reframing
+
+Additive rule-layer release. Five SKILL edits sourced from `/evolve` (626Labs Lab Backbone Step 1 retrospective, 2026-04-25) plus a new `/onboard` UX hint sourced from a real cross-machine install incident. No schema changes, no breaking changes — existing profiles and session logs continue to work unchanged.
+
+### Added
+
+- **`/onboard` Welcome — builder-profile portability hint (new-builder branch only).** When the unified profile at `~/.claude/profiles/builder.json` is missing, the welcome now surfaces a single casual sentence pointing at the profile path and the copy-and-rerun flow. The "new builder" branch fires on first install of any machine — including a returning builder's second / third workstation — and silently re-running the full interview lost cross-session continuity (project counts, persona, mode, accumulated notes). Information-only — no pause, no fork, no yes/no question.
+- **`/build` — pre-handoff deploy-verification beat.** Between checklist completion and embedded feedback, a new verification step. `tsc`-clean + lint-clean + tests-pass ≠ deploy-clean for runtime infrastructure — the prompt now lists common deploy-state findings (zombie shells, memory floors, region / Eventarc binding, CI / local desync) so builders know what to verify before shipping. Skippable for compile-time-only builds.
+- **`/spec` — subsystem config pattern-match check** added to the Architecture Self-Review section. When extending existing infrastructure (Cloud Functions, MCP tools, Firestore writers, csproj chains, etc.), grep sibling files' config values and treat established floors as default. Generalizes the build-config hygiene lesson upstream of `/build`.
+- **NEW reference: `guide/references/four-modes.md`.** The Cart / vibe / iteration / deployed-state framework. Acknowledges Cart attention's greenfield bias and shifts burden to vibe / iteration / deployed-state when extending existing apps. Citable from any SKILL; matches the existing `references/` pattern.
+
+### Changed
+
+- **`/iterate` — mode-aware framing default.** Learner / step-by-step continues to show "skip if shipping." Builder / autonomous flips to "iterate is cheap, what's the next adjacent thing the substrate makes cheap?" Autonomous-mode + parallel agents ≈ near-zero builder cost, a qualitatively richer post-build review pass, and iteration stress that feeds `/evolve` better.
+- **`/evolve` — invite-reframing prompts replace binary read / track confirmation.** Builders consistently refine first-pass observations rather than accept-or-reject. The agent now leads with "what would you reframe?", supports "split across two tracks," and adds a "resist defending the first-pass framing" load-bearing line.
+
+### Fixed
+
+- Nothing yet — this is a rule-layer release.
+
+### Security
+
+- **No new runtime dependencies.** `package.json` `dependencies` and `devDependencies` are unchanged vs `1.6.0`. No new scripts, no new schemas. All edits are SKILL prose + the new `four-modes.md` reference doc.
+
 ## [1.6.0] — 2026-04-22 — Orchestrator heads-up + deployment target + build-config hygiene
 
 Additive rule-layer release. Five new SKILL edits sourced from `/evolve 2026-04-22` (the Right Click PNG retrospective), plus a carryover `/vitals` check from `/evolve 2026-04-18` (Vibe Test retrospective). No schema changes, no breaking changes — existing profiles and session logs continue to work unchanged.
