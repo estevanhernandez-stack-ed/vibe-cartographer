@@ -185,12 +185,12 @@ would skip these), the fix lives in your local profile, not the SKILL file.
 Other builders keep the current default.
 ```
 
-**Stop and ask two questions:**
+**Stop and invite reframing — two open prompts, not yes/no:**
 
-1. "Does this match your experience? Is the pattern accurate, or am I reading it wrong?"
-2. "Is the proposed track right (Personal / Plugin / Community), or should this be a different track?"
+1. "What would you reframe in this read? Is the pattern accurate, partial-but-narrow, or off entirely?" — first-pass observations are starting points, not landings. Across multiple `/evolve` runs, builders consistently refine rather than accept-or-reject; lead with that posture as the default.
+2. "Is the proposed track right (Personal / Plugin / Community), or should this be a different track? Including 'split across two tracks' if both layers apply (e.g., Personal flag + Plugin SKILL edit)."
 
-Wait for confirmation on both before moving on. The builder can reject an observation entirely, add nuance, or reclassify the track ("no, this is actually universal — make it Plugin").
+Wait for confirmation on both before moving on. The builder can reject an observation entirely, reframe its read, reclassify the track, or split it across tracks. **Resist the temptation to defend the first-pass framing** — if the builder reshapes the observation, the reshape IS the observation now. Treat reframes as signal that the agent's pattern-detection ran one inference short, not as builder-side disagreement to negotiate.
 
 ### 4. Propose changes (one at a time)
 

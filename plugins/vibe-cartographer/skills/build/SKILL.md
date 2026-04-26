@@ -239,6 +239,32 @@ When all items are checked (including the documentation & security verification 
 
 "Your build is complete — every checklist item is done, including documentation and security review. Nice work."
 
+### Pre-handoff: Deploy verification (when applicable)
+
+Before "embedded feedback and the handoff," check whether the build touched **runtime infrastructure** — anything that has deployed-state ground truth distinct from compile/lint/test status. Common cases:
+
+- Cloud Functions (Firebase Functions, AWS Lambda, GCP Cloud Run, etc.) — new triggers, memory/timeout config changes
+- MCP server tools (when the change ships through a deployed MCP server)
+- API server routes (when the build adds endpoints that need to be reachable in prod)
+- Container images, K8s deployments, edge worker scripts (Cloudflare, Vercel, etc.)
+- Anything with a CI/CD pipeline that produces a runtime artifact
+
+If the build touched any of these, **deploy-verification is part of "done"** — `tsc clean + lint clean + tests pass` is necessary but not sufficient. Surface a brief checklist for the builder:
+
+- "Did the deploy land cleanly? Run the deploy command, paste the result if anything's surprising."
+- "Are the new runtime artifacts actually reachable / running? (For Cloud Functions: `firebase functions:list` shows the function with the right trigger type. For MCP: a test invocation works. For routes: a curl returns 200.)"
+- "If CI auto-deploys on push, check the latest run is green AND deploys the latest commit (the local-vs-remote desync footgun)."
+
+Common deploy-state findings that compile-clean misses (call them out in the prompt so the builder knows what to verify):
+- Zombie shells from prior failed deploys (e.g., function name exists with wrong trigger type, blocks recreation)
+- Memory floors below practical container-startup needs (for v2 Cloud Functions especially — `firebase-admin` init alone can OOM at 256MiB)
+- Region / database / Eventarc binding mismatches (multi-region Firestore, edge worker zones, etc.)
+- CI/local source-of-truth desync (local CLI deploy passes, then CI re-deploy with stale `origin/main` overwrites the working state)
+
+If the builder confirms deploy-verification is clean, proceed to Embedded Feedback + Handoff. If something's broken, **stop here**: drop into the "When Something Breaks" protocol from earlier in this SKILL, not the close-out flow.
+
+**Skip this entire subsection** if the build was purely compile-time work (UI components, pure functions, types, docs) and didn't touch any runtime infrastructure. The check is for builds that produce deployable artifacts, not for builds whose outputs are local-only.
+
 Then provide embedded feedback and the handoff.
 
 ### Embedded Feedback

@@ -7,7 +7,14 @@ description: "This skill should be used when the user says "/iterate" or wants t
 
 Read `skills/guide/SKILL.md` for your overall behavior, then follow this command.
 
-You are a collaborative partner. The builder has graduated from the structured process — now they're working with the agent more directly, which is the whole point. This command is completely optional. Don't pressure anyone to iterate — if the build is done and they're happy, go straight to `/reflect`.
+You are a collaborative partner. The builder has graduated from the structured process — now they're working with the agent more directly, which is the whole point. This command is completely optional, but the right default depends on how the build ran.
+
+**Mode-aware framing:**
+
+- **Learner / step-by-step mode (or build was tight on time):** Don't pressure. If the build is done and they're happy, go straight to `/reflect`. Iteration is for polish only when something's clearly rough.
+- **Builder / autonomous mode with parallel agents (or build held cleanly):** Iteration is the cheap default. The builder's cost is near-zero (no blocking responses), the agent's review pass is qualitatively richer post-build (full architectural state loaded), and iteration stress feeds `/evolve`. Don't recommend "skip to `/reflect`" reflexively — propose adjacent extensions the substrate makes cheap, and let the builder choose between extension and close.
+
+The framing for the opening question in step 1 ("What do you want to work on?") shifts accordingly: Learner-mode users hear "What's clearly rough?"; autonomous-mode users hear "What's the next adjacent thing the substrate makes cheap?" Surfacing Tier 1 / Tier 2 / Tier 3 candidates from the build's open work flags is the natural follow-up for autonomous-mode runs.
 
 ## Persona Adaptation
 
