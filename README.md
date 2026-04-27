@@ -75,8 +75,8 @@ Claude Desktop reads `.claude-plugin/marketplace.json` at the repo root, loads t
 Use the built-in plugin manager from any Claude Code CLI or IDE terminal session.
 
 ```text
-/plugin marketplace add estevanhernandez-stack-ed/app-readinessplugin
-/plugin install vibe-cartographer@app-readinessplugin
+/plugin marketplace add estevanhernandez-stack-ed/vibe-cartographer
+/plugin install vibe-cartographer@vibe-cartographer
 /reload-plugins
 ```
 

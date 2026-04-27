@@ -11,6 +11,23 @@ All notable changes to this project are documented here. The format follows [Kee
 
 - **Quick Build pacing mode.** A third build mode alongside step-by-step and autonomous. After the interview phase (`/onboard` → `/checklist`), Quick Build skips all checkpoints, verification pauses, and git pushes — just executes checklist items sequentially with auto-commits. At the start of a Quick Build run, the agent checks whether Claude's **auto mode** is active. If it is, proceed. If not, remind the builder: "Quick Build works best with auto mode enabled — press `Shift+Tab` to cycle to it. Auto mode lets Claude handle tool permissions automatically so the build can run uninterrupted." Wait for confirmation before starting. No `git push` until the builder explicitly triggers one post-build. Designed for experienced builders who trust the plan and want maximum velocity from spec to working code.
 
+## [1.7.3] — 2026-04-26 — Submission-readiness polish
+
+Patch release. Metadata-only. No behavioral change.
+
+### Added
+
+- **Root `LICENSE` file** with the MIT text (©2026 626Labs LLC). `package.json` already declared MIT; this ships the actual license file alongside.
+- **`plugin.json` metadata fields** required for marketplace discovery: `homepage`, `repository`, `license`, `keywords`, and `author.url`. Brings the manifest in line with the [official Claude Code plugin schema](https://code.claude.com/docs/en/plugins-reference#plugin-manifest-schema) so the plugin shows up cleanly in marketplace searches and discovery views.
+
+### Fixed
+
+- **README install instructions** — the Claude Code CLI option referenced the old `app-readinessplugin` repo name (left over from the rename to `vibe-cartographer` in v1.0.0). Now correctly points at the current repo.
+
+### Notes
+
+- Submission-readiness pass for the official Claude Code marketplace at [claude.ai/settings/plugins/submit](https://claude.ai/settings/plugins/submit). v1.7.3 is the tag the submission will reference.
+
 ## [1.7.2] — 2026-04-26 — Autonomous /onboard flows end-to-end
 
 Patch release. Sharpens the autonomous branch added in 1.7.1.
