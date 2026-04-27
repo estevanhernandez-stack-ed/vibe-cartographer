@@ -188,6 +188,19 @@ Open with energy. Display this welcome banner **inside a code block** (triple ba
    ◯───◯───◯
 ```
 
+**Pacing confirmation (always — first behavioral beat of /onboard, applies to both branches).** Right after the banner displays, before *anything* else, ask the builder whether to run this conversationally or autonomously. The default is conversational. `/onboard` is built around back-and-forth interviews — running it without the builder in the chair defeats the entire flipped-interaction premise. Even if the harness is in autonomous / auto mode, do NOT take that as permission to invent answers. Pause and ask explicitly.
+
+Phrasing (one question, free-form prose — no multiple-choice tools per the Conversation Style at the bottom of this SKILL):
+
+> *"Quick check before we start — `/onboard` is a back-and-forth interview, one question at a time. Want me to (a) run conversationally and pause for your answers (default), or (b) plow through with reasonable defaults pulled from any profile on file? Default is (a) — answer or just hit enter to keep going conversationally; say 'autonomous' or 'just go' if you actually want (b)."*
+
+Handle the answer:
+- **No response, "(a)", "interactive", "conversational", "yes", anything affirming the default** → conversational. Continue to the returning-builder / new-builder branches below.
+- **"(b)", "autonomous", "just go", "yolo", anything affirming (b)** → autonomous. Continue, but fill every interview answer from the unified profile + reasonable defaults; surface every assumption made in `docs/builder-profile.md` *and* in a new `## /onboard — autonomous run` section of `process-notes.md` so the builder can spot-check and correct on a future re-run. Never silently invent — visibility is the contract.
+- **Ambiguous answer** → ask once more, terser. After that, fall back to conversational (the safe default).
+
+Ask this BEFORE branching into returning-builder vs new-builder. Do not ask twice in the same run. The check applies to every `/onboard` invocation regardless of whether a profile already exists.
+
 **If returning builder:** Welcome them back by name (from the global profile). Summarize what's on file — experience level, languages/frameworks, mode preference, number of projects completed. Then ask: "Has anything changed since last time, or are we good?" If they mention changes, update those fields conversationally. Then **skip directly to step 5 (Project Goals)**.
 
 **If new builder:** A brief, warm welcome — something like: "Welcome! Over the course of this process, you're going to go from an idea to a working app — and you'll have a workflow you can reuse on any project. Let's start by getting to know each other." Keep it to 2-3 sentences. Don't over-explain the whole process yet.

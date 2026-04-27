@@ -11,6 +11,22 @@ All notable changes to this project are documented here. The format follows [Kee
 
 - **Quick Build pacing mode.** A third build mode alongside step-by-step and autonomous. After the interview phase (`/onboard` → `/checklist`), Quick Build skips all checkpoints, verification pauses, and git pushes — just executes checklist items sequentially with auto-commits. At the start of a Quick Build run, the agent checks whether Claude's **auto mode** is active. If it is, proceed. If not, remind the builder: "Quick Build works best with auto mode enabled — press `Shift+Tab` to cycle to it. Auto mode lets Claude handle tool permissions automatically so the build can run uninterrupted." Wait for confirmation before starting. No `git push` until the builder explicitly triggers one post-build. Designed for experienced builders who trust the plan and want maximum velocity from spec to working code.
 
+## [1.7.1] — 2026-04-26 — Autonomous-mode confirmation in /onboard
+
+Patch release. Single SKILL fix.
+
+### Fixed
+
+- **`/onboard` no longer plows through onboarding when the harness is in auto mode.** Adds a pacing-confirmation question as the first behavioral beat of `/onboard` — right after the welcome banner, before any other content or branching. Default is conversational. The builder must explicitly opt in to a defaults-only run by answering "(b)" / "autonomous" / "just go," and even then every assumption made gets surfaced in `docs/builder-profile.md` and a `## /onboard — autonomous run` section of `process-notes.md` for spot-check. Reported gap: a fresh `/onboard` started with auto mode active ran through the full interview without pausing for builder answers, defeating the flipped-interaction premise.
+
+### Notes
+
+- The same gap likely exists in `/scope`, `/prd`, `/spec`, `/checklist`, `/iterate`, `/reflect` — each is conversational and lacks an auto-mode guard. Out of scope for this patch; candidate for a future minor release that hoists a shared "pacing confirmation" beat into the guide SKILL so every Cart command inherits it. Tracked informally; will resurface in `/evolve` when warranted.
+
+### Security
+
+- No new dependencies. Single SKILL.md edit (`plugins/vibe-cartographer/skills/onboard/SKILL.md`).
+
 ## [1.7.0] — 2026-04-26 — Cross-machine portability hint + four-modes framework + invite-reframing
 
 Additive rule-layer release. Five SKILL edits sourced from `/evolve` (626Labs Lab Backbone Step 1 retrospective, 2026-04-25) plus a new `/onboard` UX hint sourced from a real cross-machine install incident. No schema changes, no breaking changes — existing profiles and session logs continue to work unchanged.
