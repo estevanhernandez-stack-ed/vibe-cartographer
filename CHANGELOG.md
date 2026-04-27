@@ -11,6 +11,22 @@ All notable changes to this project are documented here. The format follows [Kee
 
 - **Quick Build pacing mode.** A third build mode alongside step-by-step and autonomous. After the interview phase (`/onboard` → `/checklist`), Quick Build skips all checkpoints, verification pauses, and git pushes — just executes checklist items sequentially with auto-commits. At the start of a Quick Build run, the agent checks whether Claude's **auto mode** is active. If it is, proceed. If not, remind the builder: "Quick Build works best with auto mode enabled — press `Shift+Tab` to cycle to it. Auto mode lets Claude handle tool permissions automatically so the build can run uninterrupted." Wait for confirmation before starting. No `git push` until the builder explicitly triggers one post-build. Designed for experienced builders who trust the plan and want maximum velocity from spec to working code.
 
+## [1.7.2] — 2026-04-26 — Autonomous /onboard flows end-to-end
+
+Patch release. Sharpens the autonomous branch added in 1.7.1.
+
+### Fixed
+
+- **`/onboard` autonomous mode now flows end-to-end without further pauses once opted in.** 1.7.1 added the pacing-confirmation question as the first beat, but the autonomous branch was under-specified — it didn't explicitly say "skip the interview, no per-step confirmations, defer the decay check, just generate artifacts." 1.7.2 makes the contract explicit: opt in once at the pacing question, then Cart gets out of the way. New-builder defaults table baked into the SKILL so the artifact-fill strategy is unambiguous. Visibility is still the contract — every defaulted value is marked `(default — confirm on next run)` in `process-notes.md` — but not pausing is also the contract. Builders re-run `/onboard` interactive when they want to refine.
+
+### Notes
+
+- Decay check behavior in autonomous mode: any `_meta` field that comes back stale is deferred (no confirmation question, no stamp). The field stays past-TTL and surfaces again on the next interactive run.
+
+### Security
+
+- No new dependencies. Single SKILL.md edit (`plugins/vibe-cartographer/skills/onboard/SKILL.md`).
+
 ## [1.7.1] — 2026-04-26 — Autonomous-mode confirmation in /onboard
 
 Patch release. Single SKILL fix.
