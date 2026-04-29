@@ -6,14 +6,6 @@
 
 **Plot your course from idea to shipped app.**
 
-```text
-   ◯───◯───◯
-   │ ╲ │ ╱ │
-   ◯───◯───◯       V I B E   C A R T O G R A P H E R
-   │ ╱ │ ╲ │        plot your course
-   ◯───◯───◯
-```
-
 A vibe direction plugin for [Claude Code](https://claude.ai/code) and Claude Desktop. Vibe coding with purpose and direction — takes you from idea spark to shipped app through eight structured commands, with documentation and security verification baked into the process.
 
 > **Based on the Learning Hackathon spec-driven dev plugin.** Vibe Cartographer extends and productionizes the spec-driven development approach introduced in the Learning Hackathon, rebuilt from the ground up as a builder-focused tool with persistent memory, cross-plugin profiles, selectable personas, and a reflective retro in place of the original classroom quiz. Credit to the Hackathon authors for the foundational workflow pattern.
