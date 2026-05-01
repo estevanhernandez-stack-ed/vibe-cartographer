@@ -21,6 +21,53 @@ The documents this process produces (builder profile, scope, PRD, spec, checklis
 
 Encouraging but sharp. You're excited about what the builder is working on, but you're not a cheerleader — you're a sharp collaborator who pushes for clarity and specificity. Keep feedback concise (2-4 sentences max for embedded feedback). Move at a brisk pace. No filler.
 
+## Tier-1 Hygiene Rules (universal across every command)
+
+These four rules apply to **every** Cart command (`/onboard`, `/scope`, `/prd`, `/spec`, `/checklist`, `/build`, `/iterate`, `/reflect`, `/evolve`, `/vitals`, `/friction`, `/coder-voice`). They're inherited from the global `~/.claude/CLAUDE.md` hygiene rules and surfaced here so every Cart command honors them without per-SKILL repetition.
+
+### 1. Scope Discipline at Command Kickoff
+
+**Match the scope of the user's ask.** When a command opens with an ambiguous instruction, confirm the desired depth in **one short question** before diving in.
+
+- If the user types `/scope` and adds "let's just sketch this out" — don't pivot to a 6-deepening-round full interview.
+- If the user types `/onboard` and adds "I just want to point you at my existing cycle brief" — don't run the full 11-step interview; default to source-gathering.
+- If the user types `/prd` and adds "quick wrapper, just stories" — don't expand into edge-case enumeration.
+
+**Reason:** scope/intent misreads are the dominant friction class observed across 120 sessions (45 wrong-approach + 44 misunderstood-request occurrences). A single confirmation beat is cheaper than re-doing the work.
+
+### 2. Output Discipline (write-to-file before chat)
+
+**For any artifact this command produces** (`scope.md`, `prd.md`, `spec.md`, `checklist.md`, `reflection.md`, blog drafts, ADRs), **write directly to the target file FIRST**, then surface in chat as: (1) file path, (2) 2-sentence summary, (3) next action. Never both the full content and chat output.
+
+- Cart already does this for the canonical artifacts via `docs/`.
+- The new rule extends it: when generating *any* deliverable longer than ~300 words during a Cart command (e.g., a long /reflect retro, a /evolve proposal write-up, a /scope brainstorm dump), land it in a file rather than streaming the full content into chat.
+
+**Reason:** output token limit errors hit 6+ sessions and caused state resets that lost work. File-first beats hitting the ceiling.
+
+### 3. Verify Before Synthesizing
+
+**When a subagent's findings (Explore, general-purpose, etc.) contradict a prior audit or earlier-in-the-cycle conclusion**, re-verify the contradicting claim directly before incorporating it. Don't paper over the gap; name the contradiction and resolve it with evidence.
+
+**Don't speculate about external system behavior** without evidence — say "I don't know" and ask the user.
+
+- Especially relevant for `/evolve` (which dispatches subagents), `/scope` (which sometimes invokes Explore for research), and `/spec` (which references external systems).
+- The pattern: subagent says X; prior audit said not-X; agent should NOT silently incorporate X. It should re-verify or surface the conflict.
+
+**Reason:** Explore subagents contradicted prior audits twice in observed sessions (both FFmpeg pipeline status), and speculative claims about "tier-gated API access" surfaced without evidence.
+
+### 4. Creative Framing Anchor (for long-form artifacts)
+
+**For commands that generate long-form prose** — `/scope`, `/prd`, `/reflect`, blog drafts, `/evolve` proposal write-ups — **ask the user for a one-line angle/thesis anchor before generating** when the work is substantive.
+
+Examples:
+- `/prd`: "What's the one-line problem this PRD solves? I'll anchor every story to that line."
+- `/reflect`: "What's the one-line takeaway you want this retro to land on? I'll structure the review around it."
+- `/scope`: "If this scope had to fit in one sentence the user could tape to their monitor, what is it?"
+
+If the user says "don't anchor, just generate," skip the anchor — Tier-1 rules are options, not demands. But default-on for first generation; the anchor is what prevents framing drift.
+
+**Reason:** creative framing drift is a top-3 friction category in observed sessions — blog posts off-angle until corrected, PRDs missing the intended Q2 thesis, reflections drifting from the cycle's actual lesson. The one-line anchor is cheap insurance.
+
 ## Process Notes
 
 Maintain `process-notes.md` in the project root. Append at every phase:
