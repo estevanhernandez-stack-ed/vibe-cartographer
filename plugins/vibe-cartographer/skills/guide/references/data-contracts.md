@@ -36,7 +36,7 @@ This is the load-bearing invariant from `docs/self-evolving-plugins-framework.md
 3. **`_meta` keys are dotted field paths inside the same namespace.** A `shared._meta` entry like `"preferences.persona"` decays `shared.preferences.persona`. A `plugins.vibe-cartographer._meta` entry like `"deepening_round_habits"` decays `plugins.vibe-cartographer.deepening_round_habits`. `_meta` keys never cross namespace boundaries.
 4. **Conflicting writes refuse silently.** If two plugins try to write the same shared field with different values within one session, the second writer surfaces the conflict and refuses rather than overwriting (Pattern #11 framework rule).
 5. **Plugin-scoped fields stay plugin-scoped.** Don't promote a field into `shared` until at least two plugins genuinely need it. Premature promotion is harder to undo than late promotion.
-6. **Removing a plugin removes only `plugins.<name>`.** Uninstalling Vibe Cartographer must not touch `shared.*` or any other plugins' blocks. `/vitals` and `/evolve` rely on this.
+6. **Removing a plugin removes only `plugins.<name>`.** Uninstalling Vibe Cartographer must not touch `shared.*` or any other plugins' blocks. `/vitals` and `/evolve-cart` rely on this.
 
 ### Decay metadata shape
 
@@ -83,9 +83,9 @@ The seven canonical `friction_type` values:
 | `sequence_revised` | User reordered or skipped commands relative to the documented happy path. |
 | `rephrase_requested` | User asked the agent to simplify or restate. |
 
-`confidence` is one of `high`, `medium`, `low`. `/evolve` weighting: `high=1.0`, `medium=0.6`, `low=0.3`. Calibration entries can zero an entry's weight.
+`confidence` is one of `high`, `medium`, `low`. `/evolve-cart` weighting: `high=1.0`, `medium=0.6`, `low=0.3`. Calibration entries can zero an entry's weight.
 
-When in doubt, **don't log** (Spec Key Decision #6). False positives poison `/evolve`; false negatives are recoverable through the `/reflect` calibration check-in.
+When in doubt, **don't log** (Spec Key Decision #6). False positives poison `/evolve-cart`; false negatives are recoverable through the `/reflect` calibration check-in.
 
 Each command's specific trigger conditions live in [`./friction-triggers.md`](./friction-triggers.md). That file and this one stay in sync — `/vibe-cartographer:vitals` check #6 audits both directions.
 
@@ -101,7 +101,7 @@ Required: `schema_version`, `timestamp`, `plugin_version`, `friction_entry_ref`,
 
 `calibration` is one of:
 
-- `false_positive` — the referenced friction entry wasn't real. `/evolve` multiplies its weight by 0.0 (effectively removes it).
+- `false_positive` — the referenced friction entry wasn't real. `/evolve-cart` multiplies its weight by 0.0 (effectively removes it).
 - `false_negative` — friction the logger missed; the builder describes it after the fact in `builder_note`. There may be no matching friction entry; `friction_entry_ref` may point at a nearby anchor entry from the same session.
 
 `builder_note` is optional free-text context.

@@ -83,7 +83,7 @@ Shared by both entries unless noted.
 - **timestamp** — ISO 8601 with timezone offset. Sentinel captures start time; terminal captures end time.
 - **plugin** — always `"vibe-cartographer"`.
 - **plugin_version** — read from `plugins/vibe-cartographer/.claude-plugin/plugin.json`. If you can't determine it, use `"unknown"`.
-- **command** — which of the 10 commands is running: `onboard`, `scope`, `prd`, `spec`, `checklist`, `build`, `iterate`, `reflect`, `evolve`, `vitals`, `friction`.
+- **command** — which of the 10 commands is running: `onboard`, `scope`, `prd`, `spec`, `checklist`, `build`, `iterate`, `reflect`, `evolve-cart`, `vitals`, `friction`.
 - **project_id** — the 626Labs dashboard project ID if the session is bound. Otherwise omit or `null`.
 - **project_dir** — basename of the current working directory. Not the full path.
 - **mode** — `learner` or `builder` from the builder profile. `null` if not yet set (e.g., mid-onboard).
@@ -97,7 +97,7 @@ Shared by both entries unless noted.
 - **friction_notes** — array of short strings. Human-facing recap for `/reflect`. The actual structured friction signal goes to `friction.jsonl` via `friction-logger.log()`.
 - **key_decisions** — array of short strings. High-signal decisions only. Examples: `"chose Builder mode"`, `"skipped deepening rounds"`, `"cut feature X from scope"`.
 - **artifact_generated** — relative path to the doc this command produced, or `null`.
-- **complements_invoked** — Pattern #13 complements that *actually ran* during this command. Format: `"<source>:<name>"` (e.g., `"superpowers:brainstorming"`). **Distinct from `last_seen_complements`** — `complements_invoked` is what got used this run; `last_seen_complements` is what was available in the environment. Both surface via `/evolve`; they answer different questions.
+- **complements_invoked** — Pattern #13 complements that *actually ran* during this command. Format: `"<source>:<name>"` (e.g., `"superpowers:brainstorming"`). **Distinct from `last_seen_complements`** — `complements_invoked` is what got used this run; `last_seen_complements` is what was available in the environment. Both surface via `/evolve-cart`; they answer different questions.
 
 ## Procedure: `start(command, project_dir)`
 
@@ -189,7 +189,7 @@ Runs as step 5 of the terminal append. Writes Vibe Cartographer's snapshot of Pa
    - Otherwise: treat the new list and the previous list as sets. `gained = new \ previous`, `lost = previous \ new`. `previous_diff_count = |gained| + |lost|`. (Symmetric difference count, i.e., the size of `gained ∪ lost`.)
 4. **Compute `notable_change_at`.**
    - If previous snapshot exists AND `previous_diff_count >= 2`: set `notable_change_at = <now ISO datetime with timezone offset>`.
-   - Else: preserve the previous `notable_change_at` value (or `null` if first run). The field is **sticky** — once stamped, it persists across subsequent non-material runs so `/evolve` and `/vitals` can see "there was a material env shift at T." A later material shift overwrites it with the newer timestamp.
+   - Else: preserve the previous `notable_change_at` value (or `null` if first run). The field is **sticky** — once stamped, it persists across subsequent non-material runs so `/evolve-cart` and `/vitals` can see "there was a material env shift at T." A later material shift overwrites it with the newer timestamp.
 5. **Build the updated profile.** Mutate a deep copy of the profile (do not touch `shared.*` or any other `plugins.<name>.*` block — Pattern #11 namespace isolation).
    - Ensure `profile.plugins` exists as an object.
    - Ensure `profile.plugins["vibe-cartographer"]` exists as an object.
@@ -233,11 +233,11 @@ This SKILL writes to exactly two places:
 
 ## Why This Exists
 
-The session log is raw material for **Level 3** of the Self-Evolving Plugin Framework. `/evolve` reads these entries (alongside `friction.jsonl`) to propose plugin improvements based on observed patterns.
+The session log is raw material for **Level 3** of the Self-Evolving Plugin Framework. `/evolve-cart` reads these entries (alongside `friction.jsonl`) to propose plugin improvements based on observed patterns.
 
 The **sentinel pattern** (Story 2.2) lets `friction-logger.detect_orphans()` distinguish "user abandoned the command" from "command never ran" — abandonment is friction signal worth surfacing; non-execution isn't.
 
-The **`last_seen_complements` snapshot** (Story 4.2) gives `/evolve` and `/vitals` a way to detect material environment shifts. When two or more complements appear or disappear between runs, `notable_change_at` gets stamped — `/evolve` uses this to reweight complement-rejection patterns (the user may have rejected a complement because a better one just became available, not because the complement is bad).
+The **`last_seen_complements` snapshot** (Story 4.2) gives `/evolve-cart` and `/vitals` a way to detect material environment shifts. When two or more complements appear or disappear between runs, `notable_change_at` gets stamped — `/evolve-cart` uses this to reweight complement-rejection patterns (the user may have rejected a complement because a better one just became available, not because the complement is bad).
 
 See `docs/self-evolving-plugins-framework.md` for the full framework context and `docs/spec.md > Key Technical Decisions` for the sessionUUID and namespace-isolation rationale.
 
@@ -245,7 +245,7 @@ See `docs/self-evolving-plugins-framework.md` for the full framework context and
 
 Orchestrator-context runs (multi-command in a single chat, invoked outside Cart's
 runtime) can't call `start()` / `end()` in-process. Those runs produce a rich
-`process-notes.md` at the project level but no session-log entries, leaving `/evolve`
+`process-notes.md` at the project level but no session-log entries, leaving `/evolve-cart`
 blind to arguably the richest use case of the plugin. The runtime-not-wired banner
 (see `skills/guide/SKILL.md > Session Logging`) surfaces this to the builder at
 command start. This section specifies the backfill recipe a future

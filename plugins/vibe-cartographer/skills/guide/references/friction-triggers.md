@@ -15,7 +15,7 @@ Each section covers one command. Within a section, a markdown table lists every 
 
 The seven canonical friction types: `command_abandoned`, `default_overridden`, `complement_rejected`, `repeat_question`, `artifact_rewritten`, `sequence_revised`, `rephrase_requested`.
 
-`/evolve` weighting at high/medium/low: `1.0 / 0.6 / 0.3`. Calibration entries can zero a row out post-hoc.
+`/evolve-cart` weighting at high/medium/low: `1.0 / 0.6 / 0.3`. Calibration entries can zero a row out post-hoc.
 
 **Universal trigger (applies to every command):** `command_abandoned` is never emitted directly by a command SKILL — it surfaces only via `friction-logger.detect_orphans()`, which runs at `/onboard` startup and as `/vitals` auto-fix `(b)`. Don't list it in per-command tables; it's accounted for once, here.
 
@@ -35,7 +35,7 @@ The two question-style triggers (`repeat_question`, `rephrase_requested`) apply 
 
 | Trigger | Friction type | Confidence | Notes |
 |---------|---------------|------------|-------|
-| User explicitly chooses opposite of recommended persona based on stored profile (e.g., decay prompt offers "still superdev?" and user switches) | `default_overridden` | low | The decay flow is *designed* to surface change — this is borderline noise. Confidence stays `low` so `/evolve` doesn't over-react to expected drift. |
+| User explicitly chooses opposite of recommended persona based on stored profile (e.g., decay prompt offers "still superdev?" and user switches) | `default_overridden` | low | The decay flow is *designed* to surface change — this is borderline noise. Confidence stays `low` so `/evolve-cart` doesn't over-react to expected drift. |
 | User says "no" or "skip" when offered to create the standard `docs/` folder structure | `default_overridden` | medium | Capture choice in `symptom`. |
 | User declines a Pattern #13 complement offered during onboarding (e.g., links to `superpowers:brainstorming` for project ideation) | `complement_rejected` | high | Set `complement_involved` to the complement name (e.g., `superpowers:brainstorming`). |
 | User abandons mid-onboarding, picks back up later, but skips the resumed prompts and re-runs `/onboard` from scratch | `sequence_revised` | medium | Detected by sentinel-without-terminal followed by a fresh sentinel for the same project within 24h. Surface in `symptom`. |
@@ -120,11 +120,11 @@ The two question-style triggers (`repeat_question`, `rephrase_requested`) apply 
 
 ---
 
-## /evolve
+## /evolve-cart
 
 | Trigger | Friction type | Confidence | Notes |
 |---------|---------------|------------|-------|
-| User rejects a proposal in `proposed-changes.md` (chooses `[reject]` interactively or removes it from the queue) | `default_overridden` | medium | Capture proposal title in `symptom`. The fact that `/evolve` itself proposed the change is implicit. |
+| User rejects a proposal in `proposed-changes.md` (chooses `[reject]` interactively or removes it from the queue) | `default_overridden` | medium | Capture proposal title in `symptom`. The fact that `/evolve-cart` itself proposed the change is implicit. |
 | User declines a Pattern #13 complement offer (e.g., `superpowers:writing-plans` to scope a multi-step proposal) | `complement_rejected` | high | Set `complement_involved`. |
 | User rewrites >50% of an accepted proposal before applying it | `artifact_rewritten` | high | Strong signal — the proposal was directionally right but executed wrong. |
 | User reorders the proposal queue significantly | `sequence_revised` | low | Queue order is a soft default. Confidence low. |
@@ -135,7 +135,7 @@ The two question-style triggers (`repeat_question`, `rephrase_requested`) apply 
 
 | Trigger | Friction type | Confidence | Notes |
 |---------|---------------|------------|-------|
-| (none) | — | — | `/vitals` is a self-diagnostic. User declines on auto-fix prompts (`[n]` to a fix offer) are the **expected** mode of interaction — not friction. Logging them would flood `/evolve` with noise about a user simply choosing not to apply a fix. By spec scope, `/vitals` does not call `friction-logger.log()`. The check #6 audit confirms this absence is intentional, not an oversight. |
+| (none) | — | — | `/vitals` is a self-diagnostic. User declines on auto-fix prompts (`[n]` to a fix offer) are the **expected** mode of interaction — not friction. Logging them would flood `/evolve-cart` with noise about a user simply choosing not to apply a fix. By spec scope, `/vitals` does not call `friction-logger.log()`. The check #6 audit confirms this absence is intentional, not an oversight. |
 
 > **Forward-looking note:** This row stays empty by design through 1.5.0. If a future version of `/vitals` grows interactive behavior beyond pure check + offer-fix (e.g., asks the user to choose between two repair strategies), revisit this section.
 
@@ -156,6 +156,6 @@ The two question-style triggers (`repeat_question`, `rephrase_requested`) apply 
 When a command SKILL grows a new condition that should produce friction:
 
 1. Add a row to that command's section above (or `Universal triggers` if it applies broadly).
-2. Pick the friction type from the canonical seven. If none fit, that's a signal the type set itself needs revisiting — open an `/evolve` proposal rather than coining a new type silently.
+2. Pick the friction type from the canonical seven. If none fit, that's a signal the type set itself needs revisiting — open an `/evolve-cart` proposal rather than coining a new type silently.
 3. Pick confidence based on signal strength: high = concrete and unambiguous (line-diff, explicit reject); medium = behavioral inference; low = could plausibly be normal exploration.
 4. Add the matching `friction-logger.log()` invocation in the command SKILL at the trigger point. `/vibe-cartographer:vitals` check #6 audits both directions — if you add the trigger here without the call, or vice versa, the next `/vitals` flags the drift.

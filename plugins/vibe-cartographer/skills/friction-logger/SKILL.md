@@ -7,21 +7,21 @@ description: "Internal SKILL — not a slash command. Append-only friction captu
 
 Internal SKILL. Not a user-invocable slash command. Loaded by every command SKILL at the trigger points listed in [`../guide/references/friction-triggers.md`](../guide/references/friction-triggers.md), and by `/onboard` once at startup for orphan detection.
 
-This skill describes two procedures the agent runs whenever it detects user friction. Friction is captured silently — no confirmation prompts, no user-facing chatter. False positives poison `/evolve`, so when in doubt, **don't log**.
+This skill describes two procedures the agent runs whenever it detects user friction. Friction is captured silently — no confirmation prompts, no user-facing chatter. False positives poison `/evolve-cart`, so when in doubt, **don't log**.
 
 ## Before You Start
 
 - **Data contract:** [`../guide/references/data-contracts.md`](../guide/references/data-contracts.md) — read the "Friction log" section. The seven canonical `friction_type` values, required field set, and confidence semantics live there.
 - **Schema:** [`../guide/schemas/friction.schema.json`](../guide/schemas/friction.schema.json) — JSON Schema Draft-07. Validate against this before appending. Defensive default: malformed entries silently drop.
 - **Trigger map:** [`../guide/references/friction-triggers.md`](../guide/references/friction-triggers.md) — one section per command SKILL, listing the conditions that produce each friction type plus default confidence. Source of truth for "when does /scope log what." `/vibe-cartographer:vitals` check #6 audits both directions of this map.
-- **Framework reference:** `docs/self-evolving-plugins-framework.md` Pattern #6 — Friction Log. The pillar is **self-repair**: the plugin notices friction and feeds the signal forward to `/evolve` so future runs get smoother. The framework's first rule is "be conservative: only log clear friction, not every correction." That conservatism is encoded here as the schema-validation silent-drop and the `repeat_question` quoted-prior gate.
+- **Framework reference:** `docs/self-evolving-plugins-framework.md` Pattern #6 — Friction Log. The pillar is **self-repair**: the plugin notices friction and feeds the signal forward to `/evolve-cart` so future runs get smoother. The framework's first rule is "be conservative: only log clear friction, not every correction." That conservatism is encoded here as the schema-validation silent-drop and the `repeat_question` quoted-prior gate.
 - **Atomic appends only:** all writes go through `node scripts/atomic-append-jsonl.js ~/.claude/plugins/data/vibe-cartographer/friction.jsonl` (stdin = one JSON object). Never `>>` from a shell.
 
 ## Catalog-Wide Invariant
 
 > When in doubt, don't log.
 
-A missed friction signal is recoverable through the `/reflect` calibration check-in. A false positive corrupts `/evolve`'s weighting and is much harder to undo. Every defensive default in this SKILL exists to honor that asymmetry.
+A missed friction signal is recoverable through the `/reflect` calibration check-in. A false positive corrupts `/evolve-cart`'s weighting and is much harder to undo. Every defensive default in this SKILL exists to honor that asymmetry.
 
 ## Defensive Defaults
 
@@ -30,7 +30,7 @@ These are the load-bearing rules. Every code path through `log()` honors all fou
 1. **Schema validation silent-drop.** If the entry fails `friction.schema.json` validation, exit silently. Do not retry. Do not surface the error to the user. Do not log a partial entry. Do log a one-line note to stderr for debugging — it goes nowhere user-visible but helps `/vitals` check #6 if it later notices a missing trigger.
 2. **`repeat_question` requires `quoted_prior_message`.** This friction type only logs when the entry includes a non-empty `quoted_prior_message` field carrying the actual prior message text the user is referencing. Without that, the agent is guessing whether the user is repeating a question — and guessed friction is exactly the noise the defensive default exists to prevent. (The `quoted_prior_message` field is conveyed via `symptom` in the canonical schema; concretely: when `friction_type === "repeat_question"`, refuse to log if `symptom` is empty or doesn't include a quoted snippet of the prior turn.)
 3. **No append blocks the command.** If `atomic-append-jsonl.js` exits non-zero (locked file, full disk, permission error), surface the stderr to the calling SKILL but never block the user-facing command. Friction capture is best-effort plumbing.
-4. **Per-trigger confidence is fixed.** The `confidence` value comes from `friction-triggers.md`, not from agent judgment in the moment. Hand-tuning confidence per call drifts the calibration model. If a trigger feels mis-tuned, fix it in `friction-triggers.md` (and let `/evolve` propose the change) — don't override at log time.
+4. **Per-trigger confidence is fixed.** The `confidence` value comes from `friction-triggers.md`, not from agent judgment in the moment. Hand-tuning confidence per call drifts the calibration model. If a trigger feels mis-tuned, fix it in `friction-triggers.md` (and let `/evolve-cart` propose the change) — don't override at log time.
 
 ## Procedure: `log(entry)`
 
@@ -80,7 +80,7 @@ A sentinel session-log entry without a matching terminal entry within 24 hours i
 
 | Caller | Invocation | Notes |
 |--------|------------|-------|
-| `/onboard` | `detect_orphans()` once at startup, after the sentinel write | Auto-emits any backlog of abandoned commands so `/evolve` and `/vitals` see them. |
+| `/onboard` | `detect_orphans()` once at startup, after the sentinel write | Auto-emits any backlog of abandoned commands so `/evolve-cart` and `/vitals` see them. |
 | Every command SKILL | `log(entry)` at trigger points listed in `friction-triggers.md` | One call per detected trigger. Conservative — when in doubt, skip. |
 | `/vitals` auto-fix `(b)` | `detect_orphans()` on demand | Same procedure, surfaced as an explicit user-confirmed fix. |
 
@@ -94,6 +94,6 @@ A sentinel session-log entry without a matching terminal entry within 24 hours i
 
 ## Why This SKILL Exists
 
-Friction signals are the empirical input to `/evolve`. Without them, `/evolve` can only reason from session logs (what happened) and process notes (what the agent thought) — both filtered through the agent. Friction adds the unfiltered third channel: what the user actually did when the agent's choice didn't fit. Pattern #6's whole point is that this signal must be cheap to write, conservative in scope, and safe to ignore on a per-call basis. This SKILL is the implementation of that contract.
+Friction signals are the empirical input to `/evolve-cart`. Without them, `/evolve-cart` can only reason from session logs (what happened) and process notes (what the agent thought) — both filtered through the agent. Friction adds the unfiltered third channel: what the user actually did when the agent's choice didn't fit. Pattern #6's whole point is that this signal must be cheap to write, conservative in scope, and safe to ignore on a per-call basis. This SKILL is the implementation of that contract.
 
 The two procedures split cleanly: `log()` is the per-event hot path, called dozens of times per session; `detect_orphans()` is the cold scan, run once per `/onboard` to recover signals that the per-event path couldn't capture (because the command never finished). Together they close the loop on Pattern #6 without ever requiring the user to think about it.

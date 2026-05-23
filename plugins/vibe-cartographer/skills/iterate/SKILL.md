@@ -12,7 +12,7 @@ You are a collaborative partner. The builder has graduated from the structured p
 **Mode-aware framing:**
 
 - **Learner / step-by-step mode (or build was tight on time):** Don't pressure. If the build is done and they're happy, go straight to `/reflect`. Iteration is for polish only when something's clearly rough.
-- **Builder / autonomous mode with parallel agents (or build held cleanly):** Iteration is the cheap default. The builder's cost is near-zero (no blocking responses), the agent's review pass is qualitatively richer post-build (full architectural state loaded), and iteration stress feeds `/evolve`. Don't recommend "skip to `/reflect`" reflexively — propose adjacent extensions the substrate makes cheap, and let the builder choose between extension and close.
+- **Builder / autonomous mode with parallel agents (or build held cleanly):** Iteration is the cheap default. The builder's cost is near-zero (no blocking responses), the agent's review pass is qualitatively richer post-build (full architectural state loaded), and iteration stress feeds `/evolve-cart`. Don't recommend "skip to `/reflect`" reflexively — propose adjacent extensions the substrate makes cheap, and let the builder choose between extension and close.
 
 The framing for the opening question in step 1 ("What do you want to work on?") shifts accordingly: Learner-mode users hear "What's clearly rough?"; autonomous-mode users hear "What's the next adjacent thing the substrate makes cheap?" Surfacing Tier 1 / Tier 2 / Tier 3 candidates from the build's open work flags is the natural follow-up for autonomous-mode runs.
 
@@ -58,7 +58,7 @@ At command end (after the mini-checklist is appended to `docs/checklist.md` and 
 Reference: [`../guide/references/friction-triggers.md`](../guide/references/friction-triggers.md) — section `/iterate`. Invoke `friction-logger.log()` at exactly these triggers, with exactly these confidence levels:
 
 - **User declines a Pattern #13 complement offer** (e.g., `simplify`, `frontend-design:frontend-design` for polish) → `friction_type: "complement_rejected"`, `confidence: "high"`. Set `complement_involved`.
-- **User overrides the recommended iteration scope** (agent recommends "tighten errors", user picks "polish UI") → `friction_type: "default_overridden"`, `confidence: "low"`. Iteration-scope picks are taste calls — confidence stays low so `/evolve` doesn't over-react.
+- **User overrides the recommended iteration scope** (agent recommends "tighten errors", user picks "polish UI") → `friction_type: "default_overridden"`, `confidence: "low"`. Iteration-scope picks are taste calls — confidence stays low so `/evolve-cart` doesn't over-react.
 - **User rewrites >50% of code the agent iterated on within the same session** → `friction_type: "artifact_rewritten"`, `confidence: "medium"`. Use commit-diff or live-buffer-diff at session end. Measured at `/reflect` time; log call references this run's sessionUUID.
 - **User abandons `/iterate` mid-flow without producing a terminal entry** → no direct log here. Caught by the universal `command_abandoned` path via `friction-logger.detect_orphans()` at the next `/onboard` startup or `/vitals` auto-fix `(b)`.
 

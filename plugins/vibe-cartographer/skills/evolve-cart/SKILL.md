@@ -1,9 +1,9 @@
 ---
-name: evolve
-description: "This skill should be used when the user says \"/evolve\" or wants Vibe Cartographer to reflect on past sessions and propose improvements to itself."
+name: evolve-cart
+description: "This skill should be used when the user says \"/evolve-cart\" or wants Vibe Cartographer to reflect on past sessions and propose improvements to itself."
 ---
 
-# /evolve — Reflective Evolution
+# /evolve-cart — Reflective Evolution
 
 Read `skills/guide/SKILL.md` for your overall behavior, then follow this command.
 
@@ -22,21 +22,21 @@ This is Level 3 of the Self-Evolving Plugin Framework (see `docs/self-evolving-p
 - Read the unified profile at `~/.claude/profiles/builder.json` for baseline context (experience level, persona, preferences).
 - Read the plugin's own SKILL files (`skills/onboard/SKILL.md`, `skills/scope/SKILL.md`, etc.) so you can propose specific, accurate diffs.
 - **Read `process-notes.md` from recent projects when present.** This file is the richest source of friction evidence — the user writes "CRITICAL:", "builder refused all cuts twice", "this was rough" in plain English. Treat narrative-style entries with the same weight as session-log `friction_notes`. **Quote the source explicitly** in any observation you derive from process-notes (e.g., "From `c:/Users/estev/Projects/vibe-doc/process-notes.md`: …"). To stay bounded, read at most the most recent 5 projects' process-notes by `last_modified`.
-- **Friction triggers contract:** [`../guide/references/friction-triggers.md`](../guide/references/friction-triggers.md) — section `/evolve`. The friction-logger invocations below implement exactly the table there. If you edit one without the other, `/vibe-cartographer:vitals` check #6 flags the drift.
+- **Friction triggers contract:** [`../guide/references/friction-triggers.md`](../guide/references/friction-triggers.md) — section `/evolve-cart`. The friction-logger invocations below implement exactly the table there. If you edit one without the other, `/vibe-cartographer:vitals` check #6 flags the drift.
 - **Session logger interface:** [`../session-logger/SKILL.md`](../session-logger/SKILL.md) — `start(command, project_dir)` returns the sessionUUID for this run; terminal `end(entry)` takes it back in at command completion.
 - **Data contracts:** [`../guide/references/data-contracts.md`](../guide/references/data-contracts.md) — the "Friction log" and "Friction calibration" sections define the shapes of the two first-class inputs the Analyze phase now reads. `friction.jsonl` and `friction.calibration.jsonl` are both append-only JSONL streams under `~/.claude/plugins/data/vibe-cartographer/`; read line-by-line, silent-drop malformed lines (`/vitals` check #8 owns repair).
 
 ## Session Logging
 
-At command start — before reading session logs, profile, or friction files — call `session-logger.start("evolve", <project_dir>)` to get the sessionUUID. Hold it in memory for the duration of this command. Pass it to every `friction-logger.log()` invocation so friction entries are tagged with the right sessionUUID.
+At command start — before reading session logs, profile, or friction files — call `session-logger.start("evolve-cart", <project_dir>)` to get the sessionUUID. Hold it in memory for the duration of this command. Pass it to every `friction-logger.log()` invocation so friction entries are tagged with the right sessionUUID.
 
-At command end — after all proposals have been processed (applied / rejected / deferred) and the summary has been shown — call the session-logger terminal-append procedure (`end(entry)`) with the **same sessionUUID** returned by `start()`. Set `outcome: "completed"` if the full flow ran, `"partial"` if the builder exited mid-review but at least one proposal was processed, `"abandoned"` only if the command exited before any proposal was processed. Populate `friction_notes`, `key_decisions` (e.g., "applied 2 Plugin-track, 1 Personal-track", "rejected complement-rejection proposal for superpowers:tdd"), `artifact_generated: null` (evolve writes to SKILL files and the profile, not a single artifact), and `complements_invoked` from what actually happened. This terminal entry is **in addition to** the legacy `/evolve` run-log entry described in step 7 below — both are written, with the same sessionUUID.
+At command end — after all proposals have been processed (applied / rejected / deferred) and the summary has been shown — call the session-logger terminal-append procedure (`end(entry)`) with the **same sessionUUID** returned by `start()`. Set `outcome: "completed"` if the full flow ran, `"partial"` if the builder exited mid-review but at least one proposal was processed, `"abandoned"` only if the command exited before any proposal was processed. Populate `friction_notes`, `key_decisions` (e.g., "applied 2 Plugin-track, 1 Personal-track", "rejected complement-rejection proposal for superpowers:tdd"), `artifact_generated: null` (evolve-cart writes to SKILL files and the profile, not a single artifact), and `complements_invoked` from what actually happened. This terminal entry is **in addition to** the legacy `/evolve-cart` run-log entry described in step 7 below — both are written, with the same sessionUUID.
 
 ## Friction Logging
 
-Reference: [`../guide/references/friction-triggers.md`](../guide/references/friction-triggers.md) — section `/evolve`. Invoke `friction-logger.log()` at exactly these triggers, with exactly these confidence levels:
+Reference: [`../guide/references/friction-triggers.md`](../guide/references/friction-triggers.md) — section `/evolve-cart`. Invoke `friction-logger.log()` at exactly these triggers, with exactly these confidence levels:
 
-- **User chooses `[reject]` on a proposal** → `friction_type: "default_overridden"`, `confidence: "medium"`. Capture the proposal title in `symptom`. The fact that `/evolve` itself proposed the change is implicit — no `complement_involved`.
+- **User chooses `[reject]` on a proposal** → `friction_type: "default_overridden"`, `confidence: "medium"`. Capture the proposal title in `symptom`. The fact that `/evolve-cart` itself proposed the change is implicit — no `complement_involved`.
 - **User declines a Pattern #13 complement offer** (e.g., `superpowers:writing-plans` to scope a multi-step proposal) → `friction_type: "complement_rejected"`, `confidence: "high"`. Set `complement_involved`.
 - **User rewrites >50% of an accepted proposal before applying it** → `friction_type: "artifact_rewritten"`, `confidence: "high"`. Measured in-session — compare the proposed text against what actually got written to the SKILL file or profile.
 - **User reorders the proposal queue significantly** → `friction_type: "sequence_revised"`, `confidence: "low"`. Queue order is a soft default.
@@ -98,7 +98,7 @@ For every friction entry read in 2a, compute a weight. The weight is what drives
 
 #### 2c. Calibration decay (180-day TTL)
 
-Calibration entries themselves age out. This prevents stale false-positive marks from permanently blinding `/evolve` to shifted habits — a builder who marked "declined TDD" as a false positive 9 months ago may have genuinely shifted away from TDD in the interim.
+Calibration entries themselves age out. This prevents stale false-positive marks from permanently blinding `/evolve-cart` to shifted habits — a builder who marked "declined TDD" as a false positive 9 months ago may have genuinely shifted away from TDD in the interim.
 
 - **TTL:** `calibration_ttl_days = 180` (hard-coded in this SKILL for v1.5.0; adjustable later if tuning data suggests different).
 - **Decay rule:** a calibration entry is **past the TTL** when `now - calibration.timestamp > 180 days`. Such entries are **ignored** — treat as if they never existed. The underlying friction entry gets its full base weight back.
@@ -111,7 +111,7 @@ Group weighted friction entries by whatever grouping dimension you're analyzing 
 
 #### 2e. Complement-rejection pattern surfacing (NEW PATTERN TYPE)
 
-After weighting, do a targeted pass for the most important signal `/evolve` 1.5.0 gains: complements that the builder keeps rejecting. The Pattern #13 anchored table in `guide/SKILL.md` offers specific complements at specific trigger points — when a complement is rejected enough, that's evidence the anchored offer is wrong (either for everyone or for this builder).
+After weighting, do a targeted pass for the most important signal `/evolve-cart` 1.5.0 gains: complements that the builder keeps rejecting. The Pattern #13 anchored table in `guide/SKILL.md` offers specific complements at specific trigger points — when a complement is rejected enough, that's evidence the anchored offer is wrong (either for everyone or for this builder).
 
 **Threshold:** a complement surfaces as a candidate pattern when it has **3 or more `complement_rejected` friction entries** AND their **sum-weight is ≥ 2.4**. Three unchallenged `high`-confidence rejections (3 × 1.0 = 3.0) clear the threshold; three `medium`-confidence rejections (3 × 0.6 = 1.8) do not; three `high`-confidence rejections with one calibrated as false-positive (2 × 1.0 = 2.0) do not.
 
@@ -187,7 +187,7 @@ Other builders keep the current default.
 
 **Stop and invite reframing — two open prompts, not yes/no:**
 
-1. "What would you reframe in this read? Is the pattern accurate, partial-but-narrow, or off entirely?" — first-pass observations are starting points, not landings. Across multiple `/evolve` runs, builders consistently refine rather than accept-or-reject; lead with that posture as the default.
+1. "What would you reframe in this read? Is the pattern accurate, partial-but-narrow, or off entirely?" — first-pass observations are starting points, not landings. Across multiple `/evolve-cart` runs, builders consistently refine rather than accept-or-reject; lead with that posture as the default.
 2. "Is the proposed track right (Personal / Plugin / Community), or should this be a different track? Including 'split across two tracks' if both layers apply (e.g., Personal flag + Plugin SKILL edit)."
 
 Wait for confirmation on both before moving on. The builder can reject an observation entirely, reframe its read, reclassify the track, or split it across tracks. **Resist the temptation to defend the first-pass framing** — if the builder reshapes the observation, the reshape IS the observation now. Treat reframes as signal that the agent's pattern-detection ran one inference short, not as builder-side disagreement to negotiate.
@@ -333,7 +333,7 @@ Applied this run:
   Community track: C anonymized signals logged (opt-in only)
 
 Rejected: K proposals (won't re-surface unless the pattern shifts).
-Deferred: J proposals (saved for next /evolve run).
+Deferred: J proposals (saved for next /evolve-cart run).
 
 Plugin files changed:
   • skills/onboard/SKILL.md (Starting Point question)
@@ -349,9 +349,9 @@ Review the Plugin-track diffs and commit when you're ready. Personal
 and Community changes took effect immediately.
 ```
 
-### 7. Log the evolve run
+### 7. Log the evolve-cart run
 
-Append a special session log entry for this `/evolve` invocation to `~/.claude/plugins/data/vibe-cartographer/sessions/<date>.jsonl`:
+Append a special session log entry for this `/evolve-cart` invocation to `~/.claude/plugins/data/vibe-cartographer/sessions/<date>.jsonl`:
 
 ```json
 {
@@ -359,7 +359,7 @@ Append a special session log entry for this `/evolve` invocation to `~/.claude/p
   "timestamp": "<ISO8601>",
   "plugin": "vibe-cartographer",
   "plugin_version": "<current>",
-  "command": "evolve",
+  "command": "evolve-cart",
   "outcome": "completed",
   "sessions_analyzed": <count>,
   "observations_surfaced": <count>,
@@ -380,7 +380,7 @@ Append a special session log entry for this `/evolve` invocation to `~/.claude/p
 - **Never touch files outside `plugins/vibe-cartographer/`.** The plugin is not permitted to edit the builder's projects or other plugins.
 - **Never propose changes to `architecture/`** (user-owned) or `docs/self-evolving-plugins-framework.md` (framework spec, not plugin behavior).
 - **Never propose a change you can't ground in a specific session log entry.** "I feel like..." is not evidence; `"user_pushback": "..."` across 3 sessions is.
-- **Never delete session logs** — they're append-only history and the raw signal for future evolve runs.
+- **Never delete session logs** — they're append-only history and the raw signal for future evolve-cart runs.
 - **Never propose changes that would weaken persona adaptation, mode adaptation, or the one-question-at-a-time rule.** Those are load-bearing invariants.
 - **Never propose more than 5 changes in a single run.** If you see more patterns, surface the top 5 and note in the summary that there are others waiting.
 - **Never transmit Community-track data.** The plugin never makes network calls to share signals. Export is always builder-initiated.
@@ -388,7 +388,7 @@ Append a special session log entry for this `/evolve` invocation to `~/.claude/p
 - **Never write to `community-signals.jsonl` without explicit per-observation `[log]` approval.** Blanket "yes log everything community" consent is not valid — each observation gets its own opt-in.
 - **Never propose a change based solely on a single friction entry.** Even a `high`-confidence entry with weight 1.0 is below the complement-rejection threshold (2.4) and well below what should count as "pattern." The minimum for any weighted observation is 3 entries + sum-weight evidence. One-off entries are noise, not signal.
 - **Never ignore calibration false-positive marks (within the 180-day TTL).** If a calibration entry zeros out a friction entry's weight, that entry does not exist for ranking purposes. Don't work around the calibration by double-counting elsewhere or inflating a related entry's weight.
-- **Never delete calibration entries from disk as part of decay.** The 180-day TTL is a read-time filter only — the file is append-only history. `/vitals` check #8 owns any structural repair of the calibration file; `/evolve` never edits it.
+- **Never delete calibration entries from disk as part of decay.** The 180-day TTL is a read-time filter only — the file is append-only history. `/vitals` check #8 owns any structural repair of the calibration file; `/evolve-cart` never edits it.
 - **Never use raw counts instead of weighted sums for ranking.** All pattern ranking in the Analyze phase uses sum-of-weights. An unweighted count misreads the signal — three `low`-confidence entries (0.9 total) are not the same strength as three `high`-confidence entries (3.0 total).
 
 ## Conversation Style
@@ -401,6 +401,6 @@ Append a special session log entry for this `/evolve` invocation to `~/.claude/p
 
 ## Handoff
 
-No handoff to another command. `/evolve` is a standalone reflection run. The builder commits the changes when they're ready.
+No handoff to another command. `/evolve-cart` is a standalone reflection run. The builder commits the changes when they're ready.
 
-"Thanks for reviewing. Whenever new patterns emerge, run `/evolve` again."
+"Thanks for reviewing. Whenever new patterns emerge, run `/evolve-cart` again."

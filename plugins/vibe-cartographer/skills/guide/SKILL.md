@@ -3,7 +3,7 @@ name: guide
 description: >
   Core knowledge and agent behavior for the Vibe Cartographer process.
   This skill defines how the agent operates across all nine commands in the
-  workflow: /onboard, /scope, /prd, /spec, /checklist, /build, /iterate, /reflect, /evolve.
+  workflow: /onboard, /scope, /prd, /spec, /checklist, /build, /iterate, /reflect, /evolve-cart.
   The agent acts as a sharp, encouraging coach.
   Do not use this skill directly; it is loaded by the individual command files.
 user-invocable: false
@@ -23,7 +23,7 @@ Encouraging but sharp. You're excited about what the builder is working on, but 
 
 ## Tier-1 Hygiene Rules (universal across every command)
 
-These four rules apply to **every** Cart command (`/onboard`, `/scope`, `/prd`, `/spec`, `/checklist`, `/build`, `/iterate`, `/reflect`, `/evolve`, `/vitals`, `/friction`, `/coder-voice`). They're inherited from the global `~/.claude/CLAUDE.md` hygiene rules and surfaced here so every Cart command honors them without per-SKILL repetition.
+These four rules apply to **every** Cart command (`/onboard`, `/scope`, `/prd`, `/spec`, `/checklist`, `/build`, `/iterate`, `/reflect`, `/evolve-cart`, `/vitals`, `/friction`, `/coder-voice`). They're inherited from the global `~/.claude/CLAUDE.md` hygiene rules and surfaced here so every Cart command honors them without per-SKILL repetition.
 
 ### 1. Scope Discipline at Command Kickoff
 
@@ -40,7 +40,7 @@ These four rules apply to **every** Cart command (`/onboard`, `/scope`, `/prd`, 
 **For any artifact this command produces** (`scope.md`, `prd.md`, `spec.md`, `checklist.md`, `reflection.md`, blog drafts, ADRs), **write directly to the target file FIRST**, then surface in chat as: (1) file path, (2) 2-sentence summary, (3) next action. Never both the full content and chat output.
 
 - Cart already does this for the canonical artifacts via `docs/`.
-- The new rule extends it: when generating *any* deliverable longer than ~300 words during a Cart command (e.g., a long /reflect retro, a /evolve proposal write-up, a /scope brainstorm dump), land it in a file rather than streaming the full content into chat.
+- The new rule extends it: when generating *any* deliverable longer than ~300 words during a Cart command (e.g., a long /reflect retro, a /evolve-cart proposal write-up, a /scope brainstorm dump), land it in a file rather than streaming the full content into chat.
 
 **Reason:** output token limit errors hit 6+ sessions and caused state resets that lost work. File-first beats hitting the ceiling.
 
@@ -50,14 +50,14 @@ These four rules apply to **every** Cart command (`/onboard`, `/scope`, `/prd`, 
 
 **Don't speculate about external system behavior** without evidence — say "I don't know" and ask the user.
 
-- Especially relevant for `/evolve` (which dispatches subagents), `/scope` (which sometimes invokes Explore for research), and `/spec` (which references external systems).
+- Especially relevant for `/evolve-cart` (which dispatches subagents), `/scope` (which sometimes invokes Explore for research), and `/spec` (which references external systems).
 - The pattern: subagent says X; prior audit said not-X; agent should NOT silently incorporate X. It should re-verify or surface the conflict.
 
 **Reason:** Explore subagents contradicted prior audits twice in observed sessions (both FFmpeg pipeline status), and speculative claims about "tier-gated API access" surfaced without evidence.
 
 ### 4. Creative Framing Anchor (for long-form artifacts)
 
-**For commands that generate long-form prose** — `/scope`, `/prd`, `/reflect`, blog drafts, `/evolve` proposal write-ups — **ask the user for a one-line angle/thesis anchor before generating** when the work is substantive.
+**For commands that generate long-form prose** — `/scope`, `/prd`, `/reflect`, blog drafts, `/evolve-cart` proposal write-ups — **ask the user for a one-line angle/thesis anchor before generating** when the work is substantive.
 
 Examples:
 - `/prd`: "What's the one-line problem this PRD solves? I'll anchor every story to that line."
@@ -133,7 +133,7 @@ Key rules:
   the return value of `start()`, not timestamp math (which false-positives on the first
   command of any given day).
 
-This is Level 2 (session memory) of the Self-Evolving Plugin Framework. The data is passive for now — collected but not acted on. When `/vibe-cartographer-evolve` ships, it will read these logs to propose plugin improvements.
+This is Level 2 (session memory) of the Self-Evolving Plugin Framework. The data is passive for now — collected but not acted on. When `/vibe-cartographer-evolve-cart` ships, it will read these logs to propose plugin improvements.
 
 ## Architecture Docs
 
@@ -223,7 +223,7 @@ When in doubt, **don't** announce. Only surface a complement when you can articu
 - **Defer, don't absorb.** When a complement is invoked, hand off the phase to it. Resume the Vibe Cartographer flow once the complement returns. Don't try to wrap or reimplement its behavior.
 - **Announce once, at command start.** Mention all relevant complements in the command's opening — don't pop them up surprise-style mid-flow.
 - **Builder can decline.** "Want me to use `superpowers:test-driven-development` for the build steps, or skip it this run?" The builder is the final arbiter; never force a complement.
-- **Log it.** When a complement is invoked, capture it in the session-logger entry under a new field: `complements_invoked: ["superpowers:test-driven-development", ...]`. Useful signal for `/evolve` to see which complements actually get accepted.
+- **Log it.** When a complement is invoked, capture it in the session-logger entry under a new field: `complements_invoked: ["superpowers:test-driven-development", ...]`. Useful signal for `/evolve-cart` to see which complements actually get accepted.
 - **Privacy:** Only read what's already in the agent's runtime context (the available skills/tools list). Never enumerate the user's filesystem or Claude config to discover plugins. Never persist the discovered list anywhere durable — it's runtime-only.
 - **Don't break composition mid-command.** If a complement isn't available mid-flow (was available at start, isn't now — rare but possible), fall back to Vibe Cartographer's own flow gracefully. Don't error.
 

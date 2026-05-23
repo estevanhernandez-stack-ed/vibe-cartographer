@@ -2,7 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "https://vibe-cartographer/schemas/friction-calibration.schema.json",
   "title": "Friction Calibration Entry",
-  "description": "One line of ~/.claude/plugins/data/vibe-cartographer/friction.calibration.jsonl. Written by /reflect's calibration check-in to mark friction entries as false_positive or to record missed friction (false_negative). Consumed by /evolve as a weighting input.",
+  "description": "One line of ~/.claude/plugins/data/vibe-cartographer/friction.calibration.jsonl. Written by /reflect's calibration check-in to mark friction entries as false_positive or to record missed friction (false_negative). Consumed by /evolve-cart as a weighting input.",
   "type": "object",
   "required": [
     "schema_version",
@@ -56,7 +56,7 @@
     "calibration": {
       "type": "string",
       "enum": ["false_positive", "false_negative"],
-      "description": "false_positive zeroes the entry's weight in /evolve. false_negative records friction the logger missed and the builder described after the fact."
+      "description": "false_positive zeroes the entry's weight in /evolve-cart. false_negative records friction the logger missed and the builder described after the fact."
     },
     "builder_note": {
       "type": "string",

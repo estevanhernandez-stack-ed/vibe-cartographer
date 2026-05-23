@@ -14,4 +14,4 @@ Default scans the last 30 days and groups by friction type. All flags compose as
 
 Output: banner header, one boxed section per friction type with surviving entries (timestamp · command · project · symptom · confidence glyph), then a summary line. Confidence glyphs: ✓ high, ⚠ medium, · low.
 
-Read-only. Never writes the friction log — repair and structural integrity live in `/vitals`; proposals live in `/evolve`. Malformed lines are skipped silently (same convention as `/evolve`); run `/vitals` for line-integrity details.
+Read-only. Never writes the friction log — repair and structural integrity live in `/vitals`; proposals live in `/evolve-cart`. Malformed lines are skipped silently (same convention as `/evolve-cart`); run `/vitals` for line-integrity details.

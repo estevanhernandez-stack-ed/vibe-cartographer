@@ -7,7 +7,7 @@ description: "This skill should be used when the user says \"/friction\" or \"/v
 
 Slash command `/vibe-cartographer:friction`. **Read-only** view into `~/.claude/plugins/data/vibe-cartographer/friction.jsonl`. Default output is the last 30 days, grouped by friction type, with confidence indicators. Filters compose as AND.
 
-This is the inspection counterpart to `/evolve` (which consumes friction for proposals) and `/vitals` (which structurally audits the log). `/friction` does not write. It does not propose. It shows you what your past self flagged.
+This is the inspection counterpart to `/evolve-cart` (which consumes friction for proposals) and `/vitals` (which structurally audits the log). `/friction` does not write. It does not propose. It shows you what your past self flagged.
 
 ## Before You Start
 
@@ -33,7 +33,7 @@ At command end (after the report renders), call the session-logger terminal-appe
 
 ## Friction Logging
 
-Reference: [`../guide/references/friction-triggers.md`](../guide/references/friction-triggers.md) — section `/friction` is intentionally empty. `/friction` does **not** call `friction-logger.log()` in 1.5.0. Running a read-only inspection and declining to act on what you see is the **expected** mode of interaction, not friction. Logging it would flood `/evolve` with noise about a user simply looking at their own data.
+Reference: [`../guide/references/friction-triggers.md`](../guide/references/friction-triggers.md) — section `/friction` is intentionally empty. `/friction` does **not** call `friction-logger.log()` in 1.5.0. Running a read-only inspection and declining to act on what you see is the **expected** mode of interaction, not friction. Logging it would flood `/evolve-cart` with noise about a user simply looking at their own data.
 
 Universal triggers (`repeat_question`, `rephrase_requested`) from the top of `friction-triggers.md` still apply in principle — if the user asks the agent to re-explain a finding with a quoted prior, the universal rule applies. Honor the **defensive default**: without a quoted prior turn in `symptom`, do not log.
 
@@ -95,7 +95,7 @@ Read `plugin.json`'s `"version"` field. Fall back to `"unknown"` on parse failur
    - **Does not exist** → skip the rest of load/filter, go straight to the empty-state render (step 4b). Do not treat missing-file as an error; a first-run builder legitimately has no friction log yet.
    - **Unreadable (other error)** → render the one-line error box and proceed to step 5 with `outcome: "partial"`.
 2. Read line by line. For each line:
-   - Parse as JSON. **Malformed lines are skipped silently** (same convention as `/evolve` — `/vitals` check #8 owns repair). Keep a count of skipped lines for a single footer line (see output format).
+   - Parse as JSON. **Malformed lines are skipped silently** (same convention as `/evolve-cart` — `/vitals` check #8 owns repair). Keep a count of skipped lines for a single footer line (see output format).
    - Validate the parsed entry has at minimum the fields `timestamp`, `friction_type`, `confidence`, `command`, `project_dir`. Entries missing any of those are counted as skipped (treat as malformed for display purposes — don't try to render partial entries).
 3. Apply filters in order (the order doesn't affect the result since AND is commutative; this order minimizes wasted parse work):
    - `--days <n>` (default 30): drop entries whose `timestamp` is older than `n` days from now.
@@ -198,7 +198,7 @@ If any lines were skipped as malformed during the load pass, append one more ind
   (<N> malformed lines skipped silently — run /vitals for line-integrity details.)
 ```
 
-This is the same convention `/evolve` uses: read-only commands never try to repair — repair is `/vitals`'s job (auto-fix f).
+This is the same convention `/evolve-cart` uses: read-only commands never try to repair — repair is `/vitals`'s job (auto-fix f).
 
 ## Mental Trace — Expected Behavior Per Scenario
 
@@ -298,6 +298,6 @@ The skip is **silent** — `/friction` never names line numbers or renders parse
 
 PRD Stories 2.4 and 2.5 together establish: the builder needs a low-friction way to look at their own friction log without cracking open JSONL in a text editor, and they need per-project breadcrumbs so a multi-project habit becomes visible across contexts.
 
-`/friction` is the minimum that meets both: a filter-and-group renderer with a banner output style consistent with `/vitals`, separate from `/evolve` (which consumes friction for proposals) and separate from `/vitals` (which audits structural integrity). The separation matters — `/evolve` is a heavy "propose edits" conversation, `/vitals` is an integrity sweep, `/friction` is "show me what I flagged." Three different mental models, three different invocation cadences.
+`/friction` is the minimum that meets both: a filter-and-group renderer with a banner output style consistent with `/vitals`, separate from `/evolve-cart` (which consumes friction for proposals) and separate from `/vitals` (which audits structural integrity). The separation matters — `/evolve-cart` is a heavy "propose edits" conversation, `/vitals` is an integrity sweep, `/friction` is "show me what I flagged." Three different mental models, three different invocation cadences.
 
 The read-only contract is crisp: `/friction` does not write, does not propose, does not classify. It reads, filters, groups, renders. That invariant is what makes `/friction` safe to run at any time — mid-project, between commands, or any time the builder wants to see what past runs recorded.

@@ -36,7 +36,7 @@ At command end (after the report prints **and** any auto-fix prompts have been r
 
 ## Friction Logging
 
-Reference: [`../guide/references/friction-triggers.md`](../guide/references/friction-triggers.md) — section `/vitals` is intentionally empty. Vitals does **not** call `friction-logger.log()` in 1.5.0. User declines on auto-fix prompts are the **expected** mode of interaction, not friction. Logging them would flood `/evolve` with noise about a user simply choosing not to apply a fix.
+Reference: [`../guide/references/friction-triggers.md`](../guide/references/friction-triggers.md) — section `/vitals` is intentionally empty. Vitals does **not** call `friction-logger.log()` in 1.5.0. User declines on auto-fix prompts are the **expected** mode of interaction, not friction. Logging them would flood `/evolve-cart` with noise about a user simply choosing not to apply a fix.
 
 This rule holds for **all six** auto-fix actions below — declines (`n`) on any auto-fix prompt never produce a friction entry. Only auto-fix (b) writes to the friction log, and it does so on behalf of `friction-logger.detect_orphans()` to emit `command_abandoned` entries for orphans the user has opted in to clean up. That is not a `/vitals`-originated friction signal; it is retroactive emission of a friction type whose producer is documented as `friction-logger.detect_orphans()` per `friction-triggers.md`.
 
@@ -119,7 +119,7 @@ Print the closing advisory:
 
 ```
 Auto-fix offers above respect your choices — anything you declined stays as-is.
-Re-run /vitals any time to re-check. For deeper structural proposals, see /evolve.
+Re-run /vitals any time to re-check. For deeper structural proposals, see /evolve-cart.
 ```
 
 Then do the session-logger terminal append (see "Session Logging" above). No handoff — vitals is terminal, not a step in the sequential chain.
@@ -154,7 +154,7 @@ There is no "warn" state for this check.
 
 **(c) Report.**
 - ✓ pass: every referenced template exists.
-- ⚠ warn: a template exists on disk but no SKILL references it. List each as `<template_path>` under the "unreferenced templates" label. (This is a soft signal for `/evolve` to consider pruning; not a structural failure.)
+- ⚠ warn: a template exists on disk but no SKILL references it. List each as `<template_path>` under the "unreferenced templates" label. (This is a soft signal for `/evolve-cart` to consider pruning; not a structural failure.)
 - ✗ fail: a SKILL references a template that does not exist. List each broken reference as `<source_file>:<line_no> → <referenced_path>`.
 
 Fail takes precedence over warn — if there are both broken references and unreferenced templates, the check reports ✗ fail and still lists the warn-tier findings underneath the fail findings.
@@ -195,8 +195,8 @@ Fail takes precedence over warn — if there are both broken references and unre
 
 **(c) Report.**
 - ✓ pass: every anchored complement is present in the available-skills list.
-- ⚠ warn: one or more anchored complements are not present in the available-skills list (and runtime context is complete). List each as `<complement_identifier> — not found in available skills`. Suggest: *"Either the builder removed that plugin, or the anchored table is stale. `/evolve` can propose removing a defunct complement from the table; auto-fix (d) in a later vitals release will offer it inline."*
-- **Fail-soft branch (runtime context incomplete):** box header still reads `Check #4 — Pattern #13 complement availability`, status is ⚠ warn, and the body is exactly: *"Could not verify N complements due to incomplete runtime context. Re-run /vitals after restarting Claude Code."* where N is the count of anchored complements that could not be verified. Do not list individual complements in this branch — the signal is not reliable and listing them would create false evidence for `/evolve` later.
+- ⚠ warn: one or more anchored complements are not present in the available-skills list (and runtime context is complete). List each as `<complement_identifier> — not found in available skills`. Suggest: *"Either the builder removed that plugin, or the anchored table is stale. `/evolve-cart` can propose removing a defunct complement from the table; auto-fix (d) in a later vitals release will offer it inline."*
+- **Fail-soft branch (runtime context incomplete):** box header still reads `Check #4 — Pattern #13 complement availability`, status is ⚠ warn, and the body is exactly: *"Could not verify N complements due to incomplete runtime context. Re-run /vitals after restarting Claude Code."* where N is the count of anchored complements that could not be verified. Do not list individual complements in this branch — the signal is not reliable and listing them would create false evidence for `/evolve-cart` later.
 
 There is no ✗ fail state for this check in 1.5.0. Anchored-table drift is a warn, not a structural failure — the plugin still runs.
 
@@ -218,7 +218,7 @@ Parse each session-log line as JSON; silently skip malformed lines (check #8 own
 3. **Otherwise** compute: `friction_per_session = friction_entries_in_window / terminal_entries_in_window`. Then evaluate against the thresholds:
    - `0 < friction_per_session < 0.05` → **under-firing**: detection may be broken. Warn.
    - `0.05 ≤ friction_per_session ≤ 5.0` → **healthy**: pass.
-   - `friction_per_session > 5.0` → **over-firing**: detection may be poisoning `/evolve`. Warn.
+   - `friction_per_session > 5.0` → **over-firing**: detection may be poisoning `/evolve-cart`. Warn.
    - `friction_per_session == 0` AND `terminal_entries_in_window ≥ 10` → **silent**: no friction across 10+ sessions is suspicious. Warn.
    - `friction_per_session == 0` AND `terminal_entries_in_window < 10` → **too early**: pass, with informational note that "volume trend will calibrate after more sessions."
 
@@ -301,11 +301,11 @@ There is no ✗ fail state for this check — `.tmp` files are debris, not corru
 
 ### Check #9 — Session-log coverage (orchestrator-gap detection)
 
-**Purpose.** Detect when Cart commands were executed via narrative orchestration (e.g., one chat session running multiple Cart commands as a chain, or an agent invoking Cart's SKILLs from outside Cart's own runtime context) without the session-logger SKILL firing. Symptom: `process-notes.md` across recent projects records command invocations that have no matching entry in `~/.claude/plugins/data/vibe-cartographer/sessions/<date>.jsonl`. Without this check, `/evolve` reads incomplete data and proposes against a partial picture.
+**Purpose.** Detect when Cart commands were executed via narrative orchestration (e.g., one chat session running multiple Cart commands as a chain, or an agent invoking Cart's SKILLs from outside Cart's own runtime context) without the session-logger SKILL firing. Symptom: `process-notes.md` across recent projects records command invocations that have no matching entry in `~/.claude/plugins/data/vibe-cartographer/sessions/<date>.jsonl`. Without this check, `/evolve-cart` reads incomplete data and proposes against a partial picture.
 
 **(a) Inputs.**
 - Session log files at `~/.claude/plugins/data/vibe-cartographer/sessions/*.jsonl` (last 14 days by file mtime).
-- `process-notes.md` files across the most recent 5 projects by `last_modified` (same set the `/evolve` SKILL pulls per its "Read process-notes.md from recent projects" rule).
+- `process-notes.md` files across the most recent 5 projects by `last_modified` (same set the `/evolve-cart` SKILL pulls per its "Read process-notes.md from recent projects" rule).
 
 **(b) Procedure.**
 1. Build an index of every session-log entry: `(command, project_dir, ISO_date)` → entry.
@@ -315,7 +315,7 @@ There is no ✗ fail state for this check — `.tmp` files are debris, not corru
 
 **(c) Report.**
 - ✓ pass: no project has ≥3 unmatched command invocations.
-- ⚠ warn: list each project with missed runs as `<project_dir>: <N> Cart commands in process-notes without session-log entries (suggests orchestrator-level invocation outside Cart's runtime — session-logger SKILL never fired).` Suggest: *"A future `/vitals` release will offer auto-fix (g) to backfill synthetic session-log entries from process-notes summaries. For now, the data gap means `/evolve` reads partial signal — known limitation."*
+- ⚠ warn: list each project with missed runs as `<project_dir>: <N> Cart commands in process-notes without session-log entries (suggests orchestrator-level invocation outside Cart's runtime — session-logger SKILL never fired).` Suggest: *"A future `/vitals` release will offer auto-fix (g) to backfill synthetic session-log entries from process-notes summaries. For now, the data gap means `/evolve-cart` reads partial signal — known limitation."*
 - ✗ fail: structural failure reading process-notes (missing files, parse error). Treat as install-integrity issue per check #3's pattern.
 
 **(d) Fail-soft.** No process-notes files present → ✓ pass with body text *"No process-notes scanned — first-run state."* Session log dir empty → ⚠ warn (this is a session-logger setup issue, not a coverage gap; reuse check #5's empty-log message pattern).
@@ -706,4 +706,4 @@ Pattern #8 from the Self-Evolving Plugin Framework is the "you touch it, you bre
 
 `/vitals` is the complete pair: eight read-only structural checks surface drift cheaply and reproducibly, then six deterministic auto-fixes offer to resolve the conditions those checks surfaced — each with explicit `[y/n]` confirmation, each with a diff shown in the prompt for writes that modify profile or SKILL files, each atomic so a failed apply never corrupts the source of truth.
 
-The read-only contract remains crisp: no auto-fix ever fires without `y`, and declining every offer is indistinguishable from the read-only-only behavior. That invariant is what makes `/vitals` safe to run at any time — including before `/evolve`, before a commit, or any time the builder suspects something is off.
+The read-only contract remains crisp: no auto-fix ever fires without `y`, and declining every offer is indistinguishable from the read-only-only behavior. That invariant is what makes `/vitals` safe to run at any time — including before `/evolve-cart`, before a commit, or any time the builder suspects something is off.

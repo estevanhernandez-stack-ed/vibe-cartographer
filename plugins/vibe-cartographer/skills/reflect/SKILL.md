@@ -58,9 +58,9 @@ At command end — after `docs/reflection.md` has been written, after the unifie
 
 Reference: [`../guide/references/friction-triggers.md`](../guide/references/friction-triggers.md) — section `/reflect`. Invoke `friction-logger.log()` at exactly these triggers, with exactly these confidence levels:
 
-- **User declines the calibration check-in** (`[skip]` to "want to mark false positives?") → `friction_type: "default_overridden"`, `confidence: "low"`. The check-in is itself optional — declines are expected. Confidence stays low so it doesn't pollute the calibration signal or trigger `/evolve` noise.
+- **User declines the calibration check-in** (`[skip]` to "want to mark false positives?") → `friction_type: "default_overridden"`, `confidence: "low"`. The check-in is itself optional — declines are expected. Confidence stays low so it doesn't pollute the calibration signal or trigger `/evolve-cart` noise.
 - **User declines a Pattern #13 complement offer** (e.g., `superpowers:requesting-code-review`) → `friction_type: "complement_rejected"`, `confidence: "high"`. Set `complement_involved`.
-- **User rewrites >50% of generated `reflection.md`** → `friction_type: "artifact_rewritten"`, `confidence: "medium"`. Reflections are personal — confidence stays medium. Measured at the *next* `/reflect` or `/evolve` read time, not in-line; the log call at that future read references this run's sessionUUID.
+- **User rewrites >50% of generated `reflection.md`** → `friction_type: "artifact_rewritten"`, `confidence: "medium"`. Reflections are personal — confidence stays medium. Measured at the *next* `/reflect` or `/evolve-cart` read time, not in-line; the log call at that future read references this run's sessionUUID.
 - **User marks 3+ entries `false_positive` during the calibration check-in** → **no friction entry.** Calibration is its own signal channel — `/reflect` never logs friction-about-friction. Calibration entries go to `friction.calibration.jsonl`, not `friction.jsonl`.
 
 Universal triggers from the top of `friction-triggers.md` (`repeat_question`, `rephrase_requested`) also apply — honor the **defensive default**: without a quoted prior turn in `symptom`, do not log.
@@ -91,7 +91,7 @@ These reflect on *what the builder did*, not on abstract principles. Each questi
 
 3. **What the process caught vs missed.** "What did the workflow catch that you would have missed working solo? What did it miss that you wish it had caught?" — Honest both-sides. Pull specifics: friction notes the agent flagged, edge cases surfaced during deepening rounds, things `/iterate` had to clean up that `/build` shipped, etc.
 
-4. **Hindsight on the workflow itself.** "If you ran another project tomorrow with this same workflow, what's one thing you'd do differently — about how YOU showed up, not what the plugin should change?" — The plugin-improvement reflection happens in `/evolve`. This question is about the builder's own practice. The agent should resist the temptation to redirect to "what should the plugin do better."
+4. **Hindsight on the workflow itself.** "If you ran another project tomorrow with this same workflow, what's one thing you'd do differently — about how YOU showed up, not what the plugin should change?" — The plugin-improvement reflection happens in `/evolve-cart`. This question is about the builder's own practice. The agent should resist the temptation to redirect to "what should the plugin do better."
 
 ### After the check-in
 
@@ -197,7 +197,7 @@ Two questions, one at a time:
 
 ### Calibration check-in
 
-This is the last step of Part B. It's a quick loop that lets the builder correct the plugin's friction detector — marking false positives so `/evolve` doesn't act on noise, and describing false negatives the logger missed. Pattern #6 (Friction Log) pairs with this check-in: the logger captures conservatively during commands, and this loop recovers missed signal while scrubbing false positives. Data contract: [`../guide/references/data-contracts.md`](../guide/references/data-contracts.md) — "Friction calibration" section.
+This is the last step of Part B. It's a quick loop that lets the builder correct the plugin's friction detector — marking false positives so `/evolve-cart` doesn't act on noise, and describing false negatives the logger missed. Pattern #6 (Friction Log) pairs with this check-in: the logger captures conservatively during commands, and this loop recovers missed signal while scrubbing false positives. Data contract: [`../guide/references/data-contracts.md`](../guide/references/data-contracts.md) — "Friction calibration" section.
 
 **Step 1 — Read this project's friction entries.**
 
@@ -260,7 +260,7 @@ Adapt tone to persona. Learner mode: explain what each group means if the builde
 
 **Step 5 — Acknowledge and move on.**
 
-After writes complete, one short line: "Logged N marks — that'll feed into `/evolve` next time you run it. Let's pull together your reflection."
+After writes complete, one short line: "Logged N marks — that'll feed into `/evolve-cart` next time you run it. Let's pull together your reflection."
 
 If the builder declined (`skip`), that itself is a `default_overridden` friction entry per the /reflect trigger table — log it now via `friction-logger.log()` with `friction_type: "default_overridden"`, `confidence: "low"`, and pass this `/reflect`'s sessionUUID. Confidence stays low because declining the check-in is expected behavior — this is a weak signal, not a complaint about the check-in itself.
 
