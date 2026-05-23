@@ -11,6 +11,26 @@ All notable changes to this project are documented here. The format follows [Kee
 
 - **Quick Build pacing mode.** A third build mode alongside step-by-step and autonomous. After the interview phase (`/onboard` → `/checklist`), Quick Build skips all checkpoints, verification pauses, and git pushes — just executes checklist items sequentially with auto-commits. At the start of a Quick Build run, the agent checks whether Claude's **auto mode** is active. If it is, proceed. If not, remind the builder: "Quick Build works best with auto mode enabled — press `Shift+Tab` to cycle to it. Auto mode lets Claude handle tool permissions automatically so the build can run uninterrupted." Wait for confirmation before starting. No `git push` until the builder explicitly triggers one post-build. Designed for experienced builders who trust the plan and want maximum velocity from spec to working code.
 
+## [1.9.0] — 2026-05-23 — /tend drift sweep + build deploy-verify rewrite + evolve rename
+
+Minor release. Additive plus one rename. The harness-engineering frame (OpenAI's writeup on entropy and observability) drove the build changes; the rename clears a name collision before more siblings land.
+
+### Added
+
+- **`/tend` SKILL — read-only drift sweep on the app you built.** Six checks against the built app: spec ↔ code drift, checklist ↔ artifact drift, doc drift (dangling references / stale README), pattern entropy (duplication + naming inconsistency), dead weight (orphan files / unused deps), and debt accumulation (TODO / FIXME / stubs / empty handlers). Banner-style report mirroring `/vitals`, with ✓ / ⚠ / ✗ per check and a summary line. **Read-only in this release — it writes nothing** (not source, not docs, not plugin state); remedial auto-PRs ship later. This is the diagnostic half of garbage-collection / entropy management, shipped first — the same diagnostic-before-remedial path `/vitals` took. Defers deep security scanning to `vibe-sec` when installed (Pattern #13). See [`plugins/vibe-cartographer/skills/tend/SKILL.md`](plugins/vibe-cartographer/skills/tend/SKILL.md).
+- **Harness-engineering briefs** under [`docs/horizon/`](docs/horizon/) — `harness-engineering-comparison.md`, `harness-task-force-charter.md`, `harness-amends-decision-sheet.md`, `decision-log-harness-amends.md` — plus a ranked [`proposed-changes-harness.md`](proposed-changes-harness.md) at the repo root. The proposal set that seeded this cycle's build + `/tend` work.
+
+### Changed
+
+- **`/build` deploy-verification rewrite — run the read-only probes yourself, don't outsource to the builder.** When a build touches runtime infrastructure (Cloud Functions, MCP servers, deployed routes, containers, CI/CD), the agent now *executes* the reachability and CI-freshness probes (`firebase functions:list`, `curl` for a 200, MCP test invocation, `gh run list`/`view`) and asserts what it observed — observability as context. Mutating commands (deploy, destroy, migrate, rollback) stay builder-confirmed. The agent hands a specific probe back to the builder only when it lacks the access that probe needs. See [`plugins/vibe-cartographer/skills/build/SKILL.md`](plugins/vibe-cartographer/skills/build/SKILL.md).
+- **`/build` pre-handoff: run the enforcers (Pattern #13).** Before declaring the build done, defer verification to the enforcer plugins the ecosystem already owns rather than eyeballing it. If `vibe-test` is installed, run `/vibe-test:gate` and treat a non-zero gate as a remediation prompt (fix, re-run, then hand off). If `vibe-sec` exposes an invocable scan, run it the same way (it's pre-release v0.0.1 with no command yet — skip until it ships one; don't fabricate an invocation). Falls back to the manual Documentation & Security Verification checklist item when neither is installed. Relies on `vibe-test`'s `gate` exit-code contract — a committed cross-plugin surface.
+- **Renamed the evolve skill `evolve` → `evolve-cart`** to disambiguate bare `/evolve` across sibling plugins (vibe-doc, vibe-iterate each ship their own evolve). The pattern going forward: every plugin's evolve skill is `evolve-<short>`. Renamed the skill directory, command file, `name:` field, and every command-invocation / path / friction-triggers section-key reference across the plugin subdir. The concept language ("self-evolution", "Self-Evolving Plugin Framework", "Level 3", "reflective evolution") is unchanged — only the command surface moved. `/vitals` check #6 (which cross-validates the evolve skill against its friction-triggers section) still passes: skill name, section key, and friction-type set all agree on `evolve-cart`.
+
+### Notes
+
+- `/tend` and `/build`'s enforcer integration are two halves of the same harness move: deterministic checks whose output becomes the agent's remediation prompt, not a report a human reads out.
+- The rename is user-facing — `/evolve` no longer resolves; use `/evolve-cart` (or `/vibe-cartographer:evolve-cart`). Minor bump per the deferred-renames plan, bundled with the earned build + `/tend` work rather than shipped as churn.
+
 ## [1.8.0] — 2026-05-01 — Coder-voice SKILL + cutter library + Tier-1 hygiene from Claude Insights
 
 Minor release. Pure additive — no breaking changes, no contract surface changes. Three feature pillars landed in a single afternoon session, all derived from observed friction patterns.
