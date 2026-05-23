@@ -249,11 +249,14 @@ Before "embedded feedback and the handoff," check whether the build touched **ru
 - Container images, K8s deployments, edge worker scripts (Cloudflare, Vercel, etc.)
 - Anything with a CI/CD pipeline that produces a runtime artifact
 
-If the build touched any of these, **deploy-verification is part of "done"** — `tsc clean + lint clean + tests pass` is necessary but not sufficient. Surface a brief checklist for the builder:
+If the build touched any of these, **deploy-verification is part of "done"** — `tsc clean + lint clean + tests pass` is necessary but not sufficient.
 
-- "Did the deploy land cleanly? Run the deploy command, paste the result if anything's surprising."
-- "Are the new runtime artifacts actually reachable / running? (For Cloud Functions: `firebase functions:list` shows the function with the right trigger type. For MCP: a test invocation works. For routes: a curl returns 200.)"
-- "If CI auto-deploys on push, check the latest run is green AND deploys the latest commit (the local-vs-remote desync footgun)."
+**Run the read-only probes yourself — don't outsource verification to the builder.** You enumerated these checks; now execute them and assert the result. Observability is context: the agent that can observe the running system verifies its own work instead of asking the builder to paste logs. Only fall back to asking the builder when a probe needs access or credentials you don't have.
+
+- **Reachability (read-only — run these and report what you observed, pass or fail):** Cloud Functions → run `firebase functions:list` and confirm the function appears with the right trigger type. Routes → `curl` the endpoint and assert a 200 (or the expected status). MCP → issue a test invocation. Don't ask the builder "is it reachable?" — find out and tell them.
+- **CI freshness (read-only — run this):** confirm the latest CI run is green AND that it deployed the latest commit, not a stale `origin/main` (the local-vs-remote desync footgun). Use `gh run list` / `gh run view` or the platform equivalent.
+- **Never auto-run a mutating command to verify.** Deploy, destroy, migrate, and rollback stay builder-confirmed — ask before running them. Verification is read-only probes only.
+- **When a probe needs access you lack, *then* hand that one check to the builder** — specifically, not wholesale: "I can't reach the Firebase project from here — run `firebase functions:list` and paste what you see."
 
 Common deploy-state findings that compile-clean misses (call them out in the prompt so the builder knows what to verify):
 - Zombie shells from prior failed deploys (e.g., function name exists with wrong trigger type, blocks recreation)
@@ -264,6 +267,16 @@ Common deploy-state findings that compile-clean misses (call them out in the pro
 If the builder confirms deploy-verification is clean, proceed to Embedded Feedback + Handoff. If something's broken, **stop here**: drop into the "When Something Breaks" protocol from earlier in this SKILL, not the close-out flow.
 
 **Skip this entire subsection** if the build was purely compile-time work (UI components, pure functions, types, docs) and didn't touch any runtime infrastructure. The check is for builds that produce deployable artifacts, not for builds whose outputs are local-only.
+
+### Pre-handoff: Run the enforcers (Pattern #13 — defer, don't duplicate)
+
+Before declaring the build done, hand verification to the enforcer plugins the ecosystem already owns rather than eyeballing it. This is the harness move: deterministic checks whose output becomes the agent's remediation prompt, not a report you read out.
+
+- **If `vibe-test` is installed:** run `/vibe-test:gate`. It returns a single pass/fail (exit 0 pass / 1 threshold breach / 2 tool error). On a non-zero gate, **don't just report it — treat the gate's findings as a remediation prompt:** fix what it flags, then re-run the gate. Only proceed to handoff when it passes, or the builder explicitly accepts the gap.
+- **If `vibe-sec` is installed and exposes an invocable scan:** run it the same way — findings become remediation, not a hand-off report. *(As of this writing vibe-sec is pre-release (v0.0.1) and ships no invocable command yet — skip it until it does. Don't fabricate an invocation.)*
+- **If neither is installed:** fall back to the manual Documentation & Security Verification checklist item. The prose walk-through is the floor; the enforcer plugins are the ceiling.
+
+Never reimplement what the enforcer plugins do — defer to them (Pattern #13). They own test-gating and security scanning; `/build` orchestrates and acts on their output. (Read dependency: this relies on `vibe-test`'s `gate` exit-code contract — a committed cross-plugin surface.)
 
 Then provide embedded feedback and the handoff.
 
