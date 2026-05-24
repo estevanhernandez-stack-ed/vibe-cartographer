@@ -424,7 +424,7 @@ Sections that don't apply (e.g., empty Cross when only base ran) are written as 
 
 This SKILL doesn't append a session log entry — it's a meta/setup SKILL, not part of the build chain. Skip the `session-logger` start/end protocol that build-chain SKILLs use.
 
-If the user explicitly asks to log the run, append a one-line decision via `mcp__626Labs__manage_decisions` with `category: architecture` (since voice profile changes are architectural for how the agent operates). Otherwise no logging.
+If the user explicitly asks to log the run and a decision-log MCP is available, append a one-line decision there with `category: architecture` (since voice profile changes are architectural for how the agent operates) — auto-detects the 626Labs dashboard (`mcp__626labs-cloud__manage_decisions`) when present. No decision-log MCP, or no explicit ask? No logging. The MCP is never required.
 
 ## What NOT to do
 
