@@ -11,6 +11,14 @@ All notable changes to this project are documented here. The format follows [Kee
 
 - **Quick Build pacing mode.** A third build mode alongside step-by-step and autonomous. After the interview phase (`/onboard` → `/checklist`), Quick Build skips all checkpoints, verification pauses, and git pushes — just executes checklist items sequentially with auto-commits. At the start of a Quick Build run, the agent checks whether Claude's **auto mode** is active. If it is, proceed. If not, remind the builder: "Quick Build works best with auto mode enabled — press `Shift+Tab` to cycle to it. Auto mode lets Claude handle tool permissions automatically so the build can run uninterrupted." Wait for confirmation before starting. No `git push` until the builder explicitly triggers one post-build. Designed for experienced builders who trust the plan and want maximum velocity from spec to working code.
 
+## [1.9.1] — 2026-05-23 — decision-log MCP rename + generic framing
+
+Patch release. Fixes a stale MCP server reference and reframes decision-logging as optional.
+
+### Fixed
+
+- **Stale decision-log MCP reference in `/coder-voice`.** The 626Labs MCP server was renamed `626Labs` → `626labs-cloud`; the coder-voice SKILL still pointed at the old `mcp__626Labs__manage_decisions` name, so opt-in decision logging couldn't reach the live server. Corrected to `mcp__626labs-cloud__manage_decisions` and reframed so the decision-log MCP is optional and auto-detected (the 626Labs dashboard is the recognized instance, not a hard dependency) — logging is skipped cleanly when no such MCP is present. See [`plugins/vibe-cartographer/skills/coder-voice/SKILL.md`](plugins/vibe-cartographer/skills/coder-voice/SKILL.md).
+
 ## [1.9.0] — 2026-05-23 — /tend drift sweep + build deploy-verify rewrite + evolve rename
 
 Minor release. Additive plus one rename. The harness-engineering frame (OpenAI's writeup on entropy and observability) drove the build changes; the rename clears a name collision before more siblings land.
