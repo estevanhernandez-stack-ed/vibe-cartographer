@@ -85,3 +85,9 @@ philosophy that's irresponsible at solo scale.
   - **`/vitals` is the existing enforced-harness prototype** (`skills/vitals/SKILL.md`: 8 deterministic checks + remediation-style suggestions + per-fix consent) — every Proposal here borrows its mechanic (deterministic check → remediation prompt → explicit consent) rather than inventing one.
   - **`vibe-sec` and `vibe-test` already own security and test-gating** — flagged on Proposals #1 and #2 so any enforcement defers via Pattern #13 instead of duplicating sibling capability.
 - Nothing else was safe to do without crossing the propose-don't-apply line. No new SKILLs scaffolded, no `scripts/security-check.js` written (that's a Proposal #1 do-now to ship under explicit approval, not an autonomous action in a propose-only run).
+
+## 2026-05-23 — evolve signal: bring-your-own decision-log MCP
+
+Keep decision-log MCP guidance MCP-agnostic — reference "your decision-log MCP if present (626Labs dashboard auto-detected as `mcp__626labs-cloud__*`)" rather than hardcoding ours. If Cart ever gains a pluggable decision-log surface, support bring-your-own-MCP. Surfaced by the 2026-05-23 sweep.
+
+status: deferred, evolve-input only.
