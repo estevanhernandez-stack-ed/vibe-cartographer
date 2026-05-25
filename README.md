@@ -84,6 +84,21 @@ Dogfooded across build cycles — Vibe Cartographer builds the other Vibe plugin
 
 Then navigate to a **fresh, empty folder** for your project and run `/onboard`. All project artifacts get created in your project folder under `docs/`.
 
+## Migration
+
+Vibe Cartographer is the rename of what was previously `@esthernandez/app-project-readiness` (v0.5.0 and earlier). **Migration is automatic on your first `/onboard` run** — no manual steps:
+
+- Your unified builder profile at `~/.claude/profiles/builder.json` gets its `plugins.app-project-readiness` block copied to `plugins.vibe-cartographer` (old key preserved for one release as a safety net).
+- Deep-legacy markdown profiles at `~/.claude/plugins/data/app-project-readiness/user-profile.md` also migrate.
+- Legacy session logs at `~/.claude/plugins/data/app-project-readiness/sessions/` are left in place — append-only history isn't touched.
+- The old `@esthernandez/app-project-readiness` npm package is deprecated with a pointer. Install Vibe Cartographer via the marketplace above and uninstall the old one when you're ready.
+
+## More
+
+- [INSTALL.md](INSTALL.md) — detailed install, verification, configuration, troubleshooting, and uninstall steps
+- [CHANGELOG.md](CHANGELOG.md) — release history and contributing guide
+- [docs/self-evolving-plugins-framework.md](docs/self-evolving-plugins-framework.md) — thesis and pattern catalog driving the plugin's architecture
+
 ## Part of the Vibe ecosystem
 
 One of 11 plugins in the **[Vibe Plugins](https://github.com/estevanhernandez-stack-ed/vibe-plugins)** marketplace from [626 Labs](https://626labs.dev) — foundations (Thesis Engine, Keystone) and process pillars (Cartographer, Doc, Sec, Test, Thesis, Iterate, Taker, Walk, Insights) for AI-assisted creation.
@@ -91,6 +106,11 @@ One of 11 plugins in the **[Vibe Plugins](https://github.com/estevanhernandez-st
 ```text
 /plugin marketplace add estevanhernandez-stack-ed/vibe-plugins
 ```
+
+## Credits
+
+- **Based on the Learning Hackathon spec-driven development plugin.** The eight-command workflow (onboard → scope → PRD → spec → checklist → build → iterate → reflect) is adapted from the Hackathon's original spec-driven dev pattern. Vibe Cartographer productionizes that workflow with builder-focused language, persistent cross-plugin memory, selectable personas, and a reflective retro in place of the original quiz.
+- Built by [626Labs LLC](https://626labs.dev) — Fort Worth, TX.
 
 ## License
 
