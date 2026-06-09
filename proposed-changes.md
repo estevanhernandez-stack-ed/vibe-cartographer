@@ -1,8 +1,8 @@
 # Proposed Changes — /evolve-cart run 2026-06-09
 
-> **L3 reflective-evolution output. PROPOSE only — nothing here has been applied to any SKILL file.**
+> **L3 reflective-evolution output.** Originally PROPOSE-only. **All five proposals were ratified by Este and applied 2026-06-09** — committed locally in five conventional commits (one per proposal), **not pushed**; the version was deliberately left unbumped (release decision happens after review). Per-proposal dispositions are inline below.
 > Authored 2026-06-09 by The Architect (autonomous orchestrator-context run; session-logger not wired in this environment, this file is the durable record per `skills/guide/SKILL.md > Session Logging`).
-> Review queue: each proposal takes `[apply]` / `[modify]` / `[reject]` / `[skip]`. Plugin-track edits land only on explicit yes, and even then stay uncommitted until a deliberate commit session.
+> Review queue: each proposal took `[apply]` / `[modify]` / `[reject]` / `[skip]` — all five were `[apply]`. **Proposal #3 carries a review condition:** the verbatim three-modes contract text appears in the run report for Este's review; it merges only after he reads it (the push gate enforces this). Plugin-track edits stay uncommitted-to-remote until a deliberate push.
 
 ## Corpus analyzed
 
@@ -125,6 +125,8 @@ Two small additions, no behavior removed:
 ## Proposal 5 — Cold-start honesty in the Analyze phase when `friction.jsonl` is empty
 
 **Track: Plugin** · **Confidence: medium** · **Weighted evidence: 7 weeks × 2 config homes × zero friction rows ever, against ~80 lines of weighting machinery; partially derivative of Proposal 1 but a distinct surface**
+
+> **Disposition: [applied] 2026-06-09** — committed locally (not pushed; version unbumped). Added a cold-start branch at the top of `skills/evolve-cart/SKILL.md` §2a (the first 2a — "Read friction.jsonl"): when `friction.jsonl` is missing/empty, name the real evidence base in step-1 framing, promote builder-authored process-notes evolve flags to synthetic `high`-confidence entries (weight 1.0, `false_negative` standing) and other narrative friction to `medium`, surface the capture gap as a standing observation, and skip §2b–2e mechanics that have no input. Full weighting machinery left intact for when Proposal 1 turns the data on.
 
 ### Observation
 

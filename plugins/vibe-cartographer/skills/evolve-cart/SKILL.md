@@ -78,6 +78,15 @@ Target 2-5 genuine observations, not a laundry list. Quality over volume.
 
 #### 2a. Read friction.jsonl and friction.calibration.jsonl
 
+**Cold-start branch — if `friction.jsonl` is missing or empty.** This is the *default* state for every new install (and was the actual state of both config homes through this SKILL's first year — `friction.jsonl` had never existed anywhere, so §2b–2e had been silently analyzing zero rows). Do not run the weighting machinery over an empty file and imply a weighted analysis happened. Instead:
+
+- **Say so in the step-1 framing.** State it plainly: "no structured friction captured yet — ranking from session-log `friction_notes` and process-notes flags." Name the actual evidence base.
+- **Promote builder-authored evolve flags to synthetic high-confidence entries.** Explicit flags in `process-notes.md` — phrases like "/evolve signal", "strong /evolve signal", "evolve should pick this up", "CRITICAL:" — are treated as synthetic friction entries with `confidence: "high"` (weight `1.0`, the same standing as a `false_negative` calibration: the builder explicitly flagged them). Treat other, narrative-only friction as `medium`.
+- **Surface the capture gap itself as a standing observation** until structured entries begin to exist — the absence of friction data is itself signal worth a line in the findings (and is exactly what Proposal 1 / the loggers-fail-loud change exists to fix).
+- **Skip the §2b–2e mechanics that have no input.** Do not fabricate base weights, calibration multipliers, or TTL math for rows that don't exist. The machinery below stays fully intact for when `friction.jsonl` starts filling — it just doesn't run on an empty file.
+
+Once `friction.jsonl` has rows, ignore this branch and proceed with the full pipeline below.
+
 `friction.jsonl` and `friction.calibration.jsonl` are first-class inputs — same tier as session logs and process-notes. Read them both:
 
 1. **Read** `~/.claude/plugins/data/vibe-cartographer/friction.jsonl` line-by-line. Parse each as JSON; silently skip malformed lines (`/vitals` check #8 owns repair). Each entry is a `friction.schema.json`-shaped record with `timestamp`, `command`, `friction_type`, `confidence`, `symptom`, `complement_involved` (sometimes null), `sessionUUID`, `project_dir`.
