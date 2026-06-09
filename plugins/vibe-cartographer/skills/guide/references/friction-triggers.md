@@ -151,6 +151,16 @@ The two question-style triggers (`repeat_question`, `rephrase_requested`) apply 
 
 ---
 
+## /reconnect (a.k.a. /vibe-cartographer:reconnect)
+
+| Trigger | Friction type | Confidence | Notes |
+|---------|---------------|------------|-------|
+| (none) | — | — | `/reconnect` is a backfill/maintenance command. It reconstructs session-log entries from `process-notes.md` and writes only to the session log after explicit confirmation; it never edits `process-notes.md`. Declining the diff-preview confirmation is the **expected** mode of interaction, not friction. By spec scope, it does not call `friction-logger.log()`. `/vitals` check #6 treats `/reconnect` as a documented-empty command alongside `/vitals` and `/friction`. |
+
+> **Forward-looking note:** Same caveat as `/vitals` and `/friction`. If a future version grows interactive behavior beyond parse + preview + confirm (e.g., asking the user to disambiguate two candidate timestamps), revisit this section.
+
+---
+
 ## Adding a new trigger
 
 When a command SKILL grows a new condition that should produce friction:

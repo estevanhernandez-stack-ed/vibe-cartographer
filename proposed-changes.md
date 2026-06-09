@@ -54,6 +54,8 @@ From `C:/Users/estev/Projects/ROROROblox/process-notes.md` (builder-authored, re
 
 **Track: Plugin** · **Confidence: high** · **Weighted evidence: 3 session-log mentions + a measurable 6-week data hole spanning ~7 cycles**
 
+> **Disposition: [applied] 2026-06-09** — committed locally (not pushed; version unbumped). New `skills/reconnect/SKILL.md` (full implementation of the contract-stable recipe — deterministic UUIDv5-from-sha1 for idempotency, opt-in diff preview, never edits `process-notes.md`) + `commands/reconnect.md` wrapper. Added the `/reconnect` `(none)` row set to `friction-triggers.md` and made `/reconnect` the third documented-empty exception in `/vitals` check #6. Flipped the three future-tense pointers (guide banner + two in session-logger) to reference the shipped command. Command/skill parity matched. (Open follow-up: `package.json` description still lists 13 commands — defer to the release commit.)
+
 ### Observation
 
 The reconnect backfill — process-notes → session-log entries — has been specced-but-not-implemented for seven weeks while exactly the gap it exists to repair grew to its largest size ever.

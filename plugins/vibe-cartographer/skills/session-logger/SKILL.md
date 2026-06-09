@@ -249,8 +249,9 @@ runtime) can't call `start()` / `end()` in-process. Those runs produce a rich
 `process-notes.md` at the project level but no session-log entries, leaving `/evolve-cart`
 blind to arguably the richest use case of the plugin. The runtime-not-wired banner
 (see `skills/guide/SKILL.md > Session Logging`) surfaces this to the builder at
-command start. This section specifies the backfill recipe a future
-`/vibe-cartographer:reconnect` slash command will implement.
+command start. This section specifies the backfill recipe; the
+`/vibe-cartographer:reconnect` slash command (`skills/reconnect/SKILL.md`) is its
+shipped implementation. Keep the two in sync — `/vitals` check #1 cross-references them.
 
 **Input:** project root directory containing `process-notes.md`.
 
@@ -287,6 +288,7 @@ preview of what would be appended, waits for builder confirmation, then writes.
 exists in any session file, skip that heading — reconnect has already run
 against this `process-notes.md` before.
 
-**Not yet implemented as a slash command.** The backfill is specified here so the
-contract is stable before implementation. When demand warrants, a
-`skills/reconnect/SKILL.md` companion lands and implements exactly this recipe.
+**Implemented as `/vibe-cartographer:reconnect`.** The backfill was specified here first
+so the contract was stable before implementation; `skills/reconnect/SKILL.md` now
+implements exactly this recipe. This section remains the contract reference — edits to
+the recipe land in both files (`/vitals` check #1 guards the cross-reference).

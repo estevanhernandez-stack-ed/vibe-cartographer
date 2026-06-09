@@ -126,8 +126,8 @@ Key rules:
 
   > **Heads-up — session-logger isn't wired in this environment.** Your
   > `process-notes.md` in the project is the durable record for this run.
-  > The backfill recipe lives in `skills/session-logger/SKILL.md#reconnect-procedure`;
-  > a future `/vibe-cartographer:reconnect` command will implement it.
+  > When you're back in a Cart-wired session, run `/vibe-cartographer:reconnect`
+  > to backfill the session log from these notes (`skills/reconnect/SKILL.md`).
 
   Only surface this banner once per chat — don't repeat on every command. Detection is
   the return value of `start()`, not timestamp math (which false-positives on the first
