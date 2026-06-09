@@ -1,13 +1,13 @@
 ---
 name: vitals
-description: "This skill should be used when the user says \"/vitals\" or \"/vibe-cartographer:vitals\" or wants a structural integrity check on the Vibe Cartographer install. Runs eight read-only checks and reports findings in a banner-style report, then conditionally offers up to six deterministic auto-fix actions with per-fix [y/n] confirmation. Implements Pattern #8 (Plugin Self-Test) from the Self-Evolving Plugin Framework."
+description: "This skill should be used when the user says \"/vitals\" or \"/vibe-cartographer:vitals\" or wants a structural integrity check on the Vibe Cartographer install. Runs ten read-only checks and reports findings in a banner-style report, then conditionally offers up to six deterministic auto-fix actions with per-fix [y/n] confirmation. Implements Pattern #8 (Plugin Self-Test) from the Self-Evolving Plugin Framework."
 ---
 
 # /vitals — Self-Diagnostic
 
-Slash command `/vibe-cartographer:vitals`. Runs eight **read-only** checks against the installed plugin files, the unified profile, the session log, and the friction log, prints a banner-style report with per-check status (✓ pass, ⚠ warn, ✗ fail) and a summary line, then — if any check surfaced a condition with a matching auto-fix — offers that auto-fix with explicit `[y/n]` confirmation before any write.
+Slash command `/vibe-cartographer:vitals`. Runs ten **read-only** checks against the installed plugin files, the unified profile, the session log, and the friction log, prints a banner-style report with per-check status (✓ pass, ⚠ warn, ✗ fail) and a summary line, then — if any check surfaced a condition with a matching auto-fix — offers that auto-fix with explicit `[y/n]` confirmation before any write.
 
-This is Pattern #8 (Plugin Self-Test) from `docs/self-evolving-plugins-framework.md`, complete: diagnostic half (eight read-only checks) + remedial half (six per-fix interactive auto-fix prompts). **No fix ever runs without an explicit `[y/n]`.** Read-only checks never write; writes happen only in the Auto-Fix phase, and only after the user types `y`. A bare `/vitals` invocation with every auto-fix declined is indistinguishable from the read-only-only behavior.
+This is Pattern #8 (Plugin Self-Test) from `docs/self-evolving-plugins-framework.md`, complete: diagnostic half (ten read-only checks) + remedial half (six per-fix interactive auto-fix prompts). **No fix ever runs without an explicit `[y/n]`.** Read-only checks never write; writes happen only in the Auto-Fix phase, and only after the user types `y`. A bare `/vitals` invocation with every auto-fix declined is indistinguishable from the read-only-only behavior.
 
 ## Before You Start
 
@@ -51,7 +51,7 @@ Vitals is a diagnostic, not a conversation. Persona still applies to the one int
 - **Professor:** "Running a structural integrity sweep — here's what each check looks at and what it found."
 - **Cohort:** "Let's see what shook loose. Eight checks incoming."
 - **Superdev:** "Running vitals."
-- **Architect:** "Structural sweep — nine checks across SKILLs, schemas, logs, and runtime context."
+- **Architect:** "Structural sweep — ten checks across SKILLs, schemas, logs, and runtime context."
 - **Coach:** "Time to look under the hood. Eight checks, here we go."
 - **System default:** "Running vitals."
 
@@ -95,9 +95,9 @@ Write the persona-adapted opening line. If `--full`, append the runtime warning.
 
 Read `plugin.json`'s `"version"` field. Fall back to `"unknown"` on parse failure. Capture the current local ISO datetime for the banner.
 
-### 3. Run the nine checks
+### 3. Run the ten checks
 
-Run checks #1 through #8 **in order**. Each check independently succeeds, warns, or fails. A failure in one check never aborts the next check — the report always includes all eight sections.
+Run checks #1 through #10 **in order**. Each check independently succeeds, warns, or fails. A failure in one check never aborts the next check — the report always includes all ten sections.
 
 The full specification of each check is in **"Check Specifications"** below. The evaluator must implement each check per that spec.
 
@@ -320,6 +320,30 @@ There is no ✗ fail state for this check — `.tmp` files are debris, not corru
 
 **(d) Fail-soft.** No process-notes files present → ✓ pass with body text *"No process-notes scanned — first-run state."* Session log dir empty → ⚠ warn (this is a session-logger setup issue, not a coverage gap; reuse check #5's empty-log message pattern).
 
+### Check #10 — Evolve continuity
+
+**Purpose.** Verify that Plugin-track edits an `/evolve-cart` run recorded as applied still exist in the canonical tree. `/evolve-cart` applies SKILL edits directly to files but does **not** commit them — the builder commits later, and nothing downstream confirms the edits survived. A working-tree rebuild between apply-time and commit-time can silently erase them: that is exactly what happened to the 2026-04-26 "Autonomy Mode Adaptation" batch (13 files recorded applied, zero survived, undetected for six weeks). This check is the tripwire that loss should have tripped.
+
+**(a) Read.**
+- Session log files at `~/.claude/plugins/data/vibe-cartographer/sessions/*.jsonl` — **full history** (evolve runs are rare and a loss can be old; no window cap, unlike check #5).
+- The canonical plugin tree under `plugins/vibe-cartographer/`.
+- The durable record `proposed-changes.md` at the solo-repo root, if present (for the lost-vs-superseded disambiguation in (b)).
+
+**(b) Evaluate.**
+1. Filter session entries to those whose `command` matches `evolve*` (`evolve-cart`, plus the legacy `evolve` name — the schema does not enum-constrain `command`, and the April 2026 entries pre-date the rename) **AND** that carry a non-empty `applied_files` array.
+2. For each such entry, for each path in `applied_files`: resolve it relative to the plugin root and check the file exists.
+   - **File missing** → candidate miss.
+   - **File exists** → if the entry (or the matching `proposed-changes.md` record) names a specific section/heading the edit added, do a best-effort substring check that a distinctive phrase from that heading still appears in the file. Absent → candidate miss (content-level). Present → pass.
+3. **Disambiguate lost vs superseded.** If `proposed-changes.md` marks the corresponding proposal `rejected`, `deferred`, or `superseded`, the absence is expected — do **not** flag it. Only flag absences with no such record: the edit was recorded applied and then vanished.
+
+**(c) Report.**
+- ✓ pass: every `applied_files` path from every evolve* entry still exists (and named sections survive). One-line metric: `<N> evolve runs, <M> applied files — all present.`
+- ⚠ warn: at least one applied file (or named section) is missing with no superseded/rejected record. List each as `<session_date> evolve-cart applied <path>[#<section>] — missing from tree`. Suggest: *"Evolve-applied work is missing from the canonical tree — re-land it from `proposed-changes.md`, or mark the proposal superseded if it was intentionally reverted."*
+
+There is no ✗ fail state — missing evolve work is a continuity warning, not a structural break in the running plugin.
+
+**(d) Fail-soft.** No session log, or no evolve* entries carrying `applied_files` → ✓ pass with body *"No recorded evolve-applied files to verify — first-run or no evolve history."* `proposed-changes.md` absent → run the existence check anyway and flag misses; just skip the lost-vs-superseded disambiguation and note that in the box.
+
 ## Output Format
 
 The report is rendered as markdown. Color is conveyed via emoji (✓ / ⚠ / ✗); box drawing uses Unicode characters evoking the Vibe Doc CLI banner aesthetic. Everything below is agent output — the evaluator emits it verbatim (with computed values substituted) after the checks run.
@@ -347,7 +371,7 @@ Then one blank line before the first check.
 
 ### Per-check boxed section
 
-Each of the nine checks renders as its own box. Use Unicode box-drawing characters. Inside the box, the first line is the check status + title, and subsequent lines are findings.
+Each of the ten checks renders as its own box. Use Unicode box-drawing characters. Inside the box, the first line is the check status + title, and subsequent lines are findings.
 
 ```
   ┌──────────────────────────────────────────────────────────────────┐
@@ -407,7 +431,7 @@ After the last check box, one blank line, then a summary line of the form:
   <N> ✓  ·  <N> ⚠  ·  <N> ✗
 ```
 
-Indented two spaces, glyphs separated by middle dot and two spaces on each side. The three counts sum to 8.
+Indented two spaces, glyphs separated by middle dot and two spaces on each side. The three counts sum to 10.
 
 Below the summary line, one blank line, then the closing advisory from step 5 of the flow.
 
@@ -605,10 +629,12 @@ This is the deterministic output the evaluator should produce when invoked again
 - **Check 6** — ✓ pass. The step-10 install wires friction-triggers.md and the command SKILLs consistently; the one intentional empty row (`/vitals`) and one (`/friction`) are documented and excluded from the orphan-trigger set.
 - **Check 7** — ✓ pass in a healthy install; ⚠ warn if the user has recently experienced a crashed atomic-write.
 - **Check 8** — ⚠ warn with "No friction log yet — feature available after first friction event" on a first run; ✓ pass after the log exists and is clean.
+- **Check 9** — ✓ pass on a first run ("No process-notes scanned — first-run state."); ⚠ warn only when a single project shows ≥3 Cart commands in `process-notes.md` with no matching session-log entries (the orchestrator-gap signal).
+- **Check 10** — ✓ pass on a first run ("No recorded evolve-applied files to verify — first-run or no evolve history."); ⚠ warn only when an `/evolve-cart` run's recorded `applied_files` no longer exist in the tree and `proposed-changes.md` carries no superseded/rejected record.
 
-A typical first-run summary line is `3 ✓  ·  5 ⚠  ·  0 ✗` (the warns being checks #3, #4, #5, #8, and possibly #2 for unreferenced templates).
+A typical first-run summary line is `5 ✓  ·  5 ⚠  ·  0 ✗` (the warns being checks #3, #4, #5, #8, and possibly #2 for unreferenced templates; checks #1, #6, #7, #9, #10 pass).
 
-A typical steady-state summary line after `/onboard` and several sessions is `8 ✓  ·  0 ⚠  ·  0 ✗`.
+A typical steady-state summary line after `/onboard` and several sessions is `10 ✓  ·  0 ⚠  ·  0 ✗`.
 
 ## Mental Trace — Auto-Fix Scenarios
 

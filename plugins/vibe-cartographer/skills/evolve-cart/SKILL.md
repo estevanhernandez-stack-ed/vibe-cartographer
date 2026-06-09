@@ -329,6 +329,8 @@ Action depends on the track:
 
 ### 6. Summary
 
+**Write the durable record first.** Before printing the summary, write (or update) **`proposed-changes.md` at the solo-repo root** — the same file this run is reading from, and the sibling of `proposed-changes-harness.md`. It is the durable record of the run: the observations surfaced, each proposal's disposition (`applied` / `rejected` / `deferred`), and **for every applied Plugin-track edit, the exact diff text that was applied**. This matters because Plugin-track edits land directly in SKILL files and are NOT committed by this command — a working-tree wipe (the exact failure that lost the 2026-04-26 batch for six weeks) then costs the edits but not the record, and the next run re-proposes from the file instead of rediscovering the loss from absence. The convention is already named in `guide/references/friction-triggers.md` ("User rejects a proposal in `proposed-changes.md`"); this step makes writing the file mandatory, not optional. Append/update per-proposal status markers in place; never delete prior runs' records (append-only history, like the logs).
+
 After all proposals processed:
 
 ```
@@ -352,6 +354,9 @@ Community signals logged (local only, not sent):
 
 Review the Plugin-track diffs and commit when you're ready. Personal
 and Community changes took effect immediately.
+
+Plugin-track edits applied this run are UNCOMMITTED until you commit them.
+Durable record: proposed-changes.md.
 ```
 
 ### 7. Log the evolve-cart run
