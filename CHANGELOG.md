@@ -11,6 +11,25 @@ All notable changes to this project are documented here. The format follows [Kee
 
 - **Quick Build pacing mode.** A third build mode alongside step-by-step and autonomous. After the interview phase (`/onboard` → `/checklist`), Quick Build skips all checkpoints, verification pauses, and git pushes — just executes checklist items sequentially with auto-commits. At the start of a Quick Build run, the agent checks whether Claude's **auto mode** is active. If it is, proceed. If not, remind the builder: "Quick Build works best with auto mode enabled — press `Shift+Tab` to cycle to it. Auto mode lets Claude handle tool permissions automatically so the build can run uninterrupted." Wait for confirmation before starting. No `git push` until the builder explicitly triggers one post-build. Designed for experienced builders who trust the plan and want maximum velocity from spec to working code.
 
+## [1.10.0] — 2026-06-09 — telemetry blackout fix + /reconnect + autonomy contract
+
+Minor release. The evolve-harvest wave: every proposal from the 2026-06-09 `/evolve-cart` run, applied and reviewed.
+
+### Fixed
+
+- **Logging scripts now ship inside the plugin.** Installed copies contained no `scripts/` directory, so every logger call (`node scripts/atomic-append-jsonl.js`) was dead on installs — session/friction telemetry silently dark since the first release (the 6-week blackout). The atomic helpers now live at `plugins/vibe-cartographer/scripts/`, all 18 invocation sites resolve via `${CLAUDE_PLUGIN_ROOT}`, the data dir auto-creates, and loggers fail loud instead of silently skipping.
+
+### Added
+
+- **`/vibe-cartographer:reconnect`** — backfill the session log from process-notes when sessions ran unlogged (specced 2026-04-22, demand-gate met).
+- **Autonomy Mode Adaptation re-landed** — the third adaptation axis (persona = voice, Learner/Builder = pacing, autonomy = confirmations). Three modes: Guided (default), Autonomous–Self, Autonomous–Agent-persona, with the fully-autonomous contract (opt-in once, flow through answerable beats, surface every assumption visibly, defer stale decay-stamps, never pause on record-resolved confirmations) and one hard boundary: `/evolve-cart` Plugin-track edits always queue for review. Reconstructs the lost 2026-04-26 work.
+- **Durable evolve artifacts + vitals Check #10** — every `/evolve-cart` run writes `proposed-changes.md`; vitals now verifies past runs' applied files still exist in the tree (the check that would have caught the lost autonomy work within a week).
+- **Cold-start branch in `/evolve-cart` Analyze §2a** — when friction.jsonl is absent or empty, name the real evidence base and rank from process-notes flags instead of implying weighted analysis happened.
+
+### Changed
+
+- Vitals check count reconciled to ten (a pre-existing Check #9 had never been counted); `commands/vitals.md` brought to parity, including its stale "this command never writes" claim.
+
 ## [1.9.1] — 2026-05-23 — decision-log MCP rename + generic framing
 
 Patch release. Fixes a stale MCP server reference and reframes decision-logging as optional.
