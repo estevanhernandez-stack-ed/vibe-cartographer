@@ -14,7 +14,7 @@ This skill describes two procedures the agent runs against the unified builder p
 - **Data contract:** `skills/guide/references/data-contracts.md` — read the "Unified Profile" and "Decay metadata" sections.
 - **Schema:** `skills/guide/schemas/builder-profile.schema.json` — `_meta` blocks live under each namespace (`shared._meta` and `plugins.<name>._meta`) keyed by dotted field path. Per-entry shape: `{ last_confirmed, stale, ttl_days }`.
 - **Framework reference:** `docs/self-evolving-plugins-framework.md` Pattern #4 — Memory Decay and Refresh. The pillar is **self-repair**. Past-TTL fields gain `stale: true` but values are never modified without explicit user input.
-- **Atomic writes only:** all profile writes go through `node scripts/atomic-write-json.js ~/.claude/profiles/builder.json` (stdin = full profile JSON). Never write the profile inline.
+- **Atomic writes only:** all profile writes go through `node ${CLAUDE_PLUGIN_ROOT}/scripts/atomic-write-json.js ~/.claude/profiles/builder.json` (stdin = full profile JSON). Never write the profile inline.
 
 ## Catalog-Wide Invariant
 
@@ -90,7 +90,7 @@ The returned value is a string field path the caller (`/onboard`) uses to phrase
    - If the entry exists: set `entry.last_confirmed = <today ISO date>` (e.g., `2026-04-16`), `entry.stale = false`. Preserve `entry.ttl_days` exactly as-is.
    - If the entry does not exist: create it with `last_confirmed = <today>`, `stale = false`, `ttl_days = <default from the table above>`. If the field path is not in the default-TTL table, refuse to create the entry (return without writing) — the SKILL only manages the documented fields.
 6. **Bump top-level metadata.** Set `profile.last_updated = <today ISO date>`.
-7. **Atomic write.** Pipe the full profile JSON to `node scripts/atomic-write-json.js ~/.claude/profiles/builder.json`. On non-zero exit, surface the stderr message to the caller. Do not retry — the caller owns retry policy.
+7. **Atomic write.** Pipe the full profile JSON to `node ${CLAUDE_PLUGIN_ROOT}/scripts/atomic-write-json.js ~/.claude/profiles/builder.json`. On non-zero exit, surface the stderr message to the caller. Do not retry — the caller owns retry policy.
 
 `stamp()` does **not** mutate the field's value. Updating the value (because the user said "actually I switched to professor") is the caller's responsibility — `/onboard` writes the new value, then calls `stamp()` to refresh the timestamp.
 

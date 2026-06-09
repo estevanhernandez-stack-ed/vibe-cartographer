@@ -46,7 +46,7 @@ If any are missing, list what's missing and point to the relevant command. Revie
 - Skim the app code itself — does it match what the spec and PRD described?
 - **Friction triggers contract:** [`../guide/references/friction-triggers.md`](../guide/references/friction-triggers.md) — section `/reflect`. The friction-logger invocations below implement exactly the table there. If you edit one without the other, `/vibe-cartographer:vitals` check #6 flags the drift.
 - **Session logger interface:** [`../session-logger/SKILL.md`](../session-logger/SKILL.md) — `start(command, project_dir)` returns the sessionUUID for this run; terminal `end(entry)` takes it back in at command completion.
-- **Data contracts:** [`../guide/references/data-contracts.md`](../guide/references/data-contracts.md) — the "Friction log" and "Friction calibration" sections define the shapes read and written during the calibration check-in. `friction.jsonl` is the read source; `friction.calibration.jsonl` is the write target. Both use `node scripts/atomic-append-jsonl.js`.
+- **Data contracts:** [`../guide/references/data-contracts.md`](../guide/references/data-contracts.md) — the "Friction log" and "Friction calibration" sections define the shapes read and written during the calibration check-in. `friction.jsonl` is the read source; `friction.calibration.jsonl` is the write target. Both use `node ${CLAUDE_PLUGIN_ROOT}/scripts/atomic-append-jsonl.js`.
 
 ## Session Logging
 
@@ -239,7 +239,7 @@ Adapt tone to persona. Learner mode: explain what each group means if the builde
 **Step 4 — Handle the builder's response.**
 
 - **If the builder says `skip`, `pass`, `looks fine`, or similar:** no writes. Proceed to "Generate `docs/reflection.md`".
-- **If the builder replies with `fp <number>` markings:** for each marked entry, append ONE line to `friction.calibration.jsonl` via `node scripts/atomic-append-jsonl.js ~/.claude/plugins/data/vibe-cartographer/friction.calibration.jsonl`. Schema:
+- **If the builder replies with `fp <number>` markings:** for each marked entry, append ONE line to `friction.calibration.jsonl` via `node ${CLAUDE_PLUGIN_ROOT}/scripts/atomic-append-jsonl.js ~/.claude/plugins/data/vibe-cartographer/friction.calibration.jsonl`. Schema:
   ```json
   {
     "schema_version": 1,

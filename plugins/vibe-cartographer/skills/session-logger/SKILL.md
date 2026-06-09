@@ -12,7 +12,7 @@ Internal SKILL. Not a user-invocable slash command. Every Vibe Cartographer comm
 - **Data contract:** [`../guide/references/data-contracts.md`](../guide/references/data-contracts.md) — read the "Session log" section. The sentinel vs terminal shapes, required fields, and sessionUUID pairing contract live there.
 - **Session log schema:** [`../guide/schemas/session-log.schema.json`](../guide/schemas/session-log.schema.json) — JSON Schema Draft-07. The schema's `oneOf` splits sentinel (outcome=in_progress) from terminal (outcome in completed/abandoned/error/partial). Every write validates against this.
 - **Unified profile schema:** [`../guide/schemas/builder-profile.schema.json`](../guide/schemas/builder-profile.schema.json) — the `plugins.vibe-cartographer._meta.last_seen_complements` sub-shape (list / timestamp / previous_diff_count / notable_change_at) is defined here. Pattern #11 namespace isolation: this SKILL writes ONLY inside `plugins.vibe-cartographer._meta`, never into `shared.*` or any other plugin's namespace.
-- **Atomic protocol:** all session log writes go through `node scripts/atomic-append-jsonl.js`; all profile writes go through `node scripts/atomic-write-json.js`. Never `>>` from a shell.
+- **Atomic protocol:** all session log writes go through `node ${CLAUDE_PLUGIN_ROOT}/scripts/atomic-append-jsonl.js`; all profile writes go through `node ${CLAUDE_PLUGIN_ROOT}/scripts/atomic-write-json.js`. `${CLAUDE_PLUGIN_ROOT}` is the plugin install root (the directory holding `.claude-plugin/plugin.json`) — the helper scripts ship inside the plugin at `scripts/`, so the path resolves on every install, not just the solo-repo checkout. Resolve from the plugin root, never from the cwd. Never `>>` from a shell.
 - **Orphan pairing:** the sentinel's `sessionUUID` is the load-bearing field. `friction-logger.detect_orphans()` scans 7 days of session files looking for sentinels whose `(command, project_dir, sessionUUID)` has no matching terminal entry.
 
 ## Where the Log Lives
@@ -20,7 +20,8 @@ Internal SKILL. Not a user-invocable slash command. Every Vibe Cartographer comm
 `~/.claude/plugins/data/vibe-cartographer/sessions/<YYYY-MM-DD>.jsonl`
 
 - One file per day. Append-only. Never rewrite existing lines.
-- `mkdir -p` the directory on first use (the atomic-append script handles this).
+- **Auto-create the data dir.** `${CLAUDE_PLUGIN_ROOT}/scripts/atomic-append-jsonl.js` `mkdir -p`s the target directory (and parents) on first use, so a fresh config home gets `~/.claude/plugins/data/vibe-cartographer/sessions/` created on the first command of the first session. No separate setup step.
+- **Fail loud, never silent (when the script can't be resolved).** If `${CLAUDE_PLUGIN_ROOT}/scripts/atomic-append-jsonl.js` cannot be resolved or run — orchestrator context with no plugin root, an unexpected install layout, no `node` on PATH — do **NOT** silently skip the write. Fall back: create `~/.claude/plugins/data/vibe-cartographer/sessions/` (and parents) with any available tool, then append the single JSON line directly (a Write/Edit append, a shell append, whatever the environment offers). Atomicity is preferred, but a plain append beats a missing entry. **Only if both the script path and the direct fallback fail** do you stop — and then surface the one-time heads-up banner (`skills/guide/SKILL.md > Session Logging`) so the gap is visible to the builder. Silent-skip is the one behavior this SKILL must never fall back to: the six-week telemetry blackout that motivated this contract was caused by exactly that.
 - Cross-project: a single user's logs from all their projects land here.
 - Every command run produces **two** entries in the same daily file: one sentinel at start, one terminal at end, paired by `sessionUUID`.
 
@@ -123,9 +124,9 @@ Called by a command SKILL at invocation. Returns the `sessionUUID` the command m
 4. **Validate against `session-log.schema.json`** (the `sentinelEntry` branch of the `oneOf`). On validation failure, exit silently — do not block command startup. Friction capture without a sentinel still works; missing the sentinel only weakens orphan detection for this one run.
 5. **Atomic append.** Pipe the JSON-stringified entry to:
    ```bash
-   node scripts/atomic-append-jsonl.js ~/.claude/plugins/data/vibe-cartographer/sessions/<today>.jsonl
+   node ${CLAUDE_PLUGIN_ROOT}/scripts/atomic-append-jsonl.js ~/.claude/plugins/data/vibe-cartographer/sessions/<today>.jsonl
    ```
-   where `<today>` is `YYYY-MM-DD` in local time. On non-zero exit, log a one-line note to stderr and continue — session logging is instrumentation, not critical path.
+   where `<today>` is `YYYY-MM-DD` in local time. On a non-zero exit **or** an unresolvable script path, apply the write-anyway fallback in "Where the Log Lives" (auto-create the dir + direct append; banner only if that also fails). Logging stays off the critical path — it never blocks the command — but it must never fail *quietly*.
 6. **Return the `sessionUUID`** to the caller. The command SKILL holds it in memory for the duration of the run and passes it back in when calling the terminal-append procedure.
 
 **Concurrency note:** two commands started in the same minute in different projects will get different UUIDs. That's the whole point of Decision #3 in the spec — timestamps alone can collide; UUIDs can't.
@@ -148,13 +149,13 @@ Called by a command SKILL at completion, after embedded feedback and before the 
      - `project_id`, `project_dir`, `mode`, `persona`: pulled the same way as in `start()` so the pair is internally consistent.
 2. **Match the sessionUUID.** The entry's `sessionUUID` MUST equal the value returned by `start()` for this same command run. Never mint a new UUID here — that breaks orphan pairing and invalidates every friction entry tagged with the original UUID.
 3. **Validate against `session-log.schema.json`** (the `terminalEntry` branch of the `oneOf`). Required: `schema_version`, `timestamp`, `plugin`, `plugin_version`, `command`, `project_dir`, `sessionUUID`, `outcome`. `outcome` must be one of `completed` | `abandoned` | `error` | `partial`.
-4. **Atomic append to today's session file** exactly as in `start()` step 5:
+4. **Atomic append to today's session file** exactly as in `start()` step 5 (same write-anyway fallback on unresolvable path or non-zero exit):
    ```bash
-   node scripts/atomic-append-jsonl.js ~/.claude/plugins/data/vibe-cartographer/sessions/<today>.jsonl
+   node ${CLAUDE_PLUGIN_ROOT}/scripts/atomic-append-jsonl.js ~/.claude/plugins/data/vibe-cartographer/sessions/<today>.jsonl
    ```
 5. **Update `plugins.vibe-cartographer._meta.last_seen_complements`.** See the dedicated procedure below. This runs whether or not the atomic-append in step 4 succeeded — the two writes are independent instruments. If the unified profile write fails, surface the stderr and continue; don't retry and don't block the handoff.
 
-**Failure handling:** same as `start()` — session logging is instrumentation. A failed append logs a one-line warning to stderr and the command proceeds to handoff. The user never sees a session-logger error.
+**Failure handling:** same as `start()` — session logging stays off the critical path and the command always proceeds to handoff. But "off the critical path" is not "silent": a script that can't be resolved or an append that exits non-zero triggers the write-anyway fallback (auto-create + direct append), and only a *total* failure (script path unresolvable AND direct fallback failed) surfaces the one-time heads-up banner from `guide/SKILL.md > Session Logging`. A routine best-effort miss logs one line to stderr; a structural inability to log at all is made visible once.
 
 ## Procedure: `update_last_seen_complements(available_complements)`
 
@@ -198,7 +199,7 @@ Runs as step 5 of the terminal append. Writes Vibe Cartographer's snapshot of Pa
    - Update `profile.last_updated = <now ISO date>`.
 6. **Atomic write.** Pipe the JSON-stringified updated profile to:
    ```bash
-   node scripts/atomic-write-json.js ~/.claude/profiles/builder.json
+   node ${CLAUDE_PLUGIN_ROOT}/scripts/atomic-write-json.js ~/.claude/profiles/builder.json
    ```
    `atomic-write-json.js` handles the `.tmp` + `fsync` + `rename` sequence. On non-zero exit, surface the stderr and continue — the terminal session-log entry has already been appended, so orphan pairing still works.
 7. **Invariant check (defensive).** Before writing, assert the root profile still has `shared` and `plugins` keys and that no keys outside `plugins["vibe-cartographer"]` were mutated. If the assertion fails, abort the write and surface an error to stderr. Pattern #11 violations must never reach disk.

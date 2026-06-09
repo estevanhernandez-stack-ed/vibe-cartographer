@@ -128,7 +128,7 @@ At terminal write time, `session-logger` ALSO updates `plugins.vibe-cartographer
 
 **When to use:** any write to the unified profile JSON (`~/.claude/profiles/builder.json`). Anywhere you need to rewrite an entire file and need to guarantee that a reader either sees the previous full version or the new full version, never a half-written file.
 
-**How:** pipe the new JSON object to `node scripts/atomic-write-json.js <target-path>`. The script:
+**How:** pipe the new JSON object to `node ${CLAUDE_PLUGIN_ROOT}/scripts/atomic-write-json.js <target-path>`. `${CLAUDE_PLUGIN_ROOT}` is the plugin install root (the dir holding `.claude-plugin/plugin.json`); the helper ships inside the plugin at `scripts/`, so the path resolves on every install rather than only in a solo-repo checkout. The script:
 
 1. Reads stdin, parses as JSON (exit 1 on parse failure).
 2. `mkdirSync(parent, { recursive: true })`.
@@ -150,7 +150,7 @@ At terminal write time, `session-logger` ALSO updates `plugins.vibe-cartographer
 
 **When to use:** any append to a `.jsonl` log — friction.jsonl, friction.calibration.jsonl, sessions/*.jsonl. Use this for all per-line appends; never `>>` from a shell.
 
-**How:** pipe one JSON object to `node scripts/atomic-append-jsonl.js <target-path>`. The script:
+**How:** pipe one JSON object to `node ${CLAUDE_PLUGIN_ROOT}/scripts/atomic-append-jsonl.js <target-path>`. `${CLAUDE_PLUGIN_ROOT}` is the plugin install root (the dir holding `.claude-plugin/plugin.json`); the helper ships inside the plugin at `scripts/`, so the path resolves on every install rather than only in a solo-repo checkout. The script:
 
 1. Reads stdin, parses as JSON (exit 1 on parse failure).
 2. Re-serializes to a single line (no embedded newlines in the JSON value).

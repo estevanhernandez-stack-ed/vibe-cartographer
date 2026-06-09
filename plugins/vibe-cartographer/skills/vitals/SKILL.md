@@ -419,7 +419,7 @@ Six deterministic, per-fix-confirmed writes. Each one is **only** eligible when 
 
 - **Eligibility.** Derived from the check findings in step 3. If the check did not surface the condition, do not offer the fix. Do not offer a fix speculatively.
 - **Confirmation.** `[y/n]` per fix. Default on empty input is `n` (decline). Input other than `y`/`yes` (case-insensitive) is treated as decline, no clarifying retry. One round of consent per fix — if the user declines, move on; do not re-prompt within this run.
-- **Atomicity for profile writes.** All writes to `~/.claude/profiles/builder.json` go through `node scripts/atomic-write-json.js <path>` with the new full profile piped on stdin. Never partial-write, never in-place edit. On atomic-write failure, surface the exit-1 stderr to the user, mark the session outcome `partial`, and move to the next fix.
+- **Atomicity for profile writes.** All writes to `~/.claude/profiles/builder.json` go through `node ${CLAUDE_PLUGIN_ROOT}/scripts/atomic-write-json.js <path>` with the new full profile piped on stdin. Never partial-write, never in-place edit. On atomic-write failure, surface the exit-1 stderr to the user, mark the session outcome `partial`, and move to the next fix.
 - **Failure isolation.** An applied fix's failure never aborts subsequent fixes or the closing advisory. Each fix is its own transactional unit.
 - **No friction on decline.** Per the Friction Logging rules above, `n` on any fix produces no friction entry.
 - **Post-apply line.** On successful apply, print one line: `  ✓ applied: <one-sentence description>`. On declined: `  · skipped (declined): <one-sentence description>`. On failure: `  ✗ failed: <one-sentence description> — <reason>`.
@@ -443,7 +443,7 @@ Six deterministic, per-fix-confirmed writes. Each one is **only** eligible when 
 
 For merge conflicts (same key, different value), name the conflict in the diff: *"plugins.app-project-readiness.tone = 'warm' — plugins.vibe-cartographer.tone already set to 'neutral'; keeping 'neutral' (new location wins per 1.5.0 migration rule)."*
 
-**Apply.** Build the merged profile object in-memory, then write via `node scripts/atomic-write-json.js ~/.claude/profiles/builder.json`. On success, post-apply line reads: `  ✓ applied: migrated plugins.app-project-readiness → plugins.vibe-cartographer (N keys moved, M merged).`
+**Apply.** Build the merged profile object in-memory, then write via `node ${CLAUDE_PLUGIN_ROOT}/scripts/atomic-write-json.js ~/.claude/profiles/builder.json`. On success, post-apply line reads: `  ✓ applied: migrated plugins.app-project-readiness → plugins.vibe-cartographer (N keys moved, M merged).`
 
 ### Fix (b) — Orphan `command_abandoned` emission
 
@@ -472,7 +472,7 @@ For merge conflicts (same key, different value), name the conflict in the diff: 
 
   On `y`, fall back to per-orphan prompting. On `a`, accept all without further prompts. On `n` (or unknown), skip all.
 
-**Apply.** Each emission goes through `friction-logger.log(entry)`, which itself goes through `node scripts/atomic-append-jsonl.js`. Post-apply line counts the emissions actually written: `  ✓ applied: emitted <N> command_abandoned friction entries.`
+**Apply.** Each emission goes through `friction-logger.log(entry)`, which itself goes through `node ${CLAUDE_PLUGIN_ROOT}/scripts/atomic-append-jsonl.js`. Post-apply line counts the emissions actually written: `  ✓ applied: emitted <N> command_abandoned friction entries.`
 
 ### Fix (c) — Fresh-stamp `_meta` after upgrade
 
@@ -504,7 +504,7 @@ Fields that already have a `_meta` entry are never overwritten — fresh-stamp i
   Fresh-stamp _meta blocks? [y/n]
 ```
 
-**Apply.** Invokes the decay SKILL's fresh-stamp migration logic (the `stamp(field_path)` procedure run against each decay-eligible field). Each stamp goes through `node scripts/atomic-write-json.js`, but the implementation may batch all additions into a single atomic-write if the decay SKILL exposes a `stamp_batch()` helper; if not, one stamp per field is acceptable (each is atomic-safe on its own).
+**Apply.** Invokes the decay SKILL's fresh-stamp migration logic (the `stamp(field_path)` procedure run against each decay-eligible field). Each stamp goes through `node ${CLAUDE_PLUGIN_ROOT}/scripts/atomic-write-json.js`, but the implementation may batch all additions into a single atomic-write if the decay SKILL exposes a `stamp_batch()` helper; if not, one stamp per field is acceptable (each is atomic-safe on its own).
 
 Post-apply line: `  ✓ applied: fresh-stamped <N> _meta blocks with today's date.`
 
@@ -625,7 +625,7 @@ Six scenarios, one per fix, each starting from a known staged condition. Every s
 3. Prompt renders the diff block with the single move `plugins.app-project-readiness.persona → plugins.vibe-cartographer.persona`.
 4. User types `y`.
 5. Vitals builds the merged profile object in memory: deletes the old block, creates `plugins.vibe-cartographer = { persona: "superdev" }`.
-6. `node scripts/atomic-write-json.js ~/.claude/profiles/builder.json` with the new object on stdin. Exit 0.
+6. `node ${CLAUDE_PLUGIN_ROOT}/scripts/atomic-write-json.js ~/.claude/profiles/builder.json` with the new object on stdin. Exit 0.
 7. Post-apply line: `  ✓ applied: migrated plugins.app-project-readiness → plugins.vibe-cartographer (1 key moved, 0 merged).`
 8. Session terminal append: `outcome: "completed"`, `key_decisions: ["migrated plugins.app-project-readiness → plugins.vibe-cartographer"]`.
 
@@ -639,7 +639,7 @@ Six scenarios, one per fix, each starting from a known staged condition. Every s
 2. Auto-fix (b) eligibility: 1 orphan → single `[y/n]` (not batch; batch mode is >5).
 3. Prompt: `scope started 2026-04-15T08:00:00-05:00 in app-readinessplugin (sessionUUID AAAA-...)`. User types `y`.
 4. Vitals calls `friction-logger.log({ friction_type: "command_abandoned", original_command: "scope", original_timestamp: "2026-04-15T08:00:00-05:00", sessionUUID: "AAAA-...", project_dir: "app-readinessplugin", confidence: "high", symptom: "Sentinel recorded at 2026-04-15T08:00:00-05:00, no terminal entry within 24h", agent_guess_at_cause: null, complement_involved: null })`.
-5. `friction-logger.log` validates against `friction.schema.json`, then appends via `node scripts/atomic-append-jsonl.js ~/.claude/plugins/data/vibe-cartographer/friction.jsonl`. Exit 0.
+5. `friction-logger.log` validates against `friction.schema.json`, then appends via `node ${CLAUDE_PLUGIN_ROOT}/scripts/atomic-append-jsonl.js ~/.claude/plugins/data/vibe-cartographer/friction.jsonl`. Exit 0.
 6. Post-apply line: `  ✓ applied: emitted 1 command_abandoned friction entry.`
 7. Session terminal append: `outcome: "completed"`, `key_decisions: ["emitted 1 orphan command_abandoned entry"]`.
 
