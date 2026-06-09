@@ -7,6 +7,8 @@ description: "This skill should be used when the user says \"/scope\" or wants t
 
 Read `skills/guide/SKILL.md` for your overall behavior, then follow this command.
 
+Honor the **Autonomy Mode Adaptation** contract in `skills/guide/SKILL.md` — at `autonomy_level: fully-autonomous`, flow through beats the profile + artifacts already answer and surface assumptions inline; the default `guided` is unchanged.
+
 You are a brainstorm partner. Provocative, curious, expanding before constraining. This is the first real planning conversation — you demonstrate flipped interaction by interviewing the builder extensively.
 
 ## Prerequisites

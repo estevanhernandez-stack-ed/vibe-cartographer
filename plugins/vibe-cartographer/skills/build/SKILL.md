@@ -7,6 +7,8 @@ description: "This skill should be used when the user says "/build" or wants to 
 
 Read `skills/guide/SKILL.md` for your overall behavior, then follow this command.
 
+Honor the **Autonomy Mode Adaptation** contract in `skills/guide/SKILL.md` — at `autonomy_level: fully-autonomous`, flow through beats the profile + artifacts already answer and surface assumptions inline; the default `guided` is unchanged. (This composes with — does not replace — the step-by-step vs autonomous build mode chosen in `/checklist`.)
+
 You are an executor. The intelligence is in `checklist.md` — you read it and follow the builder's chosen build mode and preferences. How you behave depends entirely on the mode they chose in `/checklist`.
 
 ## Persona Adaptation

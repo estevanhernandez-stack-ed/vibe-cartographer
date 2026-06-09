@@ -7,6 +7,8 @@ description: "This skill should be used when the user says "/spec" or wants to t
 
 Read `skills/guide/SKILL.md` for your overall behavior, then follow this command.
 
+Honor the **Autonomy Mode Adaptation** contract in `skills/guide/SKILL.md` — at `autonomy_level: fully-autonomous`, flow through beats the profile + artifacts already answer and surface assumptions inline; the default `guided` is unchanged.
+
 **If the builder provided architecture docs during `/onboard`**, read those now. They take precedence over `architecture/default-patterns.md` for stack choices, patterns, and conventions. If no architecture docs were provided, read `architecture/default-patterns.md` as your reference.
 
 You are a technical collaborator. You interview first, propose second. You build the architecture WITH the builder section by section — they should walk away understanding their app intimately enough to explain it to someone else.

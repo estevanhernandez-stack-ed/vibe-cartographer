@@ -274,6 +274,49 @@ Read the builder's mode from `docs/builder-profile.md` (once it exists). Mode is
 - Same process notes logging
 - When mode and experience level suggest different defaults, mode is the primary driver and experience level is the tiebreaker
 
+## Autonomy Mode Adaptation
+
+Autonomy is the **third adaptation axis**, independent of the other two: **persona** controls *voice*, **Learner/Builder mode** controls *pacing*, and **autonomy** controls *how many confirmations the agent stops for*. All three compose — they never override each other — and this axis changes **nothing** about the persona table or the Learner/Builder tables above. It is purely additive.
+
+Read two fields from the unified profile (`~/.claude/profiles/builder.json`) at the start of every command:
+
+- `plugins.vibe-cartographer.autonomy_level` — `"guided"` (default) | `"fully-autonomous"`.
+- `plugins.vibe-cartographer.cycle_builder_identity` — `"self"` (a human builder is driving) | `"agent-persona"` (an agent persona is running the cycle on a human's behalf).
+
+These two fields form a 2×2 grid, but the two `guided` cells behave identically — when every beat is confirmed, *who* the builder is doesn't change anything — so the grid collapses to **three modes**:
+
+| Mode | `autonomy_level` | `cycle_builder_identity` | Behavior |
+|------|------------------|--------------------------|----------|
+| **Guided** *(default)* | `guided` | any | Current behavior, unchanged. Every interview beat is asked, every recommendation is confirmable, decay re-validation prompts surface inline. This is what every new builder gets until they explicitly opt into more. |
+| **Autonomous — Self** | `fully-autonomous` | `self` | The human builder opted into autonomy. Flow through; surface assumptions for their async review. |
+| **Autonomous — Agent-persona** | `fully-autonomous` | `agent-persona` | An agent persona is the "builder" for this cycle. Same flow-through, but every assumption is logged for the **human's** next interactive pass — the persona is trusted to proceed, not to ratify. |
+
+### The fully-autonomous contract (both Autonomous modes)
+
+When `autonomy_level` is `"fully-autonomous"`, every command honors this contract:
+
+1. **Opt in once.** The builder opts into autonomy a single time, at `/onboard`. No per-command re-confirmation of the autonomy choice itself.
+2. **Flow through answerable beats.** Any interview beat whose answer is already determined by the unified profile + the project's existing artifacts (`docs/*.md`, `process-notes.md`, architecture docs) is answered from those sources — don't re-ask the builder a question the record already answers.
+3. **Surface every assumption inline.** When the agent fills a beat from inference rather than an explicit source, state the assumption in-line and mark it `(default — confirm on next interactive run)`. The run never silently assumes; it assumes *visibly*.
+4. **Defer stale decay-stamps.** If a decay-eligible profile field is past its TTL, do **not** stop the autonomous run to re-validate it. Note it and defer the re-stamp to the next interactive (`guided`) run. Autonomy never blocks on housekeeping.
+5. **Never pause for confirmations the profile already answers.** Confirmations exist for genuine forks the record can't resolve. If the profile + artifacts resolve it, proceed.
+
+**Self vs Agent-persona** differ only in *who reviews the surfaced assumptions, and when*: in **Self** mode the human opted in and is reachable, so assumptions are surfaced for their review whenever they next look; in **Agent-persona** mode the human is out of the loop for the cycle, so every assumption and every deferred decay-stamp is accumulated for the human's next interactive pass — the bar for "surface it" is lower, and nothing the persona inferred is treated as ratified.
+
+### Promotion criteria (guided → fully-autonomous)
+
+Autonomy is earned, not the default. Offer to promote a builder to `fully-autonomous` only when all hold:
+
+- **N+ completed projects** through the full chain (the builder has seen what each command produces and trusts the shape).
+- **A rich profile + brief** — enough in the unified profile and the cycle brief that most interview beats are genuinely answerable from the record.
+- **Explicit opt-in.** The builder says yes. Autonomy is never inferred or auto-enabled, no matter how many projects they've shipped.
+
+`guided` stays the default for everyone until that opt-in. Downgrading is always immediate and needs no criteria — a single "let's go back to step-by-step" returns to `guided`.
+
+### One hard boundary
+
+Autonomy governs the **builder's own cycle** — the interview beats and confirmations of `/onboard` through `/reflect`. It never extends to the plugin editing *itself*: `/evolve-cart` Plugin-track SKILL edits **always** queue for explicit review even at `fully-autonomous` (see `skills/evolve-cart/SKILL.md`). The plugin changing its own shape is the one fork autonomy never auto-resolves.
+
 ## Command Chain
 
 ```

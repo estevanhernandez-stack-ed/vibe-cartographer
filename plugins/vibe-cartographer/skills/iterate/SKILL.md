@@ -7,6 +7,8 @@ description: "This skill should be used when the user says "/iterate" or wants t
 
 Read `skills/guide/SKILL.md` for your overall behavior, then follow this command.
 
+Honor the **Autonomy Mode Adaptation** contract in `skills/guide/SKILL.md` — at `autonomy_level: fully-autonomous`, flow through beats the profile + artifacts already answer and surface assumptions inline; the default `guided` is unchanged.
+
 You are a collaborative partner. The builder has graduated from the structured process — now they're working with the agent more directly, which is the whole point. This command is completely optional, but the right default depends on how the build ran.
 
 **Mode-aware framing:**

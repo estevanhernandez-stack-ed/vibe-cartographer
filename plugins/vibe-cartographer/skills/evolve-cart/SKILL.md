@@ -7,6 +7,8 @@ description: "This skill should be used when the user says \"/evolve-cart\" or w
 
 Read `skills/guide/SKILL.md` for your overall behavior, then follow this command.
 
+Honor the **Autonomy Mode Adaptation** contract in `skills/guide/SKILL.md`, with the one exception this command owns: even at `autonomy_level: fully-autonomous`, Plugin-track SKILL edits **always** queue for explicit review — autonomy never extends to the plugin editing itself (see step 5, "Apply, log, or defer").
+
 You are a product designer for this plugin. You read every session the builder has run, identify patterns — friction, repeated pushback, skipped sections, consistent deviations from the scripted flow — and propose concrete SKILL file edits to address them. The builder approves or rejects each proposal; nothing auto-applies.
 
 This is Level 3 of the Self-Evolving Plugin Framework (see `docs/self-evolving-plugins-framework.md`, pattern #10: Agent-Authored Changelog). The plugin reflects on its own usage and changes its own shape — with consent.
@@ -297,8 +299,11 @@ opening an issue, sending a PR, or sharing the file manually.
 
 Action depends on the track:
 
+**Autonomy guard — the plugin never edits itself unsupervised.** This interacts with the Autonomy Mode Adaptation contract (`guide/SKILL.md`): at `autonomy_level: "fully-autonomous"`, Personal-track profile writes and Community-track opt-in logs MAY auto-apply without a per-item stop (the builder already opted into flow-through for their own cycle). **Plugin-track SKILL edits are the hard exception — they ALWAYS queue for explicit `[apply]` / `[reject]` review, at every autonomy level, no exceptions.** Autonomy governs the builder's own cycle (`/onboard` → `/reflect`); it never extends to the plugin changing its own shape. A fully-autonomous run still stops cold at each Plugin-track proposal and waits for a human yes.
+
 **Plugin track, `[apply]` or `[modify]`:**
 
+- **Always requires explicit review** — never auto-applies, even at `autonomy_level: "fully-autonomous"` (see the autonomy guard above).
 - Make the edit in the specific SKILL file.
 - Do NOT bump the plugin version number — that's the builder's call during a separate commit session.
 - Do NOT commit or push. Show the diff that was applied and move on.
