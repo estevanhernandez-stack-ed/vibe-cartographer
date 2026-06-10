@@ -11,6 +11,18 @@ All notable changes to this project are documented here. The format follows [Kee
 
 - **Quick Build pacing mode.** A third build mode alongside step-by-step and autonomous. After the interview phase (`/onboard` → `/checklist`), Quick Build skips all checkpoints, verification pauses, and git pushes — just executes checklist items sequentially with auto-commits. At the start of a Quick Build run, the agent checks whether Claude's **auto mode** is active. If it is, proceed. If not, remind the builder: "Quick Build works best with auto mode enabled — press `Shift+Tab` to cycle to it. Auto mode lets Claude handle tool permissions automatically so the build can run uninterrupted." Wait for confirmation before starting. No `git push` until the builder explicitly triggers one post-build. Designed for experienced builders who trust the plan and want maximum velocity from spec to working code.
 
+## [1.10.1] — 2026-06-09 — vibe-sec enforcer revival
+
+Patch release. First fix landed from the 2026-06-09 quality-net gap analysis (GAP-02).
+
+### Fixed
+
+- **`/build`'s pre-handoff security enforcer is live again.** The enforcer block still described vibe-sec as "pre-release (v0.0.1), no invocable command yet — skip it," prose written before vibe-sec shipped `:gate`. vibe-sec is at v0.7.0 with a CI-safe gate (exit 0/1/2); `/build` now runs `/vibe-sec:gate` alongside `/vibe-test:gate` and treats non-zero findings as a remediation prompt. Every build since vibe-sec became invocable had silently skipped security enforcement.
+
+### Removed
+
+- **Legacy npm version check in `/onboard`.** It pointed at the npm global-install channel, which is stale at 1.7.3 while the plugin ships 1.10.x through the marketplace — the upgrade advice it printed was wrong for every current install path. Removed under the section's own removal clause; start-of-command order is now session-logger.start() → decay check → rest of onboard.
+
 ## [1.10.0] — 2026-06-09 — telemetry blackout fix + /reconnect + autonomy contract
 
 Minor release. The evolve-harvest wave: every proposal from the 2026-06-09 `/evolve-cart` run, applied and reviewed.
