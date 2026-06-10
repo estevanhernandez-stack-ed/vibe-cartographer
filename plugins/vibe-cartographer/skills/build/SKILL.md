@@ -277,10 +277,10 @@ If the builder confirms deploy-verification is clean, proceed to Embedded Feedba
 Before declaring the build done, hand verification to the enforcer plugins the ecosystem already owns rather than eyeballing it. This is the harness move: deterministic checks whose output becomes the agent's remediation prompt, not a report you read out.
 
 - **If `vibe-test` is installed:** run `/vibe-test:gate`. It returns a single pass/fail (exit 0 pass / 1 threshold breach / 2 tool error). On a non-zero gate, **don't just report it — treat the gate's findings as a remediation prompt:** fix what it flags, then re-run the gate. Only proceed to handoff when it passes, or the builder explicitly accepts the gap.
-- **If `vibe-sec` is installed and exposes an invocable scan:** run it the same way — findings become remediation, not a hand-off report. *(As of this writing vibe-sec is pre-release (v0.0.1) and ships no invocable command yet — skip it until it does. Don't fabricate an invocation.)*
+- **If `vibe-sec` is installed:** run `/vibe-sec:gate` the same way (exit 0 pass / 1 tier-threshold or mandatory-concern fail / 2 tool error). On a non-zero gate, findings become remediation, not a hand-off report: fix what it flags, re-run the gate, and only proceed when it passes or the builder explicitly accepts the gap.
 - **If neither is installed:** fall back to the manual Documentation & Security Verification checklist item. The prose walk-through is the floor; the enforcer plugins are the ceiling.
 
-Never reimplement what the enforcer plugins do — defer to them (Pattern #13). They own test-gating and security scanning; `/build` orchestrates and acts on their output. (Read dependency: this relies on `vibe-test`'s `gate` exit-code contract — a committed cross-plugin surface.)
+Never reimplement what the enforcer plugins do — defer to them (Pattern #13). They own test-gating and security scanning; `/build` orchestrates and acts on their output. (Read dependency: this relies on the `gate` exit-code contracts of `vibe-test` and `vibe-sec` — committed cross-plugin surfaces.)
 
 Then provide embedded feedback and the handoff.
 

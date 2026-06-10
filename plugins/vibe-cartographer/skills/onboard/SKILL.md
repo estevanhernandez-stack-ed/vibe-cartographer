@@ -15,34 +15,6 @@ You are a warm, energetic host kicking off the build process. This is the very f
 
 None. This is the entry point for the entire process.
 
-## Version Check (soft, non-blocking)
-
-Before displaying the welcome banner, do a quick background version check against the npm registry. If a newer version of Vibe Cartographer is available, mention it once at the top of the welcome — don't nag, don't block, don't print anything if the check fails.
-
-**Run this bash command** (ignore any errors — this is best-effort, offline/network issues must NOT block /onboard):
-
-```bash
-INSTALLED=$(cat ~/.npm-global/lib/node_modules/@esthernandez/vibe-cartographer/plugins/vibe-cartographer/.claude-plugin/plugin.json 2>/dev/null \
-  || find "$APPDATA/npm/node_modules/@esthernandez/vibe-cartographer/plugins/vibe-cartographer/.claude-plugin/plugin.json" 2>/dev/null \
-  | head -1 | xargs cat 2>/dev/null \
-  | python -c "import sys, json; print(json.load(sys.stdin).get('version', 'unknown'))" 2>/dev/null) && \
-LATEST=$(curl -sf --max-time 5 https://registry.npmjs.org/@esthernandez/vibe-cartographer/latest \
-  | python -c "import sys, json; print(json.load(sys.stdin).get('version', 'unknown'))" 2>/dev/null) && \
-if [ -n "$INSTALLED" ] && [ -n "$LATEST" ] && [ "$INSTALLED" != "$LATEST" ] && [ "$LATEST" != "unknown" ]; then
-  echo "📦 Vibe Cartographer $LATEST is available (you're on $INSTALLED)."
-  echo "   Upgrade: npm install -g @esthernandez/vibe-cartographer@latest"
-fi
-```
-
-**Rules:**
-- Run this ONCE at the very start of /onboard, before any other output
-- If the command fails, errors, times out, or returns nothing — silently continue with the rest of /onboard
-- Never print anything if installed version equals latest version
-- Never print anything if the check couldn't determine a version
-- The user should never see "version check failed" — only the positive notification or silence
-
-This is a nice-to-have, not load-bearing. If it's too noisy or breaks in practice, it can be removed without affecting any other plugin behavior.
-
 ## Before You Start
 
 - **Check the working directory.** The builder should be running their coding agent in an empty folder they've set aside specifically for their project. Check the current directory — if it has existing files (beyond dotfiles like `.git`, `.claude`, etc.), pause and ask: "It looks like this folder already has files in it. This process works best in a fresh, empty folder you've designated for your project. Want to create a new folder and move there, or are you good to continue here?" If it's empty (or they confirm), proceed.
@@ -58,7 +30,7 @@ At command start, call `session-logger.start("onboard", <project_dir>)` to get t
 
 At command end (after `docs/builder-profile.md` is written, the unified profile is updated, and the `## /onboard` section of `process-notes.md` is populated), call the session-logger terminal-append procedure with the outcome and this same sessionUUID. Include `friction_notes`, `key_decisions`, `artifact_generated: "docs/builder-profile.md"`, and `complements_invoked` as applicable.
 
-**Order at command start (once all pieces are wired): version check → session-logger.start() → decay check → rest of onboard.** The session-logger sentinel must be on disk before the decay check runs so `friction-logger.detect_orphans()` can pair a sentinel to a terminal for this run.
+**Order at command start (once all pieces are wired): session-logger.start() → decay check → rest of onboard.** The session-logger sentinel must be on disk before the decay check runs so `friction-logger.detect_orphans()` can pair a sentinel to a terminal for this run.
 
 Also invoke `friction-logger.detect_orphans()` once at startup (after session-logger.start() writes the sentinel, before the decay check). Any sentinels from prior runs older than 24h without a matching terminal get emitted as `command_abandoned` friction entries. This is the out-of-band orphan sweep — do not attempt to also log `command_abandoned` from inside the regular friction trigger table.
 
