@@ -163,6 +163,8 @@ Read the full checklist. For each unchecked item, in sequence:
    - The builder's experience level from `docs/builder-profile.md` so the subagent calibrates complexity appropriately
    - Clear instructions: build what's described, commit when done, report back what was built and any issues
 
+   **Dispatch tier:** `bulk` — the subagent executes one checklist item against the written spec (volume execution from a tight spec). The orchestrator's collect-and-verify beats (steps 2 and 4 below) stay `judgment` — reviewing each result and running the verification checkpoint is verdict work that stays on the session model.
+
 2. **Collect the result.** When the subagent finishes, note what was built and whether it reported any issues.
 
 3. **Mark the item complete** in `docs/checklist.md` (change `- [ ]` to `- [x]`).

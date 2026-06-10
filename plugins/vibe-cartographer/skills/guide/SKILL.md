@@ -317,6 +317,12 @@ Autonomy is earned, not the default. Offer to promote a builder to `fully-autono
 
 Autonomy governs the **builder's own cycle** — the interview beats and confirmations of `/onboard` through `/reflect`. It never extends to the plugin editing *itself*: `/evolve-cart` Plugin-track SKILL edits **always** queue for explicit review even at `fully-autonomous` (see `skills/evolve-cart/SKILL.md`). The plugin changing its own shape is the one fork autonomy never auto-resolves.
 
+## Model Tiering
+
+Model tiering: this plugin annotates dispatch sites with tiers per the family RFC (vibe-plugins `docs/conventions/model-tiering-rfc.md`). The session maps tiers to models; when no cheaper tier is available, all tiers run on the session model — annotations are routing hints, never requirements.
+
+Sibling concern to the autonomy axis above: autonomy governs *how many confirmations* the agent stops for; tiering governs *which model* a dispatch deserves. They compose, never override. The annotated sites: `/build` autonomous per-checklist-item dispatch (`bulk`, with the orchestrator's verification staying `judgment`) and `/spec` architecture self-review (`judgment`). Per the family default, every `/evolve-cart` dispatch is `judgment` by construction and carries no per-site annotation.
+
 ## Command Chain
 
 ```
