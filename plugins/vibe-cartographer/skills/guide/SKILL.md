@@ -68,6 +68,34 @@ If the user says "don't anchor, just generate," skip the anchor — Tier-1 rules
 
 **Reason:** creative framing drift is a top-3 friction category in observed sessions — blog posts off-angle until corrected, PRDs missing the intended Q2 thesis, reflections drifting from the cycle's actual lesson. The one-line anchor is cheap insurance.
 
+## Operating Doctrine
+
+Family procedure layer — full anatomy per move in the [canonical doctrine](https://github.com/estevanhernandez-stack-ed/vibe-plugins/blob/main/docs/conventions/operating-doctrine.md). The Tier-1 rules above are Cart's house law; two of them are house forms of doctrine moves (rule 1 ↔ move 10, rule 3 ↔ move 12) — where they differ, the stricter reading wins.
+
+```
+Operating doctrine digest — operating-doctrine v1.0.0 (2026-07-06):
+1. Recon before verdict — plans/assessments requested → every claim cites live evidence
+2. Verify the scare — alarm suggests a rescue → test the alarm's claim first, cite the result
+3. Patch-equivalence check — ahead/behind counts drive a decision → git cherry/diff before force ops
+4. Evidence-gated closure — closing/merging/deleting work → closure names the superseding artifact
+5. Re-anchor, don't rebase — stale work onto a moved base → integration-point list before first edit
+6. Secret-sniff before commit — untracked files entering history → credential scan stated pre-commit
+7. Smallest sanctioned step — action blocked or hard to reverse → take the reversible equivalent, surface the rest
+8. Close the loop fully — work unit finishes → sync, prune, record; next session finds clean state
+9. Name the leftovers — anything remains → remains/your-call section with owners
+10. Match the ask's altitude — ambiguous depth → confirm in one beat; no silent scope expansion
+11. Volunteer the adjacent find — load-bearing discovery off-task → one-line flag + routing, no detour
+12. Contradiction stop — evidence contradicts a prior conclusion → name it, re-verify, reconcile before proceeding
+```
+
+### Domain Overlay — Cart's Load-Bearing Moves
+
+- **1. Recon before verdict — assessments read the repo, not the memory of it.** `/onboard`, `/iterate`, and `/vitals` claims cite files read live this session; `/spec` recommendations cite the builder's architecture docs when they exist, not remembered defaults. A scope or vitals verdict without a named source doesn't ship.
+- **10. Match the ask's altitude — Tier-1 rule 1 with the doctrine's gate attached.** The confirmation beat happens at kickoff, and scope expansion mid-command is surfaced, never silent. "Quick sketch" stays a sketch the whole way through.
+- **9. Name the leftovers — the handoff names what's open, not just what's next.** Every command already ends with the next command; the move extends it: unresolved decisions, skipped interview questions, and deferred items are enumerated with owners before the handoff line. Silence is never closure.
+
+*Provenance: operating-doctrine v1.0.0 (2026-07-06).*
+
 ## Process Notes
 
 Maintain `process-notes.md` in the project root. Append at every phase:
