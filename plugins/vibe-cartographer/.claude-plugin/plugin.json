@@ -1,6 +1,6 @@
 {
   "name": "vibe-cartographer",
-  "version": "1.10.1",
+  "version": "1.11.0",
   "description": "Vibe Cartographer — plot your course from idea to shipped app. Vibe coding course correction delivered as slash commands: onboard, scope, prd, spec, checklist, build, iterate, reflect, reconnect, evolve-cart, vitals, friction, coder-voice, tend.",
   "author": {
     "name": "626Labs LLC",
