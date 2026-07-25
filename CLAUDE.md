@@ -2,102 +2,50 @@
 
 > **Persona:** This repo inherits The Architect from `~/.claude/CLAUDE.md`. No need to re-establish — just adds project context below.
 
-## Tech Stack & Voice
+The plugin that builds the other plugins. Ships as content, not code — markdown SKILLs and commands, no runtime build. `plugins/vibe-cartographer/` is the shipped artifact; the repo root is the workspace around it.
 
-- **Stack:** Node.js (no runtime build — plugin ships as content: markdown SKILLs + commands). Python helpers in `scripts/` for plugin packaging and npm stats. Published as npm package `@esthernandez/vibe-cartographer` (currently v1.7.3) and as a Claude Code plugin via marketplace.
-- **Distribution:** Self-marketplace via `.claude-plugin/marketplace.json` (`/plugin marketplace add estevanhernandez-stack-ed/vibe-cartographer`) AND aggregated via the [vibe-plugins](https://github.com/estevanhernandez-stack-ed/vibe-plugins) family marketplace. Version pin lives in vibe-plugins' `marketplace.json` `ref:` field.
-- **Brand:** Cyan `#17d4fa` + magenta `#f22f89`, always paired. Navy `#0f1f31` field. Space Grotesk display, Inter body, JetBrains Mono code/meta (uppercase + 0.12em tracking on small labels).
-- **Voice:** Builder-to-builder, second person, sentence case. No "empower / leverage / seamlessly / unlock / unleash." Em-dashes welcome. No emoji in CLI output, SKILL bodies, or marketing copy. Tagline: *Imagine Something Else.*
+Distributed two ways at once: its own solo marketplace (`/plugin marketplace add estevanhernandez-stack-ed/vibe-cartographer`, tracks `main`, canary) and the vibe-plugins family aggregator (pinned by `ref:`, stable). Changes hit canary consumers the moment they land on `main`.
 
-## Design system
+## Gotchas
 
-Canonical brand spec lives at `~/.claude/skills/626labs-design/` (globally available — same skill across every 626 Labs repo). Use `colors_and_type.css` as the token source and `ui_kits/` as the pattern reference.
+- **There are two `CLAUDE.md` files and they serve different audiences.** This one is for *developing* Cart. [`plugins/vibe-cartographer/CLAUDE.md`](plugins/vibe-cartographer/CLAUDE.md) is read by the runtime agent when a user invokes a Cart command in their own project. Editing the wrong one breaks the wrong audience, silently.
+- **`package.json` and `plugin.json` versions must match.** npm consumers read one, the marketplace reads the other. Drift produces silent install confusion, not an error.
+- **Editing a command means editing two files.** `commands/<name>.md` is the loader; `skills/<name>/SKILL.md` is the logic. Changing one alone is the most common way to ship a no-op.
+- **Cross-plugin contracts ripple.** vibe-doc, vibe-test, vibe-sec, and vibe-thesis read surfaces this repo defines: the builder-profile schema (especially `shared.*`), the session-log and friction-log shapes, `shared.preferences.persona` values, the framework's pattern numbers and names, and the `@esthernandez/vibe-cartographer` package name hardcoded in `/onboard`'s version check. Log a decision before merging a change to any of them, and check whether a sibling needs a paired update.
+- **SKILLs must never write to `~/.claude/plugins/data/vibe-cartographer/` directly.** Use `scripts/atomic-write-json.js` and `scripts/atomic-append-jsonl.js`. Direct writes corrupt state when sessions run concurrently, and Este runs many.
+- **A SKILL with missing `name` or `description` frontmatter does not load.** No error, it is simply absent.
+- **`bundles/*.plugin` are immutable.** Past releases stay reproducible. Fix forward with a new release; never edit a historical bundle.
+- **Don't hand-edit between the `<!-- gitnexus:start -->` and `<!-- gitnexus:end -->` markers.** GitNexus rewrites that block on every `npx gitnexus analyze`, which a post-commit hook triggers. Keystone content goes outside the markers.
+- **Cross-level edits need care.** An L1 change (command behavior) can invalidate the L2 session data that the L3 `/evolve` loop reads. Ask which level a change serves before making it.
 
-## What's where
+## Non-standard conventions
 
-| Path | What it is |
-|---|---|
-| [plugins/vibe-cartographer/](plugins/vibe-cartographer/) | The plugin itself — commands, skills, architecture defaults, `plugin.json`. **This is the shipped artifact.** |
-| [plugins/vibe-cartographer/commands/](plugins/vibe-cartographer/commands/) | The 11 slash commands users invoke (`onboard`, `scope`, `prd`, `spec`, `checklist`, `build`, `iterate`, `reflect`, `evolve`, `vitals`, `friction`). |
-| [plugins/vibe-cartographer/skills/](plugins/vibe-cartographer/skills/) | SKILL.md files backing each command — plus shared helpers: `guide`, `friction-logger`, `session-logger`, `decay`. |
-| [plugins/vibe-cartographer/architecture/](plugins/vibe-cartographer/architecture/) | Default architecture patterns the agent loads when the user provides no custom architecture docs. |
-| [.claude-plugin/marketplace.json](.claude-plugin/marketplace.json) | Solo-repo marketplace manifest. Allows `/plugin marketplace add estevanhernandez-stack-ed/vibe-cartographer`. |
-| [docs/](docs/) | Internal Cart artifacts produced by *running Cart on Cart* (meta dogfood): `scope.md`, `prd.md`, `spec.md`, `checklist.md`, `builder-profile.md`, `self-evolving-plugins-framework.md`. |
-| [scripts/](scripts/) | `postinstall.js` (npm hook), `atomic-write-json.js` / `atomic-append-jsonl.js` (used by SKILLs for safe state writes), `build-plugin.py` (zip into `.plugin`), `stats.py` (npm download tracking). |
-| [bundles/](bundles/) | Historical `.plugin` release bundles (1.0.0 → 1.5.0). **Append-only** — old bundles stay for reproducibility. |
-| [.claude/skills/gitnexus/](.claude/skills/gitnexus/) | Bundled GitNexus skill set — code intelligence reference for THIS repo's development. Not shipped to plugin users. |
-| [process-notes.md](process-notes.md) | Append-only log of meta-dogfood sessions. |
+- **`evolve` is a commit type here**, alongside the usual set — used when an L3 self-improvement proposal is applied.
+- **Runtime data lives outside the repo**, at `~/.claude/plugins/data/vibe-cartographer/` and `~/.claude/profiles/builder.json` under `plugins.vibe-cartographer.*`. Nothing in the source tree touches them; SKILLs do, at runtime.
+- **`.claude/skills/gitnexus/` is for developing this repo.** It is not shipped to plugin users.
 
-## Plugin shape — three audiences, two CLAUDE.md files
+## Rationale
 
-1. **End users** install Cart and invoke its slash commands in their own projects. They never see this repo.
-2. **Cart developers** (you, here) modify the plugin's commands and SKILLs. The repo root is your workspace; `plugins/vibe-cartographer/` is the artifact.
-3. **The plugin's runtime agent** reads [`plugins/vibe-cartographer/CLAUDE.md`](plugins/vibe-cartographer/CLAUDE.md) — that file tells the agent how to drive the workflow when a user invokes a Cart command. **Different file, different audience.** This CLAUDE.md (repo root) is for *developing* Cart; that one is for *running* Cart.
+`docs/` holds Cart artifacts produced by running Cart on Cart. They are a meta-dogfood record, not templates — read them as history rather than as the current spec.
 
-Cart's runtime data lives outside the repo at `~/.claude/plugins/data/vibe-cartographer/` (session logs, friction logs, calibration). The unified builder profile is at `~/.claude/profiles/builder.json` under `plugins.vibe-cartographer.*`. SKILLs read/write these at runtime; nothing in this repo's source tree touches them directly.
+## Pointers
 
-## Self-Evolving Plugin Framework
-
-Cart implements the four-level framework documented at [`docs/self-evolving-plugins-framework.md`](docs/self-evolving-plugins-framework.md):
-
-- **L1** — slash commands (the eight workflow commands)
-- **L2** — session memory (`session-logger` SKILL appends to `~/.claude/plugins/data/vibe-cartographer/sessions/<date>.jsonl`)
-- **L3** — reflective evolution (`/evolve` reads last 30 days of logs and proposes SKILL edits)
-- **L3.5** — friction signal + structural self-test (`friction-logger`, `/friction`, `/vitals`)
-
-When editing a SKILL, ask: *which level does this serve?* Cross-level changes need extra care — a tweak at L1 (command behavior) can invalidate L2 data the L3 loop reads.
-
-## Common tasks
-
-| You want to… | Path / command |
-|---|---|
-| Edit a command's behavior | [`plugins/vibe-cartographer/commands/<name>.md`](plugins/vibe-cartographer/commands/) (loader) AND [`plugins/vibe-cartographer/skills/<name>/SKILL.md`](plugins/vibe-cartographer/skills/) (logic) |
-| Edit shared agent behavior across all commands | [`plugins/vibe-cartographer/skills/guide/SKILL.md`](plugins/vibe-cartographer/skills/guide/SKILL.md) |
-| Add an architecture default | [`plugins/vibe-cartographer/architecture/default-patterns.md`](plugins/vibe-cartographer/architecture/default-patterns.md) |
-| Cut a release | Bump [`package.json`](package.json) + [`plugins/vibe-cartographer/.claude-plugin/plugin.json`](plugins/vibe-cartographer/.claude-plugin/plugin.json) versions (must match), `python scripts/build-plugin.py`, write CHANGELOG entry, tag, push |
-| Inspect runtime data | `cat ~/.claude/plugins/data/vibe-cartographer/sessions/$(date +%Y-%m-%d).jsonl` |
-| Re-index code intelligence | `npx gitnexus analyze` (auto-runs post-commit/merge via hook) |
-| See data contracts | [`plugins/vibe-cartographer/skills/guide/references/data-contracts.md`](plugins/vibe-cartographer/skills/guide/references/data-contracts.md) + sibling JSON schemas |
-
-## Conventions
-
-- **Commits:** Conventional commits — `feat`, `fix`, `chore`, `docs`, `evolve` (for L3 self-improvement applies). Release commits: `chore(release): bump to <version> — <summary>`.
-- **Versioning:** [`package.json`](package.json) and [`plugins/vibe-cartographer/.claude-plugin/plugin.json`](plugins/vibe-cartographer/.claude-plugin/plugin.json) versions MUST match. Lockstep — drift confuses the marketplace consumer.
-- **SKILL writing:** Each `SKILL.md` is markdown with YAML frontmatter (`name`, `description`; `model` where applicable). Body in second person, builder-to-builder voice.
-- **Atomic writes:** SKILLs that touch shared state (profile, session logs, friction logs) MUST use `scripts/atomic-write-json.js` / `scripts/atomic-append-jsonl.js`. Direct `Write` risks corruption on concurrent sessions.
-- **Bundles:** Past `.plugin` bundles in [`bundles/`](bundles/) are immutable. Never edit a historical bundle — cut a new release.
+- Runtime agent spec: [`plugins/vibe-cartographer/CLAUDE.md`](plugins/vibe-cartographer/CLAUDE.md)
+- Self-Evolving Plugin Framework, the L1/L2/L3/L3.5 model: [`docs/self-evolving-plugins-framework.md`](docs/self-evolving-plugins-framework.md)
+- Data contracts and JSON schemas: [`plugins/vibe-cartographer/skills/guide/references/data-contracts.md`](plugins/vibe-cartographer/skills/guide/references/data-contracts.md)
+- Shared agent behavior across every command: [`plugins/vibe-cartographer/skills/guide/SKILL.md`](plugins/vibe-cartographer/skills/guide/SKILL.md)
+- Architecture defaults loaded when a user supplies none: [`plugins/vibe-cartographer/architecture/`](plugins/vibe-cartographer/architecture/)
+- Release procedure: bump both versions, `python scripts/build-plugin.py`, CHANGELOG, tag, push
+- Brand tokens and voice: `~/.claude/skills/626labs-design/` and `~/.claude/CLAUDE.md` are canonical. Repo-specific only: no emoji in CLI output, SKILL bodies, or marketing copy.
+- Family aggregator pin: [`vibe-plugins/.claude-plugin/marketplace.json`](https://github.com/estevanhernandez-stack-ed/vibe-plugins/blob/main/.claude-plugin/marketplace.json)
 
 ## Decisions log
 
-Significant decisions log to the **626Labs Dashboard** via MCP (`mcp__626Labs__manage_decisions log`). Tag with project ID `6vJ7tx2eeW5eZxN9NKrB` (linked repo: `vibe-cartographer`). The bar: *would future-you (or someone asking "why this approach?") want to know this in 3–6 months?*
+Significant decisions log to a decision-log MCP when one is available — the 626Labs Dashboard is auto-detected, project ID `6vJ7tx2eeW5eZxN9NKrB`. Optional: fall back to a file or your tracker, or skip.
 
-Especially:
-- **Framework changes** — adding/removing patterns, recalibrating friction triggers, evolving the eval rubric
-- **Cross-plugin contracts** — anything touching the unified builder profile schema or `~/.claude/plugins/data/` layout
-- **Distribution mechanics** — solo-repo vs vibe-plugins aggregator routing, version pinning strategy
-- **Persona model** — adding/removing/renaming personas or changing how persona shapes agent behavior
-- **Voice corrections** — when a SKILL's output drifted from builder-to-builder voice and we corrected it
+The bar: would someone asking "why this approach?" want to know in 3-6 months. Especially framework changes (patterns, friction triggers, the eval rubric), cross-plugin contract changes, distribution and version-pinning mechanics, persona-model changes, and voice corrections where a SKILL's output drifted and got pulled back.
 
 Skip the routine: typo fixes, dep bumps, README polish, single-file refactors with no contract change.
-
-## What NOT to do
-
-- **Don't drift the version pair.** [`package.json`](package.json) and [`plugins/vibe-cartographer/.claude-plugin/plugin.json`](plugins/vibe-cartographer/.claude-plugin/plugin.json) versions MUST match. npm consumer reads one; marketplace reads the other. Drift = silent install confusion.
-- **Don't change cross-plugin contracts without coordination.** Sibling plugins (vibe-doc, vibe-test, vibe-sec, vibe-thesis) read the shared environment Cart helps define. Coordinated surfaces include: the unified builder profile schema at [`plugins/vibe-cartographer/skills/guide/schemas/builder-profile.schema.json`](plugins/vibe-cartographer/skills/guide/schemas/builder-profile.schema.json) (especially `shared.*`), the session-log + friction-log shapes ([`session-log.schema.json`](plugins/vibe-cartographer/skills/guide/schemas/session-log.schema.json), [`friction.schema.json`](plugins/vibe-cartographer/skills/guide/schemas/friction.schema.json), [`friction-calibration.schema.json`](plugins/vibe-cartographer/skills/guide/schemas/friction-calibration.schema.json)), `shared.preferences.persona` values, Self-Evolving Plugin Framework pattern numbers + names ([`docs/self-evolving-plugins-framework.md`](docs/self-evolving-plugins-framework.md)), and the `@esthernandez/vibe-cartographer` npm package name (hardcoded in `/onboard`'s soft version check). Changes ripple to canary consumers immediately on `main` (solo-repo marketplace) and to stable consumers when the [vibe-plugins aggregator's `ref:` field](https://github.com/estevanhernandez-stack-ed/vibe-plugins/blob/main/.claude-plugin/marketplace.json) bumps. Surface any coordinated change via a dashboard decision before merging — and check whether sibling plugins need a paired update.
-- **Don't hand-edit `bundles/*.plugin`.** Past releases are immutable. Fix forward with a new release.
-- **Don't write directly to `~/.claude/plugins/data/vibe-cartographer/` from a SKILL.** Use the atomic helpers in [`scripts/`](scripts/). Direct writes risk concurrent-session corruption.
-- **Don't conflate the two CLAUDE.md files.** Root [`CLAUDE.md`](CLAUDE.md) is for *developing* Cart; [`plugins/vibe-cartographer/CLAUDE.md`](plugins/vibe-cartographer/CLAUDE.md) is for the runtime agent. Editing the wrong one breaks the wrong audience.
-- **Don't modify the `<!-- gitnexus:start -->` … `<!-- gitnexus:end -->` block by hand.** GitNexus owns it and rewrites it on every `npx gitnexus analyze`. Hand edits get clobbered. Keystone content goes outside the markers.
-- **Don't skip SKILL frontmatter.** Missing `name` or `description` = the SKILL doesn't load.
-
-## References
-
-- Plugin runtime spec: [`plugins/vibe-cartographer/CLAUDE.md`](plugins/vibe-cartographer/CLAUDE.md)
-- Self-Evolving Plugin Framework: [`docs/self-evolving-plugins-framework.md`](docs/self-evolving-plugins-framework.md)
-- Data contracts: [`plugins/vibe-cartographer/skills/guide/references/data-contracts.md`](plugins/vibe-cartographer/skills/guide/references/data-contracts.md)
-- Architecture defaults: [`plugins/vibe-cartographer/architecture/`](plugins/vibe-cartographer/architecture/)
-- Aggregated marketplace: [`vibe-plugins/.claude-plugin/marketplace.json`](https://github.com/estevanhernandez-stack-ed/vibe-plugins/blob/main/.claude-plugin/marketplace.json)
-- GitNexus tooling reference: see the `<!-- gitnexus:start -->` block below
 
 ---
 
