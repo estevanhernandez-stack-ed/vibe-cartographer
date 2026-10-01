@@ -161,11 +161,18 @@ Read the full checklist. For each unchecked item, in sequence:
    - The full content of `docs/spec.md` — not just the relevant section, the whole spec. Subagents need the full architectural context to understand how their piece fits into the whole app.
    - The relevant `prd.md` section for acceptance criteria
    - The builder's experience level from `docs/builder-profile.md` so the subagent calibrates complexity appropriately
-   - Clear instructions: build what's described, commit when done, report back what was built and any issues
+   - The **worker brief**, as the closing block of the dispatch prompt. Five parts, in this order:
+     - **Done when:** the item's acceptance criteria restated as checkable statements, one line each. The subagent reports against these lines, not against "done".
+     - **Carry it through:** keep working until everything in the item is built and checked. Stop only when you can't go on without the builder, or before a step that can't be undone (deleting, force-pushing, migrating data, deploying).
+     - **Hold the scope:** when the item is built and checked, stop and report. Don't add features, tests, files, docs, or refactors the item didn't ask for. If one would help, name it in the report instead of doing it.
+     - **Prove it:** before reporting, run a real check that exercises the change: the project's tests, type-checker, build, or the changed command itself. A syntax-only check, or a check that failed to start, doesn't count. If the project's declared dependencies are the only thing missing, install them with the project's own package manager and lockfile. If no real check can run, say which one didn't run and why.
+     - **Report shape:** what was built (files), the check that ran and its result, the commit SHA, and anything that remains or was deliberately left out.
 
    **Dispatch tier:** `bulk` — the subagent executes one checklist item against the written spec (volume execution from a tight spec). The orchestrator's collect-and-verify beats (steps 2 and 4 below) stay `judgment` — reviewing each result and running the verification checkpoint is verdict work that stays on the session model.
 
-2. **Collect the result.** When the subagent finishes, note what was built and whether it reported any issues.
+   **Effort note:** a bulk dispatch here is well-specified (full spec, one item, explicit done-when lines), which is the shape vendors say to start at medium effort. When the session's bulk tier takes an effort setting, start there and raise it for items the checklist marks as hard. The session owns the tier-to-model-and-effort mapping; this SKILL names tiers, never models.
+
+2. **Collect the result, and read it as a report, not a verdict.** A subagent's turn ending is a report. Check it against the item's done-when lines: is each line met, is there a named check with a result, is there a commit? If a line is unmet, the check didn't run, or the report says "done" without evidence, send the subagent one follow-up naming exactly the open lines. At most two follow-ups per item; if it still can't close, the item enters the When Something Breaks protocol below. Never mark an item complete on a text-only "done".
 
 3. **Mark the item complete** in `docs/checklist.md` (change `- [ ]` to `- [x]`).
 

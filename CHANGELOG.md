@@ -9,7 +9,32 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ### Backlog
 
-- **Quick Build pacing mode.** A third build mode alongside step-by-step and autonomous. After the interview phase (`/onboard` → `/checklist`), Quick Build skips all checkpoints, verification pauses, and git pushes — just executes checklist items sequentially with auto-commits. At the start of a Quick Build run, the agent checks whether Claude's **auto mode** is active. If it is, proceed. If not, remind the builder: "Quick Build works best with auto mode enabled — press `Shift+Tab` to cycle to it. Auto mode lets Claude handle tool permissions automatically so the build can run uninterrupted." Wait for confirmation before starting. No `git push` until the builder explicitly triggers one post-build. Designed for experienced builders who trust the plan and want maximum velocity from spec to working code.
+- **Quick Build pacing mode** (re-ranked 2026-09-30: the natural home for cheap, fast bulk workers now that the tier has one; next up, needs a design pass on how it composes with the enforcer gates and checkpoints). A third build mode alongside step-by-step and autonomous. After the interview phase (`/onboard` → `/checklist`), Quick Build skips all checkpoints, verification pauses, and git pushes — just executes checklist items sequentially with auto-commits. At the start of a Quick Build run, the agent checks whether Claude's **auto mode** is active. If it is, proceed. If not, remind the builder: "Quick Build works best with auto mode enabled — press `Shift+Tab` to cycle to it. Auto mode lets Claude handle tool permissions automatically so the build can run uninterrupted." Wait for confirmation before starting. No `git push` until the builder explicitly triggers one post-build. Designed for experienced builders who trust the plan and want maximum velocity from spec to working code.
+
+## [1.12.0] — 2026-09-30 — worker brief for bulk dispatches
+
+Minor release. Lands the day Claude Sonnet 5.5 shipped, because the family's `bulk` tier now has a fast, cheap model to route to and the dispatch prompt had to be good enough to run there unattended. The SKILL still names tiers, never models; the session maps `bulk` to a model (the seat-level era map does that).
+
+### Added
+
+- **Worker brief in autonomous `/build`.** Every per-item subagent dispatch now closes with five parts: done-when lines (the item's acceptance criteria as checkable statements), carry-it-through (stop only when blocked on the builder or before an irreversible step), hold-the-scope (no unrequested features, tests, files, or refactors; name them in the report instead), prove-it (a real check that exercises the change, with the syntax-only and failed-to-start cases ruled out and lockfile installs allowed), and a fixed report shape (files, check and result, commit SHA, remains). The wording follows the vendor's published guidance for running agentic coding at medium effort; it costs nothing on stronger routing.
+- **Effort note at the dispatch site.** Bulk items are well-specified by construction, so the annotation says to start at medium effort where the session's bulk tier takes a setting, and raise it for items the checklist marks hard.
+
+### Changed
+
+- **Collect-and-verify reads a subagent's return as a report, not a verdict.** The orchestrator checks the report against the item's done-when lines (lines met, named check with result, commit present). Missing evidence gets one follow-up naming exactly the open lines, at most two per item, then the When Something Breaks protocol. A text-only "done" never completes an item. Closes the done-criteria gap the Opus 5.5 arrival board (vibe-plugins `docs/opus-5-5-window-2026-09-22.md`, P2) named.
+
+## [1.11.0] — 2026-07-06 — operating-doctrine stamp
+
+Minor release, entered late (the tag shipped without a changelog entry; backfilled 2026-09-30 from the commit log).
+
+### Added
+
+- **Operating-doctrine v1.0.0 stamp** in the guide SKILL: the twelve-move digest, Cart's domain overlay, and the provenance line, per the family convention (vibe-plugins `docs/conventions/operating-doctrine.md`).
+
+### Changed
+
+- Restored the plugin.json / package.json version-pair lockstep.
 
 ## [1.10.1] — 2026-06-09 — vibe-sec enforcer revival
 
