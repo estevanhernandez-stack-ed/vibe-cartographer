@@ -104,6 +104,8 @@ Maintain `process-notes.md` in the project root. Append at every phase:
 - What questions or struggles came up
 - What resonated or excited them
 
+- Whether the builder shaped the decision or accepted the default. Log passivity against activity. The builder should actively shape every decision, and `/reflect` evaluates this.
+
 If `process-notes.md` doesn't exist yet, create it with a header and the current phase.
 
 ## Document Artifacts
@@ -147,6 +149,7 @@ Key rules:
 - No PII beyond the working directory basename. No secrets. No transcript content.
 - If the append fails, log a warning in `process-notes.md` and continue — session logging is instrumentation, not critical path.
 - Every command logs its own entry. Don't batch multiple commands into one entry.
+- Legacy logs at `~/.claude/plugins/data/app-project-readiness/sessions/` stay untouched. They are append-only history, so they are not migrated.
 - **Orchestrator heads-up.** When `session-logger.start()` returns null / unresolvable
   (the runtime isn't wired in this environment — typical for multi-command-in-one-chat
   orchestrator runs), emit a ONE-TIME heads-up banner the first time it's detected in
@@ -179,9 +182,11 @@ A persistent **unified builder profile** may exist at `~/.claude/profiles/builde
 
 **Cross-plugin coordination rule:** If another 626Labs plugin also reads/writes `~/.claude/profiles/builder.json`, it owns its own `plugins.<name>` block and has shared-read access to `shared`. Never stomp another plugin's namespace. Never write fields the schema doesn't define without bumping `schema_version` and documenting the migration.
 
+**Cross-plugin contracts are read-only mid-session.** The profile schema (the `shared.*` block and the `shared.preferences.persona` values), the session-log shape, and the friction-log shape are read by sibling plugins (vibe-doc, vibe-test, vibe-sec, vibe-thesis). They are committed contracts, not internal state. If a shape should change, surface it as an `/evolve-cart` proposal at the end of the session. Never improvise a schema change mid-command.
+
 ## Persona Adaptation
 
-The builder picks a persona during `/onboard` (step 9). It's stored in the unified profile at `shared.preferences.persona` and should shape the **voice, explanation depth, and checkpoint style** you use for the rest of the process. Persona is independent from mode — mode controls **pacing**, persona controls **voice**. Both apply.
+The builder picks a persona during `/onboard` (step 9). It's stored in the unified profile at `shared.preferences.persona` and should shape the **voice, explanation depth, and checkpoint style** you use for the rest of the process. Persona is independent from mode — mode controls **pacing**, persona controls **voice**. Both apply. The persona value is cross-plugin: every 626Labs plugin reads it, so the builder onboards once. The valid values are `professor`, `cohort`, `superdev`, `architect`, `coach`, or `null` (system default).
 
 Read `shared.preferences.persona` from `~/.claude/profiles/builder.json` at the start of every command. If it's null or the file doesn't exist, use your base behavior (system default — no persona override).
 
@@ -372,6 +377,8 @@ Each command produces artifacts that downstream commands consume. The chain is l
 - **No mode switching mid-build.** The choice made in `/checklist` is locked in.
 
 `/take` runs any list or process step outside the chain.
+
+**`/evolve-cart`** (Level 3 of the Self-Evolving Plugin Framework) also sits outside the chain. The builder can run it any time after their first full session. It reads the session logs, surfaces patterns, and proposes concrete SKILL edits for the builder to approve. Nothing auto-applies. See `skills/evolve-cart/SKILL.md` for the full flow.
 
 **`/iterate`** is completely optional. It's there for builders who finish their build checklist early and want to polish. They can run it zero times or many times. Don't pressure anyone to iterate — if the build is done and they're happy, go straight to `/reflect`.
 
