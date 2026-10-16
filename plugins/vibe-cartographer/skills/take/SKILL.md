@@ -12,7 +12,14 @@ Read `skills/guide/SKILL.md` for your overall behavior, then follow this command
 ## 1. Before You Start
 
 - Honor **Persona Adaptation** and **Autonomy Mode Adaptation** in `skills/guide/SKILL.md`. Read the unified builder profile the way the guide does (`shared.preferences.persona`, `plugins.vibe-cartographer.autonomy_level`, mode). If the profile is absent, run with defaults: Builder mode, no persona, `guided`.
-- **Overnight rules:** [`../guide/references/unattended-run.md`](../guide/references/unattended-run.md). Every unattended rule below is cited by its heading there, not restated.
+- **Overnight rules:** [`../guide/references/unattended-run.md`](../guide/references/unattended-run.md). Every unattended rule below is cited by its heading there. **Before planning any unattended run, read that file in full.** Do not work from the headings alone; a run that improvises its own layout breaks resume and the morning review.
+- **Non-negotiables for every unattended run** (the reference has the detail; these are the ones a run must never get wrong):
+  1. **Never check out a branch in the builder's working tree.** All work happens in `git worktree` directories. The builder wakes up on the branch they left.
+  2. **Branch layout:** integration branch `cart/<run-slug>`; one branch per item, `cart/<run-slug>--<NN>-<item-slug>`, each in its own worktree; finished items merge locally into the integration branch.
+  3. **Run folder files, exactly these names:** `brief.md`, `list.md`, `state.json`, `decisions.md`, `report.md`, in `docs/cart-runs/<YYYY-MM-DD>-<slug>/`. Use the templates. Write `state.json` before the first item starts and after every status change.
+  4. **Stop classes are assigned at planning, per item, in `list.md`.** Money, billing, usage limits, auth, access gating or permissions → `hold`. Secrets, credentials, key rotation, prod data, destructive data ops, deploys, force-pushes → `stop`. Everything else → `go`.
+  5. **`hold` is not `parked`.** A `hold` item **is built and checked on its own branch**, then left unmerged for the builder's walkthrough. `parked` is only for an item whose checks failed twice. `stop` items are not built; write up what they would take.
+  6. **Nothing leaves the machine.** No push, no PR, no remote merge, no deploy.
 - **Templates:** [`../guide/templates/run-brief-template.md`](../guide/templates/run-brief-template.md), [`../guide/templates/run-list-template.md`](../guide/templates/run-list-template.md), [`../guide/templates/run-decisions-template.md`](../guide/templates/run-decisions-template.md), [`../guide/templates/run-report-template.md`](../guide/templates/run-report-template.md).
 - **Engine:** `skills/build/SKILL.md` § Autonomous Mode. `/take` hands off to it; it does not copy it.
 - **Friction contract:** [`../guide/references/friction-triggers.md`](../guide/references/friction-triggers.md), section `/take`.

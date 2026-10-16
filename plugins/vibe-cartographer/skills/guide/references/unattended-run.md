@@ -43,6 +43,9 @@ A new run whose slug collides with an existing folder gets `-2`, `-3`. A named r
 - Each item builds on `cart/<run-slug>--<NN>-<item-slug>` in its own worktree, cut from the integration branch's current tip.
 - When an item's done-when lines are met and its local checks pass, merge it locally into the integration branch.
 - Never `git commit -a` in a shared worktree. Stage explicit paths.
+- **Worktree paths stay short.** Put worktrees outside the repo under a short root (on Windows, `%TEMP%\cwt-<run-slug>\<NN>`), because deep paths hit Windows path-length limits.
+- **If a worktree can't be created, never fall back to the builder's tree.** Treat it as an environmental blocker: retry once with a shorter path, then park the item with the error. Every git and file command for an item runs with that item's worktree as its working directory.
+- At close, remove item worktrees whose branches merged; keep the integration and `hold` worktrees listed in the report for the builder.
 - Items run one at a time, in list order.
 - The builder's working tree is never touched. The run cuts from the last commit. Never stash, reset, or check out over the builder's tree. Uncommitted files stay exactly as they were and are listed in the morning report. The builder wakes up on the branch they started on, with `cart/<run-slug>` alongside.
 - A dependent of a `hold` item builds on top of the hold branch and is held too.

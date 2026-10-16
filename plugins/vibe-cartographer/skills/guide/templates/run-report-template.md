@@ -20,15 +20,15 @@ Pushing waits for your say-so. Tell Cart "push it", or name a subset.
 ## Waiting on you
 One block per `hold` item. Dependents built on a hold branch stack under it.
 
-- **Item [NN]: [title]** (`cart/[slug]/[NN]-[item-slug]`)
+- **Item [NN]: [title]** (`cart/[slug]--[NN]-[item-slug]`)
   - Look at: [files, behavior]
   - Held because: [surface touched: money, auth, permissions, ...]
   - Stacked on this hold, also held:
-    - **Item [NN]: [title]** (`cart/[slug]/[NN]-[item-slug]`, built on the branch above)
-    - **Item [NN]: [title]** (`cart/[slug]/[NN]-[item-slug]`, built on the item above)
+    - **Item [NN]: [title]** (`cart/[slug]--[NN]-[item-slug]`, built on the branch above)
+    - **Item [NN]: [title]** (`cart/[slug]--[NN]-[item-slug]`, built on the item above)
 
 ## Parked
-- **Item [NN]: [title]** (`cart/[slug]/[NN]-[item-slug]`)
+- **Item [NN]: [title]** (`cart/[slug]--[NN]-[item-slug]`)
   - Failure: [what failed, exact error]
   - Tried: [attempts and checks]
   - Next move: [suggested fix]
