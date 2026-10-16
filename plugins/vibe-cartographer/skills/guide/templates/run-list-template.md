@@ -1,13 +1,13 @@
 <!-- Same per-item field labels as checklist-template.md, so /build can read
      either file. Acceptance holds the item's done-when lines: observable and
      checkable by the item's own local checks. Spec ref points at the source
-     (a checklist item, a plan task, an issue, a line in the pasted list).
+     (a checklist item, a plan task, an issue #, a dashboard task id, a proposal heading, a finding id, a line in the pasted list).
      Stop class is the only added field. See skills/guide/references/unattended-run.md. -->
 
 # Run List: [slug]
 
 - [ ] **1. [Clear title: what's done when this item is complete]**
-  Spec ref: `[source path or id] > [section or line]`
+  Spec ref: `[source path, issue #, task id, proposal heading or finding id] > [section or line]`
   What to build: Concrete description of the work. Specific enough to execute without guessing.
   Acceptance: Done when [testable criteria]. Checkable with local checks.
   Verify: Specific action, e.g. "Run `[test command]` and confirm [what you should see]."
@@ -36,3 +36,11 @@
            force-pushes
      Note dependencies between items. A dependent of a hold item builds on the
      hold branch and is held too. -->
+
+<!-- Optional section. Harvested candidates too big for one run (a new mode, a
+     new subsystem) go here instead of in the list above. Omit it when empty.
+     They are not built, not counted in the tally, and not in state.json. -->
+
+## Not this run
+
+- [Title] (`[source ref]`): [one line on why it is oversized for one run]

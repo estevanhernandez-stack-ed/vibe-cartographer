@@ -34,7 +34,7 @@ Universal triggers (`repeat_question`, `rephrase_requested`) also apply; honor t
 
 ## 3. Intake
 
-Detect what the argument is: a path, a URL, pasted text, a plugin report, a step reference, or a plain ask. Read it fully, then lift candidate items.
+Detect what the argument is: a path, a URL, pasted text, a plugin report, a step reference, a plain ask, or nothing. Read it fully, then lift candidate items. With no argument, or an ask like "find the work here," go to section 3a.
 
 | Input | Example | How it is read |
 |---|---|---|
@@ -44,10 +44,40 @@ Detect what the argument is: a path, a URL, pasted text, a plugin report, a step
 | Dashboard tasks | 626 Labs open tasks, when the 626 MCP is present | Optional source, never required. Keep the task id on each item |
 | A step of another process | "step 4 of the vibe-runbook remediation" | Read that process's own docs for the step, then plan |
 | An existing run folder | `docs/cart-runs/<run>/` | Resume (section 5) |
+| Nothing, or "find the work here" | `/take` with no argument | Harvest (section 3a) |
 
 If the reading is ambiguous: ask once when attended at `guided`. At `fully-autonomous` or in an unattended run, pick the likeliest reading and log it as a ledger decision.
 
 If intake yields **zero actionable items**, say so in one sentence and stop. Write no run folder, no files.
+
+## 3a. Harvest
+
+Runs when `/take` gets no argument, or the ask is "find the work here." Instead of reading a list the builder handed over, Cart builds the list from the repo's own work sources. The result feeds the same planning path (section 5).
+
+**Sources.** Sweep them in one pass. Every source is optional; one that is absent, unavailable or empty is skipped silently, with no note and no question.
+
+- Evolve output in the repo: `proposed-changes*.md`. Skip entries marked applied, rejected or resolved. Source ref is the proposal heading.
+- Open GitHub issues: `gh issue list --state open`, when `gh` is installed and the repo has a GitHub remote. Source ref is the issue number.
+- Open 626 dashboard tasks for the bound project, when the 626 MCP is present: `project_context` with action `listTasks`. Source ref is the task id.
+- `claude plugin validate <plugin-dir>` output, when the repo is a Claude Code plugin. Each error is a candidate; warnings are candidates only when cheap to fix. Source ref is the validator message with its file.
+- Findings that sibling vibe-* plugins left on disk: `.vibe-sec/`, `.vibe-test/`, `.vibe-prompt/`, `docs/vibe-*`. Source ref is the finding id.
+
+**Verify each candidate against the repo.** Grooming, not trust: a candidate earns a place on the list by surviving a look at the code, and anything that is already done never reaches it. Sort every candidate into one of four verdicts, the same classes a backlog grooming pass uses.
+
+- **Already done:** commits, files or a passing validator already satisfy it. Drop it and record the evidence (the commit, the file, the validator pass).
+- **Duplicate:** the same work appears in more than one source. Merge into one item and keep every source ref on it.
+- **Stale:** it names files, features or plans that no longer exist, or its context has died. Flag it, do not build it.
+- **Still real:** current and actionable. Keep.
+
+Every drop and every stale flag carries evidence. A verdict without evidence is not a verdict.
+
+**Shape.** Write the survivors straight into `list.md` in the run-list shape (section 5): the five fields plus `Stop class`, with the source ref in `Spec ref` and a size guess (S, M or L) in `What to build`. A candidate too big for one run, such as a new mode or a new subsystem, does not become an item. List it under "Not this run" in `list.md` with its source ref and one line on why it is oversized.
+
+**Always confirmed.** Show the harvested list for the builder to trim before anything runs, even in an unattended run. The builder is present at that moment, and the harvest is where scope gets set; trimming is the one decision that cannot be deferred to the morning. List the dropped and stale candidates with their evidence beside it so the builder can overrule a drop. Once the builder confirms, planning continues per section 5, and mode is decided per section 4 on the trimmed list.
+
+If the sweep yields **zero actionable items**, say so in one sentence, name which sources were checked, and stop. Write no run folder, no files.
+
+Harvest adds no friction triggers. Trimming the list is the harvest's normal flow, not a signal; the triggers in section 2 are unchanged.
 
 ## 4. Mode
 
