@@ -3,6 +3,8 @@ description: "Read-only inspection of Vibe Cartographer's friction log. Filters 
 argument-hint: "[--project <name>] [--type <friction_type>] [--confidence high|medium|low] [--days <n>]"
 ---
 
+**Load the full instructions first:** read `${CLAUDE_PLUGIN_ROOT}/skills/friction-log/SKILL.md` in full and follow it. This file is only the entry point; the skill is the complete instruction set, and the command shadows it, so it will not load on its own.
+
 Use the **friction-log** skill (`skills/friction-log/SKILL.md`) to render a read-only view of `~/.claude/plugins/data/vibe-cartographer/friction.jsonl`.
 
 Default scans the last 30 days and groups by friction type. All flags compose as AND:

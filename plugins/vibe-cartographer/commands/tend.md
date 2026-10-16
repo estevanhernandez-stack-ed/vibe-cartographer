@@ -3,6 +3,8 @@ description: "Read-only drift sweep on the app you built — scans for entropy a
 argument-hint: "[--full]"
 ---
 
+**Load the full instructions first:** read `${CLAUDE_PLUGIN_ROOT}/skills/tend/SKILL.md` in full and follow it. This file is only the entry point; the skill is the complete instruction set, and the command shadows it, so it will not load on its own.
+
 Use the **tend** skill (`skills/tend/SKILL.md`) to run a read-only drift sweep on the app you built with Vibe Cartographer.
 
 Checks covered: (1) spec ↔ code drift, (2) checklist ↔ artifact drift, (3) doc drift (dangling references / stale README), (4) pattern entropy (duplication + naming inconsistency), (5) dead weight (orphan files / unused dependencies), (6) debt accumulation (TODO / FIXME / stubs / empty handlers).

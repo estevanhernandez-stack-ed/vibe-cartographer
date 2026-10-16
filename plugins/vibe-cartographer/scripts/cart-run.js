@@ -153,7 +153,8 @@ function cmdInit(a) {
   const base = git(repo, 'rev-parse', 'HEAD');
   const integration = `cart/${runSlug}`;
   git(repo, 'branch', integration, base);
-  const root = worktreeRoot(runSlug);
+  // Keyed by repo and run, so same-named runs in two repos never share a worktree root.
+  const root = worktreeRoot(`${slugify(path.basename(repo)).slice(0, 16)}-${runSlug}`);
   const intWt = addWorktree(repo, path.join(root, 'int'), integration, null);
   const state = {
     run: runSlug,

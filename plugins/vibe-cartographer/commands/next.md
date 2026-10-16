@@ -3,6 +3,8 @@ description: "Read-only: looks at your docs/ folder and tells you which chain st
 argument-hint: ""
 ---
 
+**Load the full instructions first:** read `${CLAUDE_PLUGIN_ROOT}/skills/next/SKILL.md` in full and follow it. This file is only the entry point; the skill is the complete instruction set, and the command shadows it, so it will not load on its own.
+
 Use the **next** skill (`skills/next/SKILL.md`) to find the next step in the Vibe Cartographer chain.
 
 It checks which artifacts exist in `docs/` (builder-profile, scope, prd, spec, checklist, reflection), whether the checklist still has unchecked items, and prints the current step and the next command in the phrasing that fits your client. If a `/take` run in `docs/cart-runs/` has unfinished items, it names the run and the command to resume it. With no profile and no docs, it points at `/onboard`.

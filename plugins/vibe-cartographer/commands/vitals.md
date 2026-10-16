@@ -3,6 +3,8 @@ description: "Run a structural integrity check on Vibe Cartographer's installati
 argument-hint: "[--full]"
 ---
 
+**Load the full instructions first:** read `${CLAUDE_PLUGIN_ROOT}/skills/vitals/SKILL.md` in full and follow it. This file is only the entry point; the skill is the complete instruction set, and the command shadows it, so it will not load on its own.
+
 Use the **vitals** skill (`skills/vitals/SKILL.md`) to run the ten-check self-diagnostic on this Vibe Cartographer install.
 
 Checks covered: (1) SKILL cross-references, (2) template references, (3) unified profile schema, (4) Pattern #13 complement availability, (5) friction log volume sanity, (6) friction-trigger consistency, (7) leftover `.tmp` debris, (8) `friction.jsonl` line integrity, (9) session-log coverage (orchestrator-gap detection), (10) evolve continuity (evolve-applied work still present in the tree).

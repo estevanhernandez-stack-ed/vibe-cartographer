@@ -121,6 +121,12 @@ for (const cmd of commands) {
   const target = COMMAND_TO_SKILL[cmd] || cmd;
   claimed.add(target);
   if (!skills[target]) fail(path.join(cmdDir, cmd + '.md'), `parity: command "${cmd}" has no matching skill "${target}"`);
+  // A command shadows its same-name skill: the slash command delivers only the command body.
+  // So the body must point the agent at the skill file, or the skill never loads.
+  const body = fs.readFileSync(path.join(cmdDir, cmd + '.md'), 'utf8');
+  if (!body.includes('${CLAUDE_PLUGIN_ROOT}/skills/' + target + '/SKILL.md')) {
+    fail(path.join(cmdDir, cmd + '.md'), `shadowing: command "${cmd}" must tell the agent to read \${CLAUDE_PLUGIN_ROOT}/skills/${target}/SKILL.md`);
+  }
 }
 for (const n of Object.keys(skills)) {
   if (!claimed.has(n) && !isInternal(n)) fail(skills[n].file, `parity: skill "${n}" has no command and is not internal`);

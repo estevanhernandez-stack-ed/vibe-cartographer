@@ -68,6 +68,13 @@ test('a colliding run gets -2', () => {
   assert.strictEqual(second.integration_branch, 'cart/dup-2');
 });
 
+test('same-named runs in two repos get separate worktrees', () => {
+  const a = cart('init', '--repo', repo(), '--slug', 'todo');
+  const b = cart('init', '--repo', repo(), '--slug', 'todo');
+  assert.notStrictEqual(a.integration_worktree, b.integration_worktree);
+  assert.ok(fs.existsSync(a.integration_worktree) && fs.existsSync(b.integration_worktree));
+});
+
 test('no commits means no unattended run', () => {
   const f = cartFails('init', '--repo', repo({ commit: false }), '--slug', 'x');
   assert.strictEqual(f.code, 1);
