@@ -229,7 +229,7 @@ This SKILL writes to exactly two places:
 ## Privacy Posture
 
 - Local-first. The log lives in the user's home directory and never leaves their machine unless they explicitly share it.
-- User-inspectable. `/vibe-cartographer:friction` reads the adjacent friction log; a future `/what-do-you-know` command will dump the session log in human-readable form.
+- User-inspectable. `/vibe-cartographer:friction` reads the adjacent friction log; `/vibe-cartographer:what-do-you-know` dumps the session log, profile, and friction data in human-readable form and lists every file path.
 - User-deletable. The user can `rm` the sessions directory at any time and the plugin continues working — it just loses the memory and treats subsequent runs like a fresh install for evolution purposes.
 
 ## Why This Exists

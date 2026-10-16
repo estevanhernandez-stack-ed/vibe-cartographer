@@ -162,6 +162,16 @@ The two question-style triggers (`repeat_question`, `rephrase_requested`) apply 
 
 ---
 
+## /what-do-you-know (a.k.a. /vibe-cartographer:what-do-you-know)
+
+| Trigger | Friction type | Confidence | Notes |
+|---------|---------------|------------|-------|
+| (none) | — | — | `/what-do-you-know` is a read-only transparency report over the profile and logs. It writes nothing beyond the standard session-log bookend. Reading your own data and moving on is the **expected** mode of interaction, not friction. By spec scope, it does not call `friction-logger.log()`. `/vitals` check #6 treats `/what-do-you-know` as a documented-empty command alongside `/vitals`, `/friction`, and `/reconnect`. |
+
+> **Forward-looking note:** Same caveat as `/vitals` and `/friction`. If a future version grows interactive behavior (for example, an in-command delete), revisit this section.
+
+---
+
 ## /reconnect (a.k.a. /vibe-cartographer:reconnect)
 
 | Trigger | Friction type | Confidence | Notes |
