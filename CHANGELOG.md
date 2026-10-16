@@ -14,6 +14,7 @@ Minor release. Cart used to need its own eight-step chain to run. Now it can tak
 ### Added
 
 - **`/take` command and skill.** Plans and runs any list or process step: reads the list, writes a brief, sequences the items, and builds them. Works attended or unattended.
+- **Harvest step in `/take`.** Run `/take` with no argument (or "find the work here") and Cart builds the list itself: evolve proposals, open GitHub issues, open dashboard tasks, `claude plugin validate` output, and sibling vibe-* findings on disk, each checked against the repo so already-done work is dropped with evidence. You trim the list before anything runs.
 - **Unattended mode.** Local-only branches (`cart/<slug>` plus one branch per item), named stop classes, and park-don't-stop: an item that hits a stop class is held with a reason and the run moves on. State lives in `state.json`, so re-running `/take` on the run folder resumes at the first non-terminal item. A push gate keeps everything local until the builder reviews.
 - **Run folder with decision ledger and morning report.** Each run writes `brief.md`, `list.md`, `state.json`, `decisions.md`, and `report.md` under `docs/cart-runs/`. The ledger records every call made without the builder; the report summarizes what merged, what is held, and what the builder's working tree looked like at the start.
 - **Permission preflight.** Before any unattended run, `/take` checks that Claude's auto mode is active and asks before work begins if it is not, so the run cannot stall on a permission prompt at 2 a.m.
