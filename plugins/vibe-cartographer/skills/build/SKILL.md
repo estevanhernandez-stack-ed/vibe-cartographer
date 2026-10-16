@@ -1,6 +1,6 @@
 ---
 name: build
-description: "This skill should be used when the user says "/build" or wants to execute checklist items — either one at a time (step-by-step) or all at once (autonomous)."
+description: "This skill should be used when the user says \"/build\" or wants to execute checklist items — either one at a time (step-by-step) or all at once (autonomous)."
 ---
 
 # /build — Build Your App

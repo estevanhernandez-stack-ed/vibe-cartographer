@@ -1,6 +1,6 @@
 ---
 name: spec
-description: "This skill should be used when the user says "/spec" or wants to translate their PRD into a technical blueprint with architecture, stack, data flow, and file structure."
+description: "This skill should be used when the user says \"/spec\" or wants to translate their PRD into a technical blueprint with architecture, stack, data flow, and file structure."
 ---
 
 # /spec — Blueprint Your App

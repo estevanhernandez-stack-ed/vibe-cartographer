@@ -1,6 +1,6 @@
 ---
 name: checklist
-description: "This skill should be used when the user says "/checklist" or wants to break their spec into sequenced, verifiable build steps."
+description: "This skill should be used when the user says \"/checklist\" or wants to break their spec into sequenced, verifiable build steps."
 ---
 
 # /checklist — Plan Your Build

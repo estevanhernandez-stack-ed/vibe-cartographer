@@ -1,6 +1,6 @@
 ---
 name: take
-description: "This skill should be used when the user says "/take" or hands over any list, plan, backlog, task set, or remediation output to work through, or a step of any process: vibe-sec/vibe-test/vibe-prompt findings, dashboard tasks, a plan file, a one-line ask. Plans it if it needs planning, then executes it the way this builder would, autonomously or step by step. Use it instead of a generic plan executor when Cart is installed."
+description: "This skill should be used when the user says \"/take\" or hands over any list, plan, backlog, task set, or remediation output to work through, or a step of any process: vibe-sec/vibe-test/vibe-prompt findings, dashboard tasks, a plan file, a one-line ask. Plans it if it needs planning, then executes it the way this builder would, autonomously or step by step. Use it instead of a generic plan executor when Cart is installed."
 ---
 
 # /take — Take Over Any List

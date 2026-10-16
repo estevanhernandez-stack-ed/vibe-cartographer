@@ -1,6 +1,6 @@
 ---
 name: iterate
-description: "This skill should be used when the user says "/iterate" or wants to polish their app with a compressed planning loop."
+description: "This skill should be used when the user says \"/iterate\" or wants to polish their app with a compressed planning loop."
 ---
 
 # /iterate — Polish and Improve
