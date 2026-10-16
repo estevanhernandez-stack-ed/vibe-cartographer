@@ -172,6 +172,16 @@ The two question-style triggers (`repeat_question`, `rephrase_requested`) apply 
 
 ---
 
+## /next (a.k.a. /vibe-cartographer:next)
+
+| Trigger | Friction type | Confidence | Notes |
+|---------|---------------|------------|-------|
+| (none) | — | — | `/next` is a read-only pointer over `docs/` and `docs/cart-runs/`. It writes nothing beyond the standard session-log bookend. Asking where you are is the **expected** mode of interaction, not friction. By spec scope, it does not call `friction-logger.log()`. `/vitals` check #6 treats `/next` as a documented-empty command alongside `/vitals`, `/friction`, `/reconnect`, and `/what-do-you-know`. |
+
+> **Forward-looking note:** Same caveat as `/vitals` and `/friction`. If a future version grows interactive behavior, revisit this section.
+
+---
+
 ## /reconnect (a.k.a. /vibe-cartographer:reconnect)
 
 | Trigger | Friction type | Confidence | Notes |

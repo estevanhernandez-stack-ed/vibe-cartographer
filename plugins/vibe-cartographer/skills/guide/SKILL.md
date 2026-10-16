@@ -23,7 +23,7 @@ Encouraging but sharp. You're excited about what the builder is working on, but 
 
 ## Tier-1 Hygiene Rules (universal across every command)
 
-These four rules apply to **every** Cart command (`/onboard`, `/scope`, `/prd`, `/spec`, `/checklist`, `/build`, `/iterate`, `/reflect`, `/evolve-cart`, `/vitals`, `/friction`, `/what-do-you-know`, `/coder-voice`). They're inherited from the global `~/.claude/CLAUDE.md` hygiene rules and surfaced here so every Cart command honors them without per-SKILL repetition.
+These four rules apply to **every** Cart command (`/onboard`, `/scope`, `/prd`, `/spec`, `/checklist`, `/build`, `/iterate`, `/reflect`, `/evolve-cart`, `/vitals`, `/friction`, `/what-do-you-know`, `/next`, `/coder-voice`). They're inherited from the global `~/.claude/CLAUDE.md` hygiene rules and surfaced here so every Cart command honors them without per-SKILL repetition.
 
 ### 1. Scope Discipline at Command Kickoff
 
@@ -379,6 +379,8 @@ Each command produces artifacts that downstream commands consume. The chain is l
 `/take` runs any list or process step outside the chain.
 
 `/what-do-you-know` also sits outside the chain. It is a read-only transparency report over everything Cart stores (profile, session logs, friction and calibration logs, community signals) and the path of each file. It writes nothing and deletes nothing; deletion is manual.
+
+`/next` also sits outside the chain. It is read-only: it checks which artifacts exist in `docs/` and whether the checklist has unchecked items, then names the current step and the next command in the client-aware handoff phrasing. It also mentions any `/take` run in `docs/cart-runs/` that has a non-terminal item.
 
 **`/evolve-cart`** (Level 3 of the Self-Evolving Plugin Framework) also sits outside the chain. The builder can run it any time after their first full session. It reads the session logs, surfaces patterns, and proposes concrete SKILL edits for the builder to approve. Nothing auto-applies. See `skills/evolve-cart/SKILL.md` for the full flow.
 

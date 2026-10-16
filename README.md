@@ -43,6 +43,7 @@ The final checklist step is always **Documentation & Security Verification** —
 | `/vitals`      | **L3.5** — self-diagnostic health check across profile, logs, and complements  |
 | `/friction`    | **L3.5** — capture real-time friction signal with calibration for future evolve |
 | `/what-do-you-know` | Read-only transparency report: everything Cart has stored about you and where each file lives |
+| `/next` | Read-only: reads `docs/` and tells you which chain step you are on and which command to run next |
 | `/tend`        | Read-only drift sweep on the app you built — entropy and spec deviation, writes nothing |
 
 Nothing auto-applies. Every proposed change from `/evolve-cart` is one-at-a-time, with your consent.
