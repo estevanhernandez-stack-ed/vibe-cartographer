@@ -4,13 +4,13 @@
     "name": "626Labs LLC"
   },
   "metadata": {
-    "description": "Vibe Cartographer — plot your course from idea to shipped app. Spec-driven development, delivered as eight slash commands."
+    "description": "Find your direction no matter where you start. Plots the course from a raw idea to a shipped app, or takes over any backlog, findings report or plan and runs it overnight the way you would."
   },
   "plugins": [
     {
       "name": "vibe-cartographer",
       "source": "./plugins/vibe-cartographer",
-      "description": "Vibe Cartographer — plot your course from idea to shipped app through spec-driven development, delivered as eight slash commands.",
+      "description": "Find your direction no matter where you start. Plots the course from a raw idea to a shipped app, or takes over any backlog, findings report or plan and runs it overnight the way you would.",
       "author": {
         "name": "626Labs LLC"
       },

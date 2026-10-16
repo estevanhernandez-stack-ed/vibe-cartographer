@@ -1,6 +1,6 @@
 ---
 name: prd
-description: "This skill should be used when the user says "/prd" or wants to turn their scope into detailed product requirements with user stories and acceptance criteria."
+description: "This skill should be used when the user says \"/prd\" or wants to turn their scope into detailed product requirements with user stories and acceptance criteria."
 ---
 
 # /prd — Define What You're Building

@@ -98,6 +98,17 @@ The two question-style triggers (`repeat_question`, `rephrase_requested`) apply 
 
 ---
 
+## /take
+
+| Trigger | Friction type | Confidence | Notes |
+|---------|---------------|------------|-------|
+| Builder heavily edits `list.md` before the run starts | `artifact_rewritten` | medium | Quote what changed in the symptom field. |
+| Builder changes an item's stop class (go, hold, stop, either direction) | `default_overridden` | medium | Name the item and both classes in the symptom field. |
+| Builder rejects a ledger decision at review | `default_overridden` | high | Quote the `D<n>` entry and the rejection in the symptom field. |
+| Builder declines a recommended unattended mode | `default_overridden` | medium | Quote the recommendation and the signal that triggered it (late window or list length) so `/evolve-cart` can recalibrate. |
+
+---
+
 ## /iterate
 
 | Trigger | Friction type | Confidence | Notes |
@@ -148,6 +159,26 @@ The two question-style triggers (`repeat_question`, `rephrase_requested`) apply 
 | (none) | — | — | `/friction` is a read-only inspection command over `friction.jsonl`. Filters and displays existing entries; never writes. By spec scope, it does not call `friction-logger.log()`. |
 
 > **Forward-looking note:** Same caveat as `/vitals` — if a future version grows interactive marking (e.g., "mark this entry false positive from the inspection view"), those marks should write to `friction.calibration.jsonl`, not generate new friction entries.
+
+---
+
+## /what-do-you-know (a.k.a. /vibe-cartographer:what-do-you-know)
+
+| Trigger | Friction type | Confidence | Notes |
+|---------|---------------|------------|-------|
+| (none) | — | — | `/what-do-you-know` is a read-only transparency report over the profile and logs. It writes nothing beyond the standard session-log bookend. Reading your own data and moving on is the **expected** mode of interaction, not friction. By spec scope, it does not call `friction-logger.log()`. `/vitals` check #6 treats `/what-do-you-know` as a documented-empty command alongside `/vitals`, `/friction`, and `/reconnect`. |
+
+> **Forward-looking note:** Same caveat as `/vitals` and `/friction`. If a future version grows interactive behavior (for example, an in-command delete), revisit this section.
+
+---
+
+## /next (a.k.a. /vibe-cartographer:next)
+
+| Trigger | Friction type | Confidence | Notes |
+|---------|---------------|------------|-------|
+| (none) | — | — | `/next` is a read-only pointer over `docs/` and `docs/cart-runs/`. It writes nothing beyond the standard session-log bookend. Asking where you are is the **expected** mode of interaction, not friction. By spec scope, it does not call `friction-logger.log()`. `/vitals` check #6 treats `/next` as a documented-empty command alongside `/vitals`, `/friction`, `/reconnect`, and `/what-do-you-know`. |
+
+> **Forward-looking note:** Same caveat as `/vitals` and `/friction`. If a future version grows interactive behavior, revisit this section.
 
 ---
 

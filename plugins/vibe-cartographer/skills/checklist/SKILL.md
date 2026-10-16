@@ -1,6 +1,6 @@
 ---
 name: checklist
-description: "This skill should be used when the user says "/checklist" or wants to break their spec into sequenced, verifiable build steps."
+description: "This skill should be used when the user says \"/checklist\" or wants to break their spec into sequenced, verifiable build steps."
 ---
 
 # /checklist — Plan Your Build
@@ -189,6 +189,8 @@ Now build the actual checklist. For each item, use this consistent format:
 ```
 
 This format is a contract with /build — every item MUST have all five fields (title, spec ref, what to build, acceptance, verify). /build reads each item and needs all five to execute properly.
+
+Where you can, write Verify as a runnable, read-only command with its expected output. /build runs those itself before asking the builder, and only visual checks go to a human.
 
 Each item should be atomic — small enough to complete in one `/build` session. If an item feels too big, break it down.
 

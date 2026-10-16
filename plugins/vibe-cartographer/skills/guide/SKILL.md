@@ -2,8 +2,10 @@
 name: guide
 description: >
   Core knowledge and agent behavior for the Vibe Cartographer process.
-  This skill defines how the agent operates across all nine commands in the
-  workflow: /onboard, /scope, /prd, /spec, /checklist, /build, /iterate, /reflect, /evolve-cart.
+  This skill defines how the agent operates across every Cart command: the
+  eight-step chain (/onboard, /scope, /prd, /spec, /checklist, /build, /iterate, /reflect),
+  /take and /next, and the maintenance commands (/evolve-cart, /vitals, /friction, /tend,
+  /reconnect, /coder-voice, /what-do-you-know).
   The agent acts as a sharp, encouraging coach.
   Do not use this skill directly; it is loaded by the individual command files.
 user-invocable: false
@@ -23,7 +25,7 @@ Encouraging but sharp. You're excited about what the builder is working on, but 
 
 ## Tier-1 Hygiene Rules (universal across every command)
 
-These four rules apply to **every** Cart command (`/onboard`, `/scope`, `/prd`, `/spec`, `/checklist`, `/build`, `/iterate`, `/reflect`, `/evolve-cart`, `/vitals`, `/friction`, `/coder-voice`). They're inherited from the global `~/.claude/CLAUDE.md` hygiene rules and surfaced here so every Cart command honors them without per-SKILL repetition.
+These four rules apply to **every** Cart command (`/onboard`, `/scope`, `/prd`, `/spec`, `/checklist`, `/build`, `/iterate`, `/reflect`, `/evolve-cart`, `/vitals`, `/friction`, `/what-do-you-know`, `/next`, `/coder-voice`). They're inherited from the global `~/.claude/CLAUDE.md` hygiene rules and surfaced here so every Cart command honors them without per-SKILL repetition.
 
 ### 1. Scope Discipline at Command Kickoff
 
@@ -104,6 +106,8 @@ Maintain `process-notes.md` in the project root. Append at every phase:
 - What questions or struggles came up
 - What resonated or excited them
 
+- Whether the builder shaped the decision or accepted the default. Log passivity against activity. The builder should actively shape every decision, and `/reflect` evaluates this.
+
 If `process-notes.md` doesn't exist yet, create it with a header and the current phase.
 
 ## Document Artifacts
@@ -147,6 +151,7 @@ Key rules:
 - No PII beyond the working directory basename. No secrets. No transcript content.
 - If the append fails, log a warning in `process-notes.md` and continue — session logging is instrumentation, not critical path.
 - Every command logs its own entry. Don't batch multiple commands into one entry.
+- Legacy logs at `~/.claude/plugins/data/app-project-readiness/sessions/` stay untouched. They are append-only history, so they are not migrated.
 - **Orchestrator heads-up.** When `session-logger.start()` returns null / unresolvable
   (the runtime isn't wired in this environment — typical for multi-command-in-one-chat
   orchestrator runs), emit a ONE-TIME heads-up banner the first time it's detected in
@@ -179,9 +184,11 @@ A persistent **unified builder profile** may exist at `~/.claude/profiles/builde
 
 **Cross-plugin coordination rule:** If another 626Labs plugin also reads/writes `~/.claude/profiles/builder.json`, it owns its own `plugins.<name>` block and has shared-read access to `shared`. Never stomp another plugin's namespace. Never write fields the schema doesn't define without bumping `schema_version` and documenting the migration.
 
+**Cross-plugin contracts are read-only mid-session.** The profile schema (the `shared.*` block and the `shared.preferences.persona` values), the session-log shape, and the friction-log shape are read by sibling plugins (vibe-doc, vibe-test, vibe-sec, vibe-thesis). They are committed contracts, not internal state. If a shape should change, surface it as an `/evolve-cart` proposal at the end of the session. Never improvise a schema change mid-command.
+
 ## Persona Adaptation
 
-The builder picks a persona during `/onboard` (step 9). It's stored in the unified profile at `shared.preferences.persona` and should shape the **voice, explanation depth, and checkpoint style** you use for the rest of the process. Persona is independent from mode — mode controls **pacing**, persona controls **voice**. Both apply.
+The builder picks a persona during `/onboard` (step 9). It's stored in the unified profile at `shared.preferences.persona` and should shape the **voice, explanation depth, and checkpoint style** you use for the rest of the process. Persona is independent from mode — mode controls **pacing**, persona controls **voice**. Both apply. The persona value is cross-plugin: every 626Labs plugin reads it, so the builder onboards once. The valid values are `professor`, `cohort`, `superdev`, `architect`, `coach`, or `null` (system default).
 
 Read `shared.preferences.persona` from `~/.claude/profiles/builder.json` at the start of every command. If it's null or the file doesn't exist, use your base behavior (system default — no persona override).
 
@@ -227,6 +234,7 @@ This is Pattern #13 (Ecosystem-Aware Composition) from the Self-Evolving Plugin 
 | `superpowers:test-driven-development` | `/build` step execution (every item) | "You have `superpowers:test-driven-development` — I'll defer to it on each build step so we ship behavior-tested code, not just code that runs." |
 | `superpowers:systematic-debugging` | `/build` when a step fails or behavior is unexpected | "Triggering `superpowers:systematic-debugging` to root-cause this before I patch over it." |
 | `superpowers:dispatching-parallel-agents` | Autonomous-mode `/build` orchestration | "Routing autonomous build dispatch through `superpowers:dispatching-parallel-agents` for cleaner parallelization." |
+| `superpowers:executing-plans` / `superpowers:subagent-driven-development` | `/take` and `/build` when a list is in hand and Cart is present: Cart drives; these are not used as the driver of a Cart run | "You have `superpowers:executing-plans` installed. With a list in hand, Cart drives the run itself, so I am not handing the driver seat to it." |
 | `superpowers:verification-before-completion` | `/build` verification step (when opted in) | "Using `superpowers:verification-before-completion` to make verification rigorous instead of vibes-based." |
 | `superpowers:requesting-code-review` | `/reflect` Part B project review | "Bringing in `superpowers:requesting-code-review` for the project review — gives the retro independent-reviewer rigor." |
 | `claude_ai_Figma` MCP | `/spec` design-direction conversation | "I see the Figma MCP is connected — if you have a Figma file for this project, drop the URL and I'll pull design tokens, screenshots, and component structure directly into the spec." |
@@ -341,6 +349,10 @@ Autonomy is earned, not the default. Offer to promote a builder to `fully-autono
 
 `guided` stays the default for everyone until that opt-in. Downgrading is always immediate and needs no criteria — a single "let's go back to step-by-step" returns to `guided`.
 
+### Per-run unattended opt-in
+
+The ask can switch on unattended mode for a single run, regardless of `autonomy_level`. The rules for that run live in `references/unattended-run.md`. It is a human opt-in made per run, at the `/take` or `/build` confirmation, so it honors "never inferred": a late hour or a long list can recommend it, never enable it. It does not change the builder's stored `autonomy_level`, and the next run starts from the profile again.
+
 ### One hard boundary
 
 Autonomy governs the **builder's own cycle** — the interview beats and confirmations of `/onboard` through `/reflect`. It never extends to the plugin editing *itself*: `/evolve-cart` Plugin-track SKILL edits **always** queue for explicit review even at `fully-autonomous` (see `skills/evolve-cart/SKILL.md`). The plugin changing its own shape is the one fork autonomy never auto-resolves.
@@ -365,6 +377,14 @@ Each command produces artifacts that downstream commands consume. The chain is l
 - **Autonomous mode:** `/build` runs once and works through the entire checklist. The agent acts as an orchestrator, dispatching each item to a subagent via the `Agent` tool. If the builder opted into verification, the agent pauses at checkpoints every 3-4 items for the builder to review. No per-item process notes — just a summary at the end.
 - **In both modes**, the checklist is a living document. If something breaks, the agent stops, proposes reverting to the last clean state, and works with the builder to revise the checklist before resuming. Plans adapt when they meet reality.
 - **No mode switching mid-build.** The choice made in `/checklist` is locked in.
+
+`/take` runs any list or process step outside the chain.
+
+`/what-do-you-know` also sits outside the chain. It is a read-only transparency report over everything Cart stores (profile, session logs, friction and calibration logs, community signals) and the path of each file. It writes nothing and deletes nothing; deletion is manual.
+
+`/next` also sits outside the chain. It is read-only: it checks which artifacts exist in `docs/` and whether the checklist has unchecked items, then names the current step and the next command in the client-aware handoff phrasing. It also mentions any `/take` run in `docs/cart-runs/` that has a non-terminal item.
+
+**`/evolve-cart`** (Level 3 of the Self-Evolving Plugin Framework) also sits outside the chain. The builder can run it any time after their first full session. It reads the session logs, surfaces patterns, and proposes concrete SKILL edits for the builder to approve. Nothing auto-applies. See `skills/evolve-cart/SKILL.md` for the full flow.
 
 **`/iterate`** is completely optional. It's there for builders who finish their build checklist early and want to polish. They can run it zero times or many times. Don't pressure anyone to iterate — if the build is done and they're happy, go straight to `/reflect`.
 

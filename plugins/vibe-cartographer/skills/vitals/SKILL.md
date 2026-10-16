@@ -244,13 +244,13 @@ Neither of the special cases is a failure; they're informational warnings so the
 
 **(b) Evaluate.** Build two sets:
 - **Trigger map:** `{ (command, friction_type) | declared in friction-triggers.md }`.
-- **Invocation map:** `{ (command, friction_type) | appears in the matching skill's SKILL.md }`. The command name is the SKILL's directory name (e.g., `skills/scope/SKILL.md` → `scope`). Universal triggers from the "Universal triggers" section of `friction-triggers.md` are tagged to every command except the three documented exceptions — `/vitals`, `/friction`, and `/reconnect` — whose per-command tables are explicitly empty by design.
+- **Invocation map:** `{ (command, friction_type) | appears in the matching skill's SKILL.md }`. The command name is the SKILL's directory name (e.g., `skills/scope/SKILL.md` → `scope`). Universal triggers from the "Universal triggers" section of `friction-triggers.md` are tagged to every command except the five documented exceptions — `/vitals`, `/friction`, `/reconnect`, `/what-do-you-know`, and `/next` — whose per-command tables are explicitly empty by design.
 
 Compute:
 - **Orphan invocations:** `(command, friction_type)` invoked in a SKILL but not declared in the trigger map.
 - **Orphan triggers:** `(command, friction_type)` declared in the trigger map but with no matching invocation in the SKILL. Exclude two categories:
   - `command_abandoned` universally — emitted only by `friction-logger.detect_orphans()`, not directly by command SKILLs.
-  - Anything under the `/vitals`, `/friction`, or `/reconnect` headings (all documented as empty tables).
+  - Anything under the `/vitals`, `/friction`, `/reconnect`, `/what-do-you-know`, or `/next` headings (all documented as empty tables).
 
 **(c) Report.**
 - ✓ pass: both orphan sets are empty.
@@ -258,6 +258,8 @@ Compute:
 - ✗ fail: orphan invocations only OR both orphan sets non-empty — the SKILL logs a friction type that isn't in the map. List each as `<command>: invokes <friction_type> without a matching row in friction-triggers.md`. Suggest: *"Add the row to friction-triggers.md (with confidence and notes) or remove the invocation."*
 
 **Vitals-specific assertion:** also verify that this file (`vitals/SKILL.md`)'s "Friction Logging" section declares **no** `friction_type` (it explicitly documents the absence). If a future edit adds one — despite the documented empty `/vitals` table — surface it under orphan invocations as `vitals: declares <friction_type> in Friction Logging but /vitals table is documented empty`. Same applies to `friction-log/SKILL.md` (the `/friction` command) and `reconnect/SKILL.md` (the `/reconnect` command) for the same reason.
+
+The `/what-do-you-know` command (`what-do-you-know/SKILL.md`) and the `/next` command (`next/SKILL.md`) get the identical assertion.
 
 **(d) Fail-soft.** `friction-triggers.md` unreadable → report ✗ fail with *"Could not load friction-triggers.md at `<path>`: `<error>`. Check #1 should have caught the underlying file issue — fix that first."* Command SKILLs directory missing → report ✗ fail with the missing-directory path (same plugin-integrity-failure class).
 

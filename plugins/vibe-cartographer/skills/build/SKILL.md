@@ -1,6 +1,6 @@
 ---
 name: build
-description: "This skill should be used when the user says "/build" or wants to execute checklist items — either one at a time (step-by-step) or all at once (autonomous)."
+description: "This skill should be used when the user says \"/build\" or wants to execute checklist items — either one at a time (step-by-step) or all at once (autonomous). Lists not produced by `/checklist` go through `/take`."
 ---
 
 # /build — Build Your App
@@ -26,11 +26,12 @@ Persona is voice. Mode (Learner/Builder) is pacing. The builder's explicit check
 
 ## Prerequisites
 
-`docs/checklist.md` must exist. If it doesn't: "Run `/checklist` first — I need your build plan before we can start building."
+`docs/checklist.md` must exist, or a run folder `docs/cart-runs/<run>/` containing `list.md` (handed over by `/take`, or named by the builder). If neither exists: "Run `/checklist` first — I need your build plan before we can start building." For a list that `/checklist` didn't produce, point the builder to `/take`.
 
 ## Before You Start
 
 - **Read everything in `docs/` first.** Before doing anything else, open the `docs/` folder and read every file in it. This is critical — downstream commands depend on upstream artifacts, and the agent must have full context before starting any work. Do not skip this step.
+- **Run folder input.** When the input is a run folder rather than `docs/checklist.md`, the bullet above does not apply. Read `brief.md` and `list.md` in the run folder, plus `docs/spec.md` when it exists, and do not require the rest of `docs/`. A run folder has no Build Preferences header: see § Unattended Mode › Working from a run folder for the settings.
 - Pay special attention to `docs/checklist.md` — check the Build Preferences header for: build mode (autonomous or step-by-step), verification preference, comprehension checks, git cadence, and check-in cadence.
 - Note experience level from `docs/builder-profile.md`.
 - Read `process-notes.md` for continuity — especially if this isn't the first /build run.
@@ -109,6 +110,16 @@ If the builder opted into verification, follow the "Verify" field in the checkli
 "Run your dev server and tell me what you see when you click the search button."
 
 Wait for their response. If something's wrong, fix it before moving on. The item isn't done until verification passes.
+
+**Run it yourself first when the Verify field is executable.** If the field names a runnable command ("Run `npm test` and confirm 12 passing", "Run `curl localhost:3000/search` and confirm a 200"), run it before asking the builder anything and assert the expected output. Pass means you report the result and move on, no builder round-trip needed.
+
+On a non-zero exit, or expected output that isn't there, do not mark the item done and do not just report the failure. Re-enter the item and frame the failure as a remediation instruction, then fix and re-run:
+
+"Verify failed: expected `200` from `curl localhost:3000/search`, got connection refused. The dev server isn't running or the route isn't wired. Fix that before marking this item done."
+
+Visual or interactive Verify fields (look at the screen, click through a flow) still go to the builder, as above. Same for a command that needs a human to judge the output.
+
+Never auto-run a mutating command to verify. Deploy, destroy, migrate, and rollback stay builder-confirmed, so ask before running them. Verification is read-only probes only.
 
 If verification is off, skip this step.
 
@@ -194,6 +205,33 @@ Don't log per-item process notes during autonomous builds. The subagents handle 
 
 ---
 
+## Unattended Mode
+
+Overnight rules live in [`../guide/references/unattended-run.md`](../guide/references/unattended-run.md). This section says how `/build` applies them and cites that file by heading; it does not restate them.
+
+A run is unattended per `unattended-run.md` § When a run is unattended: a `/take` handoff that says so, or the builder's ask on a `/build` invocation ("build it overnight"). In an unattended run the Autonomous Mode loop above is the engine, with these rules in force and no builder checkpoints:
+
+- Branches and worktrees: § Local branch layout.
+- Item classes: § Stop classes, including the mid-run upgrade.
+- Failures: § Park, don't stop, and § Environmental blockers.
+- State and restart: § Resume and state.json. `state.json` is authoritative.
+- Output: § The ledger and § The morning report.
+- Remote: § The push step. Nothing is pushed, opened or deployed during the run.
+
+An unattended `/build` on `docs/checklist.md` creates the run folder `docs/cart-runs/<date>-build-<slug>/` (§ Run folder). `state.json` is authoritative there, and the `[x]` marks in `docs/checklist.md` mirror it.
+
+### Working from a run folder
+
+Applies to any run folder handed over by `/take` or named by the builder, attended or unattended. `list.md` stands in for `checklist.md`.
+
+- **Worker context.** In the dispatch, give the worker its `list.md` item, `brief.md`, and `docs/spec.md` when it exists, in place of the full spec and the PRD section. Items use the checklist labels (title, Spec ref, What to build, Acceptance, Verify) plus `Stop class`. The worker brief's done-when lines are the item's Acceptance lines.
+- **Settings.** There is no Build Preferences header. Unattended: fixed settings per `unattended-run.md` § When a run is unattended. Attended: build mode is autonomous with the checkpoints above, git cadence is commit per item, and experience level comes from the unified builder profile (Builder mode if absent).
+- **Attended runs** use the working tree on the current branch: no integration branch, no `state.json`. Check items off in `list.md`, and the checkpoints and § When Something Breaks apply as written. Resume is the first unchecked item in `list.md`.
+- **Unattended runs** resume per `unattended-run.md` § Resume and state.json, not by checkboxes.
+- **Done** means every `list.md` item is checked (attended), or every item in `state.json` has a terminal status (unattended). Then go to § When the Checklist Is Complete; in an unattended run, the morning report replaces the process-notes summary.
+
+---
+
 ## Build-config hygiene (shared-root flags vs per-project flags)
 
 When scaffolding a project or adding build-time flags mid-build, be strict about scope. The shared-root config file (`Directory.Build.props`, root `pyproject.toml` `[tool.*]`, root `package.json`, Rust workspace `Cargo.toml [profile]`, etc.) cascades into EVERY project in the repo — including projects added hours or days later that you can't predict yet.
@@ -221,6 +259,8 @@ When scaffolding a project or adding build-time flags mid-build, be strict about
 **Observed trap (RTClickPng, 2026-04):** `InvariantGlobalization=true` was added to `Directory.Build.props` during item 2 for the .NET 9 Native AOT Engine. At item 9, a WPF Settings project was added; WPF requires ICU at startup and failed silently without it. Hours of debugging chased symptoms of a flag set days earlier. The fix was a one-line override in `Settings.csproj` to flip it back to `false`. The prevention: the flag should have lived in `Engine.csproj` from the start.
 
 ## When Something Breaks (Both Modes)
+
+This protocol applies to attended runs. An unattended run does not stop to talk: it parks the item and continues, per `unattended-run.md` § Park, don't stop.
 
 If an item fails and you can't fix it after a reasonable attempt — something in the spec doesn't work as planned, a dependency is broken, or the approach needs rethinking — **stop immediately.**
 
@@ -277,6 +317,8 @@ Common deploy-state findings that compile-clean misses (call them out in the pro
 
 If the builder confirms deploy-verification is clean, proceed to Embedded Feedback + Handoff. If something's broken, **stop here**: drop into the "When Something Breaks" protocol from earlier in this SKILL, not the close-out flow.
 
+In an unattended run, deploy verification is read-only probes only (deploys are `stop`-class there and never run). A failed or unreachable probe is a morning-report finding under Parked or Stopped, not a halt.
+
 **Skip this entire subsection** if the build was purely compile-time work (UI components, pure functions, types, docs) and didn't touch any runtime infrastructure. The check is for builds that produce deployable artifacts, not for builds whose outputs are local-only.
 
 ### Pre-handoff: Run the enforcers (Pattern #13 — defer, don't duplicate)
@@ -285,6 +327,7 @@ Before declaring the build done, hand verification to the enforcer plugins the e
 
 - **If `vibe-test` is installed:** run `/vibe-test:gate`. It returns a single pass/fail (exit 0 pass / 1 threshold breach / 2 tool error). On a non-zero gate, **don't just report it — treat the gate's findings as a remediation prompt:** fix what it flags, then re-run the gate. Only proceed to handoff when it passes, or the builder explicitly accepts the gap.
 - **If `vibe-sec` is installed:** run `/vibe-sec:gate` the same way (exit 0 pass / 1 tier-threshold or mandatory-concern fail / 2 tool error). On a non-zero gate, findings become remediation, not a hand-off report: fix what it flags, re-run the gate, and only proceed when it passes or the builder explicitly accepts the gap.
+- **Unattended runs:** a non-zero gate is a finding in the morning report, not a remediation loop that blocks close-out. Gate exit `2` follows `unattended-run.md` § Environmental blockers. This overrides the two bullets above.
 - **If neither is installed:** fall back to the manual Documentation & Security Verification checklist item. The prose walk-through is the floor; the enforcer plugins are the ceiling.
 
 Never reimplement what the enforcer plugins do — defer to them (Pattern #13). They own test-gating and security scanning; `/build` orchestrates and acts on their output. (Read dependency: this relies on the `gate` exit-code contracts of `vibe-test` and `vibe-sec` — committed cross-plugin surfaces.)

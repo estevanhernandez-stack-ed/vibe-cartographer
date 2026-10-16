@@ -8,7 +8,7 @@ Distributed two ways at once: its own solo marketplace (`/plugin marketplace add
 
 ## Gotchas
 
-- **There are two `CLAUDE.md` files and they serve different audiences.** This one is for *developing* Cart. [`plugins/vibe-cartographer/CLAUDE.md`](plugins/vibe-cartographer/CLAUDE.md) is read by the runtime agent when a user invokes a Cart command in their own project. Editing the wrong one breaks the wrong audience, silently.
+- **The runtime agent's rules live in the guide skill, not in a CLAUDE.md.** This file is for *developing* Cart. What the agent follows when a user runs a Cart command is [`plugins/vibe-cartographer/skills/guide/SKILL.md`](plugins/vibe-cartographer/skills/guide/SKILL.md). Claude Code never loads a `CLAUDE.md` inside a plugin folder (`claude plugin validate` warns about it), so the old `plugins/vibe-cartographer/CLAUDE.md` was deleted in 1.13.0. Never recreate it; put runtime guidance in a skill.
 - **`package.json` and `plugin.json` versions must match.** npm consumers read one, the marketplace reads the other. Drift produces silent install confusion, not an error.
 - **Editing a command means editing two files.** `commands/<name>.md` is the loader; `skills/<name>/SKILL.md` is the logic. Changing one alone is the most common way to ship a no-op.
 - **Cross-plugin contracts ripple.** vibe-doc, vibe-test, vibe-sec, and vibe-thesis read surfaces this repo defines: the builder-profile schema (especially `shared.*`), the session-log and friction-log shapes, `shared.preferences.persona` values, the framework's pattern numbers and names, and the `@esthernandez/vibe-cartographer` package name hardcoded in `/onboard`'s version check. Log a decision before merging a change to any of them, and check whether a sibling needs a paired update.
@@ -30,7 +30,7 @@ Distributed two ways at once: its own solo marketplace (`/plugin marketplace add
 
 ## Pointers
 
-- Runtime agent spec: [`plugins/vibe-cartographer/CLAUDE.md`](plugins/vibe-cartographer/CLAUDE.md)
+- Runtime agent spec: [`plugins/vibe-cartographer/skills/guide/SKILL.md`](plugins/vibe-cartographer/skills/guide/SKILL.md)
 - Self-Evolving Plugin Framework, the L1/L2/L3/L3.5 model: [`docs/self-evolving-plugins-framework.md`](docs/self-evolving-plugins-framework.md)
 - Data contracts and JSON schemas: [`plugins/vibe-cartographer/skills/guide/references/data-contracts.md`](plugins/vibe-cartographer/skills/guide/references/data-contracts.md)
 - Shared agent behavior across every command: [`plugins/vibe-cartographer/skills/guide/SKILL.md`](plugins/vibe-cartographer/skills/guide/SKILL.md)
@@ -50,103 +50,11 @@ Skip the routine: typo fixes, dep bumps, README polish, single-file refactors wi
 ---
 
 <!-- gitnexus:start -->
-# GitNexus — Code Intelligence
 
-This project is indexed by GitNexus as **vibe-cartographer** (738 symbols, 797 relationships, 0 execution flows). Use the GitNexus MCP tools to understand code, assess impact, and navigate safely.
+## GitNexus index
 
-> If any GitNexus tool warns the index is stale, run `npx gitnexus analyze` in terminal first.
-
-## Always Do
-
-- **MUST run impact analysis before editing any symbol.** Before modifying a function, class, or method, run `gitnexus_impact({target: "symbolName", direction: "upstream"})` and report the blast radius (direct callers, affected processes, risk level) to the user.
-- **MUST run `gitnexus_detect_changes()` before committing** to verify your changes only affect expected symbols and execution flows.
-- **MUST warn the user** if impact analysis returns HIGH or CRITICAL risk before proceeding with edits.
-- When exploring unfamiliar code, use `gitnexus_query({query: "concept"})` to find execution flows instead of grepping. It returns process-grouped results ranked by relevance.
-- When you need full context on a specific symbol — callers, callees, which execution flows it participates in — use `gitnexus_context({name: "symbolName"})`.
-
-## When Debugging
-
-1. `gitnexus_query({query: "<error or symptom>"})` — find execution flows related to the issue
-2. `gitnexus_context({name: "<suspect function>"})` — see all callers, callees, and process participation
-3. `READ gitnexus://repo/vibe-cartographer/process/{processName}` — trace the full execution flow step by step
-4. For regressions: `gitnexus_detect_changes({scope: "compare", base_ref: "main"})` — see what your branch changed
-
-## When Refactoring
-
-- **Renaming**: MUST use `gitnexus_rename({symbol_name: "old", new_name: "new", dry_run: true})` first. Review the preview — graph edits are safe, text_search edits need manual review. Then run with `dry_run: false`.
-- **Extracting/Splitting**: MUST run `gitnexus_context({name: "target"})` to see all incoming/outgoing refs, then `gitnexus_impact({target: "target", direction: "upstream"})` to find all external callers before moving code.
-- After any refactor: run `gitnexus_detect_changes({scope: "all"})` to verify only expected files changed.
-
-## Never Do
-
-- NEVER edit a function, class, or method without first running `gitnexus_impact` on it.
-- NEVER ignore HIGH or CRITICAL risk warnings from impact analysis.
-- NEVER rename symbols with find-and-replace — use `gitnexus_rename` which understands the call graph.
-- NEVER commit changes without running `gitnexus_detect_changes()` to check affected scope.
-
-## Tools Quick Reference
-
-| Tool | When to use | Command |
-|------|-------------|---------|
-| `query` | Find code by concept | `gitnexus_query({query: "auth validation"})` |
-| `context` | 360-degree view of one symbol | `gitnexus_context({name: "validateUser"})` |
-| `impact` | Blast radius before editing | `gitnexus_impact({target: "X", direction: "upstream"})` |
-| `detect_changes` | Pre-commit scope check | `gitnexus_detect_changes({scope: "staged"})` |
-| `rename` | Safe multi-file rename | `gitnexus_rename({symbol_name: "old", new_name: "new", dry_run: true})` |
-| `cypher` | Custom graph queries | `gitnexus_cypher({query: "MATCH ..."})` |
-
-## Impact Risk Levels
-
-| Depth | Meaning | Action |
-|-------|---------|--------|
-| d=1 | WILL BREAK — direct callers/importers | MUST update these |
-| d=2 | LIKELY AFFECTED — indirect deps | Should test |
-| d=3 | MAY NEED TESTING — transitive | Test if critical path |
-
-## Resources
-
-| Resource | Use for |
-|----------|---------|
-| `gitnexus://repo/vibe-cartographer/context` | Codebase overview, check index freshness |
-| `gitnexus://repo/vibe-cartographer/clusters` | All functional areas |
-| `gitnexus://repo/vibe-cartographer/processes` | All execution flows |
-| `gitnexus://repo/vibe-cartographer/process/{name}` | Step-by-step execution trace |
-
-## Self-Check Before Finishing
-
-Before completing any code modification task, verify:
-1. `gitnexus_impact` was run for all modified symbols
-2. No HIGH/CRITICAL risk warnings were ignored
-3. `gitnexus_detect_changes()` confirms changes match expected scope
-4. All d=1 (WILL BREAK) dependents were updated
-
-## Keeping the Index Fresh
-
-After committing code changes, the GitNexus index becomes stale. Re-run analyze to update it:
-
-```bash
-npx gitnexus analyze
-```
-
-If the index previously included embeddings, preserve them by adding `--embeddings`:
-
-```bash
-npx gitnexus analyze --embeddings
-```
-
-To check whether embeddings exist, inspect `.gitnexus/meta.json` — the `stats.embeddings` field shows the count (0 means no embeddings). **Running analyze without `--embeddings` will delete any previously generated embeddings.**
-
-> Claude Code users: A PostToolUse hook handles this automatically after `git commit` and `git merge`.
-
-## CLI
-
-| Task | Read this skill file |
-|------|---------------------|
-| Understand architecture / "How does X work?" | `.claude/skills/gitnexus/gitnexus-exploring/SKILL.md` |
-| Blast radius / "What breaks if I change X?" | `.claude/skills/gitnexus/gitnexus-impact-analysis/SKILL.md` |
-| Trace bugs / "Why is X failing?" | `.claude/skills/gitnexus/gitnexus-debugging/SKILL.md` |
-| Rename / extract / split / refactor | `.claude/skills/gitnexus/gitnexus-refactoring/SKILL.md` |
-| Tools, resources, schema reference | `.claude/skills/gitnexus/gitnexus-guide/SKILL.md` |
-| Index, status, clean, wiki CLI commands | `.claude/skills/gitnexus/gitnexus-cli/SKILL.md` |
+Indexed as **vibe-cartographer** — 738 symbols, 797 relationships, 0 execution flows. Resources are under `gitnexus://repo/vibe-cartographer/`.
+How to use the tools is in the global `gitnexus` skill. If a tool reports the
+index stale, run `npx gitnexus analyze`.
 
 <!-- gitnexus:end -->

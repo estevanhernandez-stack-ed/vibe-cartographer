@@ -1,0 +1,109 @@
+{
+  "run": "harvest-overnight",
+  "base_commit": "7007f04ba5e652136d11f4fcc0164a75062c81d0",
+  "integration_branch": "cart/harvest-overnight",
+  "started_at": "2026-10-16T20:38:37.946Z",
+  "items": [
+    {
+      "n": 1,
+      "slug": "build-verify-executes",
+      "stop_class": "go",
+      "status": "merged",
+      "branch": "cart/harvest-overnight--01-build-verify-executes",
+      "checks": [
+        {
+          "attempt": 1,
+          "command": "claude plugin validate plugins/vibe-cartographer",
+          "result": "pass"
+        }
+      ],
+      "reason": ""
+    },
+    {
+      "n": 2,
+      "slug": "guide-absorbs-plugin-claude-md",
+      "stop_class": "go",
+      "status": "merged",
+      "branch": "cart/harvest-overnight--02-guide-absorbs-plugin-claude-md",
+      "checks": [
+        {
+          "attempt": 1,
+          "command": "claude plugin validate plugins/vibe-cartographer (zero warnings)",
+          "result": "pass"
+        }
+      ],
+      "reason": ""
+    },
+    {
+      "n": 3,
+      "slug": "static-plugin-check",
+      "stop_class": "go",
+      "status": "merged",
+      "branch": "cart/harvest-overnight--03-static-plugin-check",
+      "checks": [
+        {
+          "attempt": 1,
+          "command": "node scripts/check-plugin.js (0 on branch; 5/5 issue-#1 defects caught on main tree)",
+          "result": "pass"
+        },
+        {
+          "attempt": 1,
+          "command": "claude plugin validate plugins/vibe-cartographer",
+          "result": "pass"
+        }
+      ],
+      "reason": ""
+    },
+    {
+      "n": 4,
+      "slug": "what-do-you-know",
+      "stop_class": "go",
+      "status": "merged",
+      "branch": "cart/harvest-overnight--04-what-do-you-know",
+      "checks": [
+        {
+          "attempt": 1,
+          "command": "node scripts/check-plugin.js",
+          "result": "pass"
+        },
+        {
+          "attempt": 1,
+          "command": "claude plugin validate plugins/vibe-cartographer",
+          "result": "pass"
+        }
+      ],
+      "reason": ""
+    },
+    {
+      "n": 5,
+      "slug": "next-command",
+      "stop_class": "go",
+      "status": "merged",
+      "branch": "cart/harvest-overnight--05-next-command",
+      "checks": [
+        {
+          "attempt": 1,
+          "command": "node scripts/check-plugin.js",
+          "result": "pass"
+        },
+        {
+          "attempt": 1,
+          "command": "claude plugin validate plugins/vibe-cartographer",
+          "result": "pass"
+        }
+      ],
+      "reason": ""
+    }
+  ],
+  "closeout": [
+    {
+      "command": "node scripts/check-plugin.js (integration)",
+      "result": "pass"
+    },
+    {
+      "command": "claude plugin validate (integration, zero warnings)",
+      "result": "pass"
+    }
+  ],
+  "finished_at": "2026-10-16T20:50:35.566Z"
+}
