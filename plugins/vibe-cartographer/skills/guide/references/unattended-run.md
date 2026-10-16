@@ -19,6 +19,8 @@ Fixed settings once a run is unattended: build mode is autonomous, no builder ch
 
 Unattended needs a git repo with at least one commit. If there is no repo or no commit, say so in one sentence and offer an attended run.
 
+**Permission preflight.** An unattended run that hits a tool-permission prompt stalls until morning. Before the builder leaves, check that the session will not ask: if the session context shows auto mode (or an equivalent bypass-prompts permission mode) is active, proceed. Otherwise say one line and wait for the builder's OK: "Overnight runs stall on permission prompts. Switch to auto mode (Shift+Tab cycles to it) before you go." This applies even when the ask itself said "overnight," because the builder is still present at that moment and won't be later. If the builder says go anyway, record it as a ledger decision.
+
 ## Run folder
 
 Every unattended run owns `docs/cart-runs/<YYYY-MM-DD>-<slug>/`:

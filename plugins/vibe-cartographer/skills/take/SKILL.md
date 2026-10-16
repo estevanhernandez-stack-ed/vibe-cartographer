@@ -56,6 +56,7 @@ Decide attended or unattended per `unattended-run.md` § When a run is unattende
 - **The ask says so** ("overnight," "I'm going to bed"): unattended, no confirmation needed.
 - **The ask is ambiguous and either signal holds**, the late window `21:00-05:00` on the local clock or `8+` items: either signal alone makes unattended the recommendation. Ask once: "14 items, and it's late. Run this unattended? Nothing gets pushed until you review." This confirmation is required even at `fully-autonomous`, because unattended is a per-run human opt-in. If the builder declines, run attended and log the friction (section 2).
 - **Neither signal:** today's behavior. Autonomous with the checkpoints `/build` Autonomous Mode describes, or step by step if the builder asked for it.
+- **Permission preflight, every unattended run:** before the builder leaves, run the preflight in `unattended-run.md` § When a run is unattended. No auto mode in sight means one line asking them to switch it on, then wait for their OK.
 - **Not a git repo, or a repo with no commits** (not a git repo means no `.git`; no commits means `git rev-parse HEAD` fails): unattended is unavailable. Say why in one sentence and offer an attended run. Do not recommend unattended on signals in this state.
 
 The item count is only known after drafting, so evaluate the length signal on the drafted list and fold the mode question into the one confirmation that shows the brief and list.
