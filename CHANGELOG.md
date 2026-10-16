@@ -22,13 +22,13 @@ Minor release. Cart used to need its own eight-step chain to run. Now it can tak
 - **Unattended-run reference** in the guide: the overnight rules shared by every autonomous Cart run.
 - **`/next`.** Reads `docs/` and names the next chain step; also lists unfinished `/take` runs.
 - **`/what-do-you-know`.** Read-only view of everything Cart stores about you: profile, session log, friction log. Deletion is left for a later attended flow.
-- **Static plugin check plus CI.** `scripts/check-plugin.js` verifies frontmatter parses, every command has a skill, and the version pair matches. Run against the 1.12.0 tree it flags all five frontmatter defects behind issue #1.
+- **Static plugin check plus CI.** `scripts/check-plugin.js` verifies frontmatter parses, every command has a skill and points at it, and the version pair matches. Run against the 1.12.0 tree it flags all five frontmatter defects behind issue #1.
+- **`cart-run.js`, the run helper.** Owns the mechanics of every unattended run: run folder and `state.json`, branch layout, short-path worktrees (never the builder's tree), local merges, park after two failed checks, and resume. Refuses to merge `hold` or `stop` items. The agent keeps the judgment. Covered by 9 tests in CI.
 
 ### Changed
 
 - **`/build` step-by-step runs a runnable Verify command itself** before asking you, and treats a failure as something to fix. Visual checks still come to you.
 - **The plugin-root `CLAUDE.md` is gone.** Claude Code never loads a CLAUDE.md inside a plugin folder, so the rules that lived only there now live in the guide skill. `claude plugin validate` reports zero warnings.
-
 - **`/build` has an unattended branch** under the shared overnight rules. Daytime autonomous and step-by-step builds are unchanged. Deploy verification in an unattended run reports the result instead of halting.
 - **When Something Breaks is scoped to attended runs.** Unattended runs park the item and continue.
 - **Guide:** per-run unattended opt-in, `/take` friction triggers, and a Cart-as-driver row in the complements table.
@@ -37,6 +37,8 @@ Minor release. Cart used to need its own eight-step chain to run. Now it can tak
 
 - **YAML frontmatter in six SKILLs.** Unescaped inner quotes in the `description` field broke strict YAML parsing, so those skills loaded with empty metadata, including no description. They are escaped now. Closes #1.
 - **Unattended item branches** are `cart/<slug>--<NN>-<item>`. The first real overnight run found that git cannot hold `cart/<slug>/<NN>-<item>` next to a `cart/<slug>` branch.
+- **Every command now loads its skill.** A command file shadows the same-name skill, so `/vibe-cartographer:<command>` delivered only the short command wrapper and the full skill instructions never loaded. This has been true for every command in earlier releases. Each wrapper now points the agent at its `SKILL.md`, and the static check fails any wrapper that doesn't.
+- **Unattended runs never fall back to your working tree.** A worktree that can't be created (for example, a Windows path-length limit) parks the item instead.
 
 ### Notes
 
