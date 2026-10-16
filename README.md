@@ -5,13 +5,17 @@
 
 # Vibe Cartographer
 
-**Plot your course from idea to shipped app — vibe coding with purpose and direction.**
+**Find your direction no matter where you start.**
 
 [![stable](https://img.shields.io/github/v/tag/estevanhernandez-stack-ed/vibe-cartographer?label=stable&color=17d4fa)](https://github.com/estevanhernandez-stack-ed/vibe-cartographer/tags)
 
 ## What it does
 
-Vibe Cartographer takes you from idea spark to shipped app through a structured chain of slash commands, with documentation and security verification baked into the process. Each command produces an artifact — scope doc, PRD, technical spec, build checklist, reflection — that the next command consumes. The agent acts as a sharp, encouraging collaborator: it interviews you through each phase instead of waiting for prompts, and adapts its voice to the persona you pick.
+Start from wherever you are.
+
+**From a raw idea,** Vibe Cartographer runs you through an eight-command chain to a shipped app, with documentation and security verification built in. Each command writes an artifact (scope, PRD, spec, build checklist, reflection) that the next one reads. The agent interviews you through each phase and adapts its voice to the persona you pick.
+
+**From anything else,** hand it to `/take`: a backlog, a security findings report, a plan someone else wrote, one step of another process, or nothing at all, in which case it finds the work in your repo itself. It plans what needs planning, then runs the list the way you would, because it knows your builder profile. Say "run it overnight" and it works on local branches, parks what it can't finish instead of stopping, and leaves you a decision ledger and a morning report. Nothing is pushed until you review.
 
 > **Based on the Learning Hackathon spec-driven dev plugin.** Vibe Cartographer extends and productionizes the spec-driven development approach introduced in the Learning Hackathon — rebuilt from the ground up as a builder-focused tool with persistent memory, cross-plugin profiles, selectable personas, and a reflective retro in place of the original classroom quiz. Credit to the Hackathon authors for the foundational workflow pattern.
 
