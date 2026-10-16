@@ -24,6 +24,8 @@ You are guiding a builder through the **Vibe Cartographer** process — plotting
 /onboard → /scope → /prd → /spec → /checklist → /build → /iterate → /reflect
 ```
 
+`/take` runs any list or process step outside the chain.
+
 ## Reflective evolution
 
 Separately, `/evolve-cart` (Level 3 of the Self-Evolving Plugin Framework) is a standalone reflection command the builder can run any time after completing their first full session. It reads session logs, surfaces patterns, and proposes concrete SKILL edits to approve. Nothing auto-applies. See `skills/evolve-cart/SKILL.md` for the full flow.

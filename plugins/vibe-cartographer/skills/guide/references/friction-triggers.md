@@ -98,6 +98,17 @@ The two question-style triggers (`repeat_question`, `rephrase_requested`) apply 
 
 ---
 
+## /take
+
+| Trigger | Friction type | Confidence | Notes |
+|---------|---------------|------------|-------|
+| Builder heavily edits `list.md` before the run starts | `artifact_rewritten` | medium | Quote what changed in the symptom field. |
+| Builder changes an item's stop class (go, hold, stop, either direction) | `default_overridden` | medium | Name the item and both classes in the symptom field. |
+| Builder rejects a ledger decision at review | `default_overridden` | high | Quote the `D<n>` entry and the rejection in the symptom field. |
+| Builder declines a recommended unattended mode | `default_overridden` | medium | Quote the recommendation and the signal that triggered it (late window or list length) so `/evolve-cart` can recalibrate. |
+
+---
+
 ## /iterate
 
 | Trigger | Friction type | Confidence | Notes |

@@ -227,6 +227,7 @@ This is Pattern #13 (Ecosystem-Aware Composition) from the Self-Evolving Plugin 
 | `superpowers:test-driven-development` | `/build` step execution (every item) | "You have `superpowers:test-driven-development` — I'll defer to it on each build step so we ship behavior-tested code, not just code that runs." |
 | `superpowers:systematic-debugging` | `/build` when a step fails or behavior is unexpected | "Triggering `superpowers:systematic-debugging` to root-cause this before I patch over it." |
 | `superpowers:dispatching-parallel-agents` | Autonomous-mode `/build` orchestration | "Routing autonomous build dispatch through `superpowers:dispatching-parallel-agents` for cleaner parallelization." |
+| `superpowers:executing-plans` / `superpowers:subagent-driven-development` | `/take` and `/build` when a list is in hand and Cart is present: Cart drives; these are not used as the driver of a Cart run | "You have `superpowers:executing-plans` installed. With a list in hand, Cart drives the run itself, so I am not handing the driver seat to it." |
 | `superpowers:verification-before-completion` | `/build` verification step (when opted in) | "Using `superpowers:verification-before-completion` to make verification rigorous instead of vibes-based." |
 | `superpowers:requesting-code-review` | `/reflect` Part B project review | "Bringing in `superpowers:requesting-code-review` for the project review — gives the retro independent-reviewer rigor." |
 | `claude_ai_Figma` MCP | `/spec` design-direction conversation | "I see the Figma MCP is connected — if you have a Figma file for this project, drop the URL and I'll pull design tokens, screenshots, and component structure directly into the spec." |
@@ -341,6 +342,10 @@ Autonomy is earned, not the default. Offer to promote a builder to `fully-autono
 
 `guided` stays the default for everyone until that opt-in. Downgrading is always immediate and needs no criteria — a single "let's go back to step-by-step" returns to `guided`.
 
+### Per-run unattended opt-in
+
+The ask can switch on unattended mode for a single run, regardless of `autonomy_level`. The rules for that run live in `references/unattended-run.md`. It is a human opt-in made per run, at the `/take` or `/build` confirmation, so it honors "never inferred": a late hour or a long list can recommend it, never enable it. It does not change the builder's stored `autonomy_level`, and the next run starts from the profile again.
+
 ### One hard boundary
 
 Autonomy governs the **builder's own cycle** — the interview beats and confirmations of `/onboard` through `/reflect`. It never extends to the plugin editing *itself*: `/evolve-cart` Plugin-track SKILL edits **always** queue for explicit review even at `fully-autonomous` (see `skills/evolve-cart/SKILL.md`). The plugin changing its own shape is the one fork autonomy never auto-resolves.
@@ -365,6 +370,8 @@ Each command produces artifacts that downstream commands consume. The chain is l
 - **Autonomous mode:** `/build` runs once and works through the entire checklist. The agent acts as an orchestrator, dispatching each item to a subagent via the `Agent` tool. If the builder opted into verification, the agent pauses at checkpoints every 3-4 items for the builder to review. No per-item process notes — just a summary at the end.
 - **In both modes**, the checklist is a living document. If something breaks, the agent stops, proposes reverting to the last clean state, and works with the builder to revise the checklist before resuming. Plans adapt when they meet reality.
 - **No mode switching mid-build.** The choice made in `/checklist` is locked in.
+
+`/take` runs any list or process step outside the chain.
 
 **`/iterate`** is completely optional. It's there for builders who finish their build checklist early and want to polish. They can run it zero times or many times. Don't pressure anyone to iterate — if the build is done and they're happy, go straight to `/reflect`.
 
