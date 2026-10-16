@@ -117,7 +117,7 @@ The autonomous engine in `skills/build/SKILL.md` (subagent per item, worker brie
 
 **Local branch layout.**
 - At run start, record the base commit. Create a local integration branch `cart/<run-slug>` from it.
-- Each item builds on its own branch `cart/<run-slug>/<NN>-<item-slug>` in its own worktree, cut from the integration branch's current tip.
+- Each item builds on its own branch `cart/<run-slug>--<NN>-<item-slug>` in its own worktree, cut from the integration branch's current tip.
 - When an item's done-when lines are met and its local checks pass, merge it locally into the integration branch. Never `git commit -a` in a shared worktree (recon: it caught a worker mid-edit on 2026-10-11).
 - Nothing is pushed. No `gh pr create`. No remote anything.
 

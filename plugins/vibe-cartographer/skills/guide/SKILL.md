@@ -2,8 +2,10 @@
 name: guide
 description: >
   Core knowledge and agent behavior for the Vibe Cartographer process.
-  This skill defines how the agent operates across all nine commands in the
-  workflow: /onboard, /scope, /prd, /spec, /checklist, /build, /iterate, /reflect, /evolve-cart.
+  This skill defines how the agent operates across every Cart command: the
+  eight-step chain (/onboard, /scope, /prd, /spec, /checklist, /build, /iterate, /reflect),
+  /take and /next, and the maintenance commands (/evolve-cart, /vitals, /friction, /tend,
+  /reconnect, /coder-voice, /what-do-you-know).
   The agent acts as a sharp, encouraging coach.
   Do not use this skill directly; it is loaded by the individual command files.
 user-invocable: false

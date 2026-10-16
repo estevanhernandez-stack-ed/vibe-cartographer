@@ -40,7 +40,7 @@ A new run whose slug collides with an existing folder gets `-2`, `-3`. A named r
 ## Local branch layout
 
 - At run start, record the base commit. Cut the integration branch `cart/<run-slug>` from it.
-- Each item builds on `cart/<run-slug>/<NN>-<item-slug>` in its own worktree, cut from the integration branch's current tip.
+- Each item builds on `cart/<run-slug>--<NN>-<item-slug>` in its own worktree, cut from the integration branch's current tip.
 - When an item's done-when lines are met and its local checks pass, merge it locally into the integration branch.
 - Never `git commit -a` in a shared worktree. Stage explicit paths.
 - Items run one at a time, in list order.

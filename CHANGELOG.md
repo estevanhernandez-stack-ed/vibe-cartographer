@@ -20,8 +20,14 @@ Minor release. Cart used to need its own eight-step chain to run. Now it can tak
 - **Permission preflight.** Before any unattended run, `/take` checks that Claude's auto mode is active and asks before work begins if it is not, so the run cannot stall on a permission prompt at 2 a.m.
 - **Run-folder templates** in the guide for brief, list, ledger, and morning report.
 - **Unattended-run reference** in the guide: the overnight rules shared by every autonomous Cart run.
+- **`/next`.** Reads `docs/` and names the next chain step; also lists unfinished `/take` runs.
+- **`/what-do-you-know`.** Read-only view of everything Cart stores about you: profile, session log, friction log. Deletion is left for a later attended flow.
+- **Static plugin check plus CI.** `scripts/check-plugin.js` verifies frontmatter parses, every command has a skill, and the version pair matches. Run against the 1.12.0 tree it flags all five frontmatter defects behind issue #1.
 
 ### Changed
+
+- **`/build` step-by-step runs a runnable Verify command itself** before asking you, and treats a failure as something to fix. Visual checks still come to you.
+- **The plugin-root `CLAUDE.md` is gone.** Claude Code never loads a CLAUDE.md inside a plugin folder, so the rules that lived only there now live in the guide skill. `claude plugin validate` reports zero warnings.
 
 - **`/build` has an unattended branch** under the shared overnight rules. Daytime autonomous and step-by-step builds are unchanged. Deploy verification in an unattended run reports the result instead of halting.
 - **When Something Breaks is scoped to attended runs.** Unattended runs park the item and continue.
@@ -29,7 +35,8 @@ Minor release. Cart used to need its own eight-step chain to run. Now it can tak
 
 ### Fixed
 
-- **YAML frontmatter in six SKILLs.** Unescaped inner quotes in the `description` field broke strict YAML parsing; they are escaped now.
+- **YAML frontmatter in six SKILLs.** Unescaped inner quotes in the `description` field broke strict YAML parsing, so those skills loaded with empty metadata, including no description. They are escaped now. Closes #1.
+- **Unattended item branches** are `cart/<slug>--<NN>-<item>`. The first real overnight run found that git cannot hold `cart/<slug>/<NN>-<item>` next to a `cart/<slug>` branch.
 
 ### Notes
 
