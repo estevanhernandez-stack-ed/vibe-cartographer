@@ -3,6 +3,8 @@ description: Capture, refresh, or extend a coder voice profile in ~/.claude/CLAU
 allowed-tools: Read, Edit, Write, Glob, Grep, Bash
 ---
 
+**Load the full instructions first:** read `${CLAUDE_PLUGIN_ROOT}/skills/coder-voice/SKILL.md` in full and follow it. This file is only the entry point; the skill is the complete instruction set, and the command shadows it, so it will not load on its own.
+
 Use the **coder-voice** skill (`skills/coder-voice/SKILL.md`) to set up or update the `## CODER VOICE SYNTHESIS` block in `~/.claude/CLAUDE.md`.
 
 **This is an option, not a demand.** Default flow with no args presents a three-way choice:

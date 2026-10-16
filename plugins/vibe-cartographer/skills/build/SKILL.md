@@ -207,7 +207,7 @@ Don't log per-item process notes during autonomous builds. The subagents handle 
 
 ## Unattended Mode
 
-Overnight rules live in [`../guide/references/unattended-run.md`](../guide/references/unattended-run.md). This section says how `/build` applies them and cites that file by heading; it does not restate them.
+Overnight rules live in [`../guide/references/unattended-run.md`](../guide/references/unattended-run.md). This section says how `/build` applies them and cites that file by heading; it does not restate them. **Read that file in full before the first unattended item**, and honor the six non-negotiables listed in `skills/take/SKILL.md` § 1 (worktrees only, never check out over the builder's tree; the `cart/<run-slug>--<NN>-<item-slug>` layout; the five run-folder file names; stop classes assigned at planning; `hold` items are built but not merged; nothing leaves the machine).
 
 A run is unattended per `unattended-run.md` § When a run is unattended: a `/take` handoff that says so, or the builder's ask on a `/build` invocation ("build it overnight"). In an unattended run the Autonomous Mode loop above is the engine, with these rules in force and no builder checkpoints:
 
@@ -218,7 +218,7 @@ A run is unattended per `unattended-run.md` § When a run is unattended: a `/tak
 - Output: § The ledger and § The morning report.
 - Remote: § The push step. Nothing is pushed, opened or deployed during the run.
 
-An unattended `/build` on `docs/checklist.md` creates the run folder `docs/cart-runs/<date>-build-<slug>/` (§ Run folder). `state.json` is authoritative there, and the `[x]` marks in `docs/checklist.md` mirror it.
+An unattended `/build` on `docs/checklist.md` creates the run folder `docs/cart-runs/<date>-build-<slug>/` (§ Run folder). `state.json` is authoritative there, and the `[x]` marks in `docs/checklist.md` mirror it. Drive it through the run helper exactly as `/take` § 6 does (`cart-run.js init --slug build-<slug>`, then `add-item` per checklist item, then the resume/start/check/finish loop); never create the folder, branches or worktrees by hand.
 
 ### Working from a run folder
 

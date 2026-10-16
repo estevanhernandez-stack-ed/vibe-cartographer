@@ -3,6 +3,8 @@ description: "Step 1 of 8 · Welcome, builder profile, persona selection, archit
 argument-hint: "(no arguments)"
 ---
 
+**Load the full instructions first:** read `${CLAUDE_PLUGIN_ROOT}/skills/onboard/SKILL.md` in full and follow it. This file is only the entry point; the skill is the complete instruction set, and the command shadows it, so it will not load on its own.
+
 Use the **onboard** skill to start the Vibe Cartographer workflow. Welcomes the builder, checks the unified profile at `~/.claude/profiles/builder.json`, runs the 11-step interview (skipped if builder is returning), picks a persona and mode, captures project goals and architecture docs, and writes `docs/builder-profile.md`.
 
 This is the entry point for the entire 8-command chain:
