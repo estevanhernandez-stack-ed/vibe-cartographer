@@ -66,7 +66,7 @@ Every path this command reads, and never writes. The same paths are printed in t
 | Community signals | `~/.claude/plugins/data/vibe-cartographer/community-signals.jsonl` (written only if the builder opted in through `/evolve-cart`; local to this machine, never transmitted) |
 | Plugin manifest | `plugins/vibe-cartographer/.claude-plugin/plugin.json` (version in the banner) |
 
-The profile path is resolved the way the guide and session-logger resolve it: `~/.claude/profiles/builder.json`. When the session runs with `CLAUDE_CONFIG_DIR` set, that folder stands in for `~/.claude`, and the report prints the resolved absolute path actually used.
+The profile path is resolved the way the guide and session-logger resolve it: `~/.claude/profiles/builder.json`. When the session runs with `CLAUDE_CONFIG_DIR` set, that folder stands in for `~/.claude` for the profile only. Plugin data stays at `~/.claude/plugins/data/vibe-cartographer/` either way, because that is where the session and friction loggers write. The report prints the resolved absolute path actually used for each file.
 
 Project-local artifacts are separate from the above and live in the builder's own project, not in plugin data: `docs/` (scope, PRD, spec, checklist, reflection), `process-notes.md`, and `docs/cart-runs/` for `/take` runs. Mention in one line that these exist in each project and are the builder's own files. Do not scan the filesystem for them.
 
