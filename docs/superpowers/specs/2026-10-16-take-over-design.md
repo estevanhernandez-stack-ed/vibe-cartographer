@@ -89,8 +89,16 @@ What makes a run unattended:
 | Plan or checklist file | `docs/superpowers/plans/*.md`, any markdown checkbox list, Cart's own `checklist.md` | Items lifted as-is, gaps filled |
 | Dashboard tasks | 626 Labs project open tasks, when the 626 MCP is present | Optional source; never required |
 | A step of another process | "do step 4 of the vibe-runbook remediation" | Read that process's own docs for the step, then plan |
+| Nothing, or "find the work here" | `/take` with no argument | Harvest step (below) |
 
-Detection is by what the argument is (path, URL, pasted text, plain ask). When ambiguous in `guided` mode, ask once; in `fully-autonomous`, pick the most likely reading and record it as a ledger decision.
+**Harvest step (optional first step, added 2026-10-16).** When `/take` gets no list, or the ask is "find the work here," Cart builds the list itself before planning:
+
+- **Sources, swept in one pass:** evolve output in the repo (`proposed-changes*.md`, entries not marked applied, rejected or resolved); open GitHub issues (`gh issue list`, when `gh` is available); open 626 dashboard tasks for the bound project (when the MCP is present); `claude plugin validate` output when the repo is a Claude Code plugin; findings files sibling vibe-* plugins already left on disk (`.vibe-sec/`, `.vibe-test/`, `.vibe-prompt/`, `docs/vibe-*`). Each source is optional; a missing one is skipped silently.
+- **Verify against repo reality** the way task grooming does: drop candidates that are already done (with the evidence), merge duplicates across sources, flag stale ones.
+- **Shape:** write candidates straight into `list.md` in the run-list shape, each with its source ref (issue number, task id, proposal heading, finding id) and a size guess. Items too big for one run (a new mode, a new subsystem) are listed under "Not this run" instead of as items.
+- **Always confirmed:** a harvested list is shown for the builder to trim before anything runs, even in unattended mode. The builder is present at that moment; the harvest is where scope gets set.
+
+Detection is by what the argument is (path, URL, pasted text, plain ask, nothing). When ambiguous in `guided` mode, ask once; in `fully-autonomous`, pick the most likely reading and record it as a ledger decision.
 
 ### 3. Planning half
 
