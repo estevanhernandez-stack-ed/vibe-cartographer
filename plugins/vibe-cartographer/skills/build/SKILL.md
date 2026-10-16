@@ -111,6 +111,16 @@ If the builder opted into verification, follow the "Verify" field in the checkli
 
 Wait for their response. If something's wrong, fix it before moving on. The item isn't done until verification passes.
 
+**Run it yourself first when the Verify field is executable.** If the field names a runnable command ("Run `npm test` and confirm 12 passing", "Run `curl localhost:3000/search` and confirm a 200"), run it before asking the builder anything and assert the expected output. Pass means you report the result and move on, no builder round-trip needed.
+
+On a non-zero exit, or expected output that isn't there, do not mark the item done and do not just report the failure. Re-enter the item and frame the failure as a remediation instruction, then fix and re-run:
+
+"Verify failed: expected `200` from `curl localhost:3000/search`, got connection refused. The dev server isn't running or the route isn't wired. Fix that before marking this item done."
+
+Visual or interactive Verify fields (look at the screen, click through a flow) still go to the builder, as above. Same for a command that needs a human to judge the output.
+
+Never auto-run a mutating command to verify. Deploy, destroy, migrate, and rollback stay builder-confirmed, so ask before running them. Verification is read-only probes only.
+
 If verification is off, skip this step.
 
 #### 4. Comprehension Check (if opted in)

@@ -190,6 +190,8 @@ Now build the actual checklist. For each item, use this consistent format:
 
 This format is a contract with /build — every item MUST have all five fields (title, spec ref, what to build, acceptance, verify). /build reads each item and needs all five to execute properly.
 
+Where you can, write Verify as a runnable, read-only command with its expected output. /build runs those itself before asking the builder, and only visual checks go to a human.
+
 Each item should be atomic — small enough to complete in one `/build` session. If an item feels too big, break it down.
 
 Walk through the first 2-3 items with the builder in detail, explaining why they're sequenced this way. For the remaining items, you can move faster — propose them and get agreement.
