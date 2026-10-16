@@ -7,9 +7,33 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
-### Backlog
+## [1.13.0] — 2026-10-16 — take over any list
 
-- **Quick Build pacing mode** (re-ranked 2026-09-30: the natural home for cheap, fast bulk workers now that the tier has one; next up, needs a design pass on how it composes with the enforcer gates and checkpoints). A third build mode alongside step-by-step and autonomous. After the interview phase (`/onboard` → `/checklist`), Quick Build skips all checkpoints, verification pauses, and git pushes — just executes checklist items sequentially with auto-commits. At the start of a Quick Build run, the agent checks whether Claude's **auto mode** is active. If it is, proceed. If not, remind the builder: "Quick Build works best with auto mode enabled — press `Shift+Tab` to cycle to it. Auto mode lets Claude handle tool permissions automatically so the build can run uninterrupted." Wait for confirmation before starting. No `git push` until the builder explicitly triggers one post-build. Designed for experienced builders who trust the plan and want maximum velocity from spec to working code.
+Minor release. Cart used to need its own eight-step chain to run. Now it can take over a list someone else wrote, a findings report or a backlog, and run it overnight with nothing pushed until you review.
+
+### Added
+
+- **`/take` command and skill.** Plans and runs any list or process step: reads the list, writes a brief, sequences the items, and builds them. Works attended or unattended.
+- **Unattended mode.** Local-only branches (`cart/<slug>` plus one branch per item), named stop classes, and park-don't-stop: an item that hits a stop class is held with a reason and the run moves on. State lives in `state.json`, so re-running `/take` on the run folder resumes at the first non-terminal item. A push gate keeps everything local until the builder reviews.
+- **Run folder with decision ledger and morning report.** Each run writes `brief.md`, `list.md`, `state.json`, `decisions.md`, and `report.md` under `docs/cart-runs/`. The ledger records every call made without the builder; the report summarizes what merged, what is held, and what the builder's working tree looked like at the start.
+- **Permission preflight.** Before any unattended run, `/take` checks that Claude's auto mode is active and asks before work begins if it is not, so the run cannot stall on a permission prompt at 2 a.m.
+- **Run-folder templates** in the guide for brief, list, ledger, and morning report.
+- **Unattended-run reference** in the guide: the overnight rules shared by every autonomous Cart run.
+
+### Changed
+
+- **`/build` has an unattended branch** under the shared overnight rules. Daytime autonomous and step-by-step builds are unchanged. Deploy verification in an unattended run reports the result instead of halting.
+- **When Something Breaks is scoped to attended runs.** Unattended runs park the item and continue.
+- **Guide:** per-run unattended opt-in, `/take` friction triggers, and a Cart-as-driver row in the complements table.
+
+### Fixed
+
+- **YAML frontmatter in six SKILLs.** Unescaped inner quotes in the `description` field broke strict YAML parsing; they are escaped now.
+
+### Notes
+
+- The Unreleased Backlog item "Quick Build pacing mode" is delivered by unattended mode, including its auto-mode check, which is now the permission preflight.
+- No contract-surface changes: existing artifacts, state files, and command names are untouched.
 
 ## [1.12.0] — 2026-09-30 — worker brief for bulk dispatches
 

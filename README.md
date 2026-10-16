@@ -31,6 +31,7 @@ Vibe Cartographer takes you from idea spark to shipped app through a structured 
 | `/build`     | Build the app — autonomous or step-by-step mode                      |
 | `/iterate`   | Optional polish pass after the core build                             |
 | `/reflect`   | Retro, peer-style feedback, and qualitative review                   |
+| `/take`      | Plan and run any list or process step, attended or overnight         |
 
 The final checklist step is always **Documentation & Security Verification** — README, docs cleanup, secrets scan, dependency audit, and deployment security posture.
 
@@ -44,6 +45,10 @@ The final checklist step is always **Documentation & Security Verification** —
 | `/tend`        | Read-only drift sweep on the app you built — entropy and spec deviation, writes nothing |
 
 Nothing auto-applies. Every proposed change from `/evolve-cart` is one-at-a-time, with your consent.
+
+### Hand Cart any list
+
+`/take` runs work that did not start as a Cart project: a findings list, a backlog, a process step. Give it the list and it plans the items, builds them one at a time, and logs every call. Say "run it overnight" and it works unattended on local-only branches (`cart/<slug>`), parks anything risky instead of stopping, and pushes nothing. In the morning you get a decision ledger and a report. You review, then you push.
 
 ### Personas
 
