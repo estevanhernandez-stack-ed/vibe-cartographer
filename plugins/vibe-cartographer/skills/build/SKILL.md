@@ -307,6 +307,8 @@ Common deploy-state findings that compile-clean misses (call them out in the pro
 
 If the builder confirms deploy-verification is clean, proceed to Embedded Feedback + Handoff. If something's broken, **stop here**: drop into the "When Something Breaks" protocol from earlier in this SKILL, not the close-out flow.
 
+In an unattended run, deploy verification is read-only probes only (deploys are `stop`-class there and never run). A failed or unreachable probe is a morning-report finding under Parked or Stopped, not a halt.
+
 **Skip this entire subsection** if the build was purely compile-time work (UI components, pure functions, types, docs) and didn't touch any runtime infrastructure. The check is for builds that produce deployable artifacts, not for builds whose outputs are local-only.
 
 ### Pre-handoff: Run the enforcers (Pattern #13 — defer, don't duplicate)
