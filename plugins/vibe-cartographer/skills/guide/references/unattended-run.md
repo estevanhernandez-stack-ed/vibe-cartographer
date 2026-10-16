@@ -43,6 +43,7 @@ A new run whose slug collides with an existing folder gets `-2`, `-3`. A named r
 - Each item builds on `cart/<run-slug>--<NN>-<item-slug>` in its own worktree, cut from the integration branch's current tip.
 - When an item's done-when lines are met and its local checks pass, merge it locally into the integration branch.
 - Never `git commit -a` in a shared worktree. Stage explicit paths.
+- **All of the above is mechanical, so the run helper does it** (§ The run helper). Do not reproduce it by hand.
 - **Worktree paths stay short.** Put worktrees outside the repo under a short root (on Windows, `%TEMP%\cwt-<run-slug>\<NN>`), because deep paths hit Windows path-length limits.
 - **If a worktree can't be created, never fall back to the builder's tree.** Treat it as an environmental blocker: retry once with a shorter path, then park the item with the error. Every git and file command for an item runs with that item's worktree as its working directory.
 - At close, remove item worktrees whose branches merged; keep the integration and `hold` worktrees listed in the report for the builder.
@@ -144,3 +145,19 @@ Also note any uncommitted files that were in the builder's tree at run start, an
 Pushing is always a separate, explicit instruction from the builder, after they review. This holds even at `fully-autonomous`. Cart offers it in the report; it never does it on its own.
 
 When told, push the integration branch (plus any approved `hold` branches, merged in on the builder's say-so), open the PR(s), and only then update dashboard task status. If the builder names a subset, push only that.
+
+## The run helper
+
+`node ${CLAUDE_PLUGIN_ROOT}/scripts/cart-run.js <command>` owns every mechanical step of an unattended run. Each command prints one JSON object. Exit 1 is a usage or state error; exit 2 is a git or environment error, and the item is already parked when one was in play.
+
+| Command | Does |
+|---|---|
+| `init --repo <dir> --slug <slug> [--date YYYY-MM-DD]` | Creates the run folder (colliding slug gets `-2`) with all five files from the templates, the integration branch at HEAD and its worktree under `~/.cwt/<run-slug>/int`. Records the builder's branch and uncommitted files. Refuses a repo with no commits. |
+| `add-item --run <runDir> --slug <s> --stop-class go\|hold\|stop [--title <t>] [--on <N>]` | Appends an item. `--on` marks a dependency; a dependent of a `hold` item builds on the hold branch. |
+| `start --run <runDir> --item <N>` | Creates the item branch and its worktree (short path, one retry, never the builder's tree) and returns the worktree path. Re-entering a `building` item returns its existing worktree. Refuses `stop` items. |
+| `check --run <runDir> --item <N> --command <cmd> --result pass\|fail\|error` | Records a check. Two `fail` results park the item; `error` is environmental and doesn't count. |
+| `finish --run <runDir> --item <N> --result merged\|held\|parked\|stopped [--reason <r>]` | `merged` merges locally into the integration branch and removes the item worktree; it refuses `hold`/`stop` items and dependents of a held item. |
+| `resume --run <runDir>` | Returns the first non-terminal item, or `done: true`. |
+| `status --run <runDir>` | Tally and per-item summary for `report.md`. |
+
+`CART_WORKTREE_ROOT` overrides the worktree root (tests use it).

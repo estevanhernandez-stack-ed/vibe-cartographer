@@ -218,7 +218,7 @@ A run is unattended per `unattended-run.md` § When a run is unattended: a `/tak
 - Output: § The ledger and § The morning report.
 - Remote: § The push step. Nothing is pushed, opened or deployed during the run.
 
-An unattended `/build` on `docs/checklist.md` creates the run folder `docs/cart-runs/<date>-build-<slug>/` (§ Run folder). `state.json` is authoritative there, and the `[x]` marks in `docs/checklist.md` mirror it.
+An unattended `/build` on `docs/checklist.md` creates the run folder `docs/cart-runs/<date>-build-<slug>/` (§ Run folder). `state.json` is authoritative there, and the `[x]` marks in `docs/checklist.md` mirror it. Drive it through the run helper exactly as `/take` § 6 does (`cart-run.js init --slug build-<slug>`, then `add-item` per checklist item, then the resume/start/check/finish loop); never create the folder, branches or worktrees by hand.
 
 ### Working from a run folder
 

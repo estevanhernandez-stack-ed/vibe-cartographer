@@ -13,10 +13,11 @@ Read `skills/guide/SKILL.md` for your overall behavior, then follow this command
 
 - Honor **Persona Adaptation** and **Autonomy Mode Adaptation** in `skills/guide/SKILL.md`. Read the unified builder profile the way the guide does (`shared.preferences.persona`, `plugins.vibe-cartographer.autonomy_level`, mode). If the profile is absent, run with defaults: Builder mode, no persona, `guided`.
 - **Overnight rules:** [`../guide/references/unattended-run.md`](../guide/references/unattended-run.md). Every unattended rule below is cited by its heading there. **Before planning any unattended run, read that file in full.** Do not work from the headings alone; a run that improvises its own layout breaks resume and the morning review.
-- **Non-negotiables for every unattended run** (the reference has the detail; these are the ones a run must never get wrong):
-  1. **Never check out a branch in the builder's working tree.** All work happens in `git worktree` directories. The builder wakes up on the branch they left.
+- **The run helper owns the mechanics.** Every unattended run drives its folder, `state.json`, branches, worktrees, merges and resume through `node ${CLAUDE_PLUGIN_ROOT}/scripts/cart-run.js` (commands in `unattended-run.md` § The run helper). Never create run files, branches or worktrees by hand, never run `git checkout` or `git switch` in the builder's tree, and never edit `state.json` directly. If the helper exits non-zero, read its message; exit 2 means it already parked the item.
+- **Non-negotiables for every unattended run** (the helper enforces 1-3 and 5; the reference has the detail):
+  1. **Never check out a branch in the builder's working tree.** All work happens in the worktree the helper's `start` returns; run every command for an item from that directory. The builder wakes up on the branch they left.
   2. **Branch layout:** integration branch `cart/<run-slug>`; one branch per item, `cart/<run-slug>--<NN>-<item-slug>`, each in its own worktree; finished items merge locally into the integration branch.
-  3. **Run folder files, exactly these names:** `brief.md`, `list.md`, `state.json`, `decisions.md`, `report.md`, in `docs/cart-runs/<YYYY-MM-DD>-<slug>/`. Use the templates. Write `state.json` before the first item starts and after every status change.
+  3. **Run folder files, exactly these names:** `brief.md`, `list.md`, `state.json`, `decisions.md`, `report.md`, in `docs/cart-runs/<YYYY-MM-DD>-<slug>/`. The helper's `init` creates all five from the templates; you fill in brief, list, decisions and report.
   4. **Stop classes are assigned at planning, per item, in `list.md`.** Money, billing, usage limits, auth, access gating or permissions → `hold`. Secrets, credentials, key rotation, prod data, destructive data ops, deploys, force-pushes → `stop`. Everything else → `go`.
   5. **`hold` is not `parked`.** A `hold` item **is built and checked on its own branch**, then left unmerged for the builder's walkthrough. `parked` is only for an item whose checks failed twice. `stop` items are not built; write up what they would take.
   6. **Nothing leaves the machine.** No push, no PR, no remote merge, no deploy.
@@ -115,7 +116,10 @@ Draft in memory first. Create the folder only once there is at least one item an
 
 Hand off to `/build`: execute `docs/cart-runs/<run>/list.md` under the Autonomous Mode engine in `skills/build/SKILL.md` with `list.md` in place of `checklist.md`, applying `unattended-run.md` when the run is unattended. Under that handoff, a worker's context is its list item, `brief.md`, and `docs/spec.md` when it exists, in place of the full spec and PRD section.
 
-- **Unattended:** all of `unattended-run.md` is in force: § Local branch layout, § Stop classes, § Park, don't stop, § Environmental blockers, § Resume and state.json, § The ledger. No builder checkpoints.
+- **Unattended:** all of `unattended-run.md` is in force: § Local branch layout, § Stop classes, § Park, don't stop, § Environmental blockers, § Resume and state.json, § The ledger. No builder checkpoints. The loop, exactly:
+  1. `cart-run.js init --repo <repo> --slug <slug>` once (creates the folder; fill `brief.md` and `list.md`), then `add-item --slug <s> --stop-class go|hold|stop [--on <N>]` per item, in list order.
+  2. Per item: `cart-run.js resume` → `start --item <N>` → dispatch the worker **inside the returned worktree** → run the item's check there and record it with `check --item <N> --command <cmd> --result pass|fail|error` → `finish --item <N> --result merged` for `go`, `held` for `hold`, `parked` if `check` already parked it. `stop` items: `finish --result stopped --reason <write-up>` without starting.
+  3. Repeat until `resume` returns `done: true`, then build `report.md` from `status`.
 - **Attended:** the engine runs as `/build` Autonomous Mode does today, in the working tree on the current branch, with its checkpoints and its "When Something Breaks" protocol. Check items off in `list.md`. No integration branch.
 
 **Dispatch tier:** `bulk` for per-item workers: one item against a written list, with the worker brief from the engine. **Dispatch tier:** `judgment` for collect-and-verify, reading each report against its done-when lines. The session owns the tier-to-model mapping; this SKILL names tiers, never models.
