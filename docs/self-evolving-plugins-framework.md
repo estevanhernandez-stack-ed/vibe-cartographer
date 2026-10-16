@@ -351,9 +351,9 @@ Designing from scratch means you can bake the data contract in before any comman
 
 ```text
 <plugin>/
-  CLAUDE.md                    # persistent plugin-level behavior
   commands/                    # slash command definitions
   skills/
+    guide/SKILL.md             # persistent plugin-level behavior (a plugin-root CLAUDE.md is never loaded)
     profile-loader/SKILL.md    # reads profile at session start
     session-logger/SKILL.md    # appends to session log
     reflector/SKILL.md         # surfaces patterns on /reflect
