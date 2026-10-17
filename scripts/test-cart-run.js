@@ -148,4 +148,102 @@ test('resume returns the first non-terminal item and re-enters a building item',
   assert.deepStrictEqual([status.tally.merged, status.tally.building, status.tally.pending], [1, 1, 1]);
 });
 
+function stateOf(runDir) { return JSON.parse(fs.readFileSync(path.join(runDir, 'state.json'), 'utf8')); }
+
+function branches(r) { return sh(r, 'git', 'branch', '--format=%(refname:short)').split('\n').filter(Boolean); }
+
+test('start refuses an occupied path that is not its worktree, and leaves it alone', () => {
+  const r = repo();
+  const { runDir } = cart('init', '--repo', r, '--slug', 'occupied');
+  cart('add-item', '--run', runDir, '--slug', 'one', '--stop-class', 'go');
+  // A worker wrote into the reserved path before start ran.
+  const dir = path.join(stateOf(runDir).worktree_root, '01');
+  fs.mkdirSync(dir, { recursive: true });
+  fs.writeFileSync(path.join(dir, 'stray.txt'), 'mine\n');
+  const f = cartFails('start', '--run', runDir, '--item', '1');
+  assert.strictEqual(f.code, 1);
+  assert.match(f.stderr, /not a worktree of cart\/occupied--01-one/);
+  assert.strictEqual(stateOf(runDir).items[0].status, 'pending');
+  assert.strictEqual(fs.readFileSync(path.join(dir, 'stray.txt'), 'utf8'), 'mine\n');
+});
+
+test('start re-creates a building item whose worktree folder was deleted', () => {
+  const r = repo();
+  const { runDir } = cart('init', '--repo', r, '--slug', 'vanished');
+  cart('add-item', '--run', runDir, '--slug', 'one', '--stop-class', 'go');
+  const s = cart('start', '--run', runDir, '--item', '1');
+  commitIn(s.worktree, 'one.txt', '1\n');
+  fs.rmSync(s.worktree, { recursive: true, force: true });
+  const again = cart('start', '--run', runDir, '--item', '1');
+  assert.strictEqual(again.item.status, 'building');
+  assert.strictEqual(sh(again.worktree, 'git', 'rev-parse', '--abbrev-ref', 'HEAD'), 'cart/vanished--01-one');
+  assert.ok(fs.existsSync(path.join(again.worktree, 'one.txt')), 'the commit survives');
+});
+
+test('cleanup of run A leaves a concurrent run B intact, and refuses B while it builds', () => {
+  const ra = repo();
+  const rb = repo();
+  const a = cart('init', '--repo', ra, '--slug', 'night');
+  const b = cart('init', '--repo', rb, '--slug', 'night');
+  cart('add-item', '--run', a.runDir, '--slug', 'done', '--stop-class', 'go');
+  cart('add-item', '--run', b.runDir, '--slug', 'busy', '--stop-class', 'go');
+  const ai = cart('start', '--run', a.runDir, '--item', '1');
+  commitIn(ai.worktree, 'a.txt', 'a2\n');
+  cart('finish', '--run', a.runDir, '--item', '1', '--result', 'merged');
+  const bi = cart('start', '--run', b.runDir, '--item', '1');
+  commitIn(bi.worktree, 'b.txt', 'b\n');
+  // A was reviewed and merged by the builder.
+  sh(ra, 'git', 'merge', '-q', '--no-ff', '-m', 'take run', 'cart/night');
+
+  const c = cart('cleanup', '--run', a.runDir);
+  assert.deepStrictEqual(branches(ra), ['main']);
+  assert.deepStrictEqual(c.kept, []);
+  assert.ok(!fs.existsSync(stateOf(a.runDir).worktree_root), 'A worktree root removed');
+  assert.ok(stateOf(a.runDir).cleanup, 'cleanup recorded in state.json');
+
+  assert.ok(fs.existsSync(path.join(bi.worktree, 'b.txt')), 'B item worktree untouched');
+  assert.ok(fs.existsSync(b.integration_worktree), 'B integration worktree untouched');
+  assert.deepStrictEqual(branches(rb).sort(), ['cart/night', 'cart/night--01-busy', 'main']);
+
+  const refused = cartFails('cleanup', '--run', b.runDir);
+  assert.strictEqual(refused.code, 1);
+  assert.match(refused.stderr, /not finished: item 1 \(building\)/);
+  assert.ok(fs.existsSync(bi.worktree));
+});
+
+test('cleanup keeps held branches unless --include-held, and keeps a dirty worktree', () => {
+  const r = repo();
+  const { runDir } = cart('init', '--repo', r, '--slug', 'held');
+  cart('add-item', '--run', runDir, '--slug', 'auth', '--stop-class', 'hold');
+  const h = cart('start', '--run', runDir, '--item', '1');
+  commitIn(h.worktree, 'auth.txt', 'gate\n');
+  cart('finish', '--run', runDir, '--item', '1', '--result', 'held');
+  fs.writeFileSync(path.join(h.worktree, 'notes.txt'), 'uncommitted\n');
+
+  const first = cart('cleanup', '--run', runDir);
+  assert.ok(fs.existsSync(path.join(h.worktree, 'notes.txt')), 'uncommitted work is never forced away');
+  assert.ok(first.kept.some((k) => k.worktree && k.branch === 'cart/held--01-auth'));
+  assert.ok(branches(r).includes('cart/held--01-auth'));
+  assert.ok(!branches(r).includes('cart/held'), 'integration at base is reachable from main, so it goes');
+
+  fs.rmSync(path.join(h.worktree, 'notes.txt'));
+  const second = cart('cleanup', '--run', runDir, '--include-held');
+  assert.ok(second.deleted_branches.includes('cart/held--01-auth'));
+  assert.deepStrictEqual(branches(r), ['main']);
+});
+
+test('cleanup keeps an unpushed integration branch and says why', () => {
+  const r = repo();
+  const { runDir } = cart('init', '--repo', r, '--slug', 'unpushed');
+  cart('add-item', '--run', runDir, '--slug', 'feat', '--stop-class', 'go');
+  const s = cart('start', '--run', runDir, '--item', '1');
+  commitIn(s.worktree, 'feat.txt', 'f\n');
+  cart('finish', '--run', runDir, '--item', '1', '--result', 'merged');
+  const c = cart('cleanup', '--run', runDir);
+  assert.deepStrictEqual(branches(r).sort(), ['cart/unpushed', 'main']);
+  assert.ok(c.deleted_branches.includes('cart/unpushed--01-feat'), 'merged item branch lives on in integration');
+  assert.match(c.kept.find((k) => k.branch === 'cart/unpushed' && !k.worktree).reason, /not merged or pushed/);
+  assert.ok(!fs.existsSync(stateOf(runDir).integration_worktree), 'its worktree goes; the branch stays');
+});
+
 test.after(() => fs.rmSync(WT_ROOT, { recursive: true, force: true }));

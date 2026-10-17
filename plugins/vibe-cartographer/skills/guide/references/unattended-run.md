@@ -47,6 +47,7 @@ A new run whose slug collides with an existing folder gets `-2`, `-3`. A named r
 - **Worktree paths stay short.** Put worktrees outside the repo under a short root (on Windows, `%TEMP%\cwt-<run-slug>\<NN>`), because deep paths hit Windows path-length limits.
 - **If a worktree can't be created, never fall back to the builder's tree.** Treat it as an environmental blocker: retry once with a shorter path, then park the item with the error. Every git and file command for an item runs with that item's worktree as its working directory.
 - At close, remove item worktrees whose branches merged; keep the integration and `hold` worktrees listed in the report for the builder.
+- **After the builder's review, clean up with `cart-run.js cleanup --run <runDir>`, never by hand.** The worktree root (`~/.cwt`) is shared by every concurrent run on the machine, so never delete it or anything under it directly. On 2026-10-16 an `rm -rf ~/.cwt` at one run's close deleted a live run's worktrees in another repo.
 - Items run one at a time, in list order.
 - The builder's working tree is never touched. The run cuts from the last commit. Never stash, reset, or check out over the builder's tree. Uncommitted files stay exactly as they were and are listed in the morning report. The builder wakes up on the branch they started on, with `cart/<run-slug>` alongside.
 - A dependent of a `hold` item builds on top of the hold branch and is held too.
@@ -154,10 +155,11 @@ When told, push the integration branch (plus any approved `hold` branches, merge
 |---|---|
 | `init --repo <dir> --slug <slug> [--date YYYY-MM-DD]` | Creates the run folder (colliding slug gets `-2`) with all five files from the templates, the integration branch at HEAD and its worktree under `~/.cwt/<run-slug>/int`. Records the builder's branch and uncommitted files. Refuses a repo with no commits. |
 | `add-item --run <runDir> --slug <s> --stop-class go\|hold\|stop [--title <t>] [--on <N>]` | Appends an item. `--on` marks a dependency; a dependent of a `hold` item builds on the hold branch. |
-| `start --run <runDir> --item <N>` | Creates the item branch and its worktree (short path, one retry, never the builder's tree) and returns the worktree path. Re-entering a `building` item returns its existing worktree. Refuses `stop` items. |
+| `start --run <runDir> --item <N>` | Creates the item branch and its worktree (short path, one retry, never the builder's tree) and returns the worktree path. Re-entering a `building` item returns its existing worktree, or re-creates it on its branch if the folder was deleted. Refuses `stop` items, and refuses (exit 1, nothing parked) a path that exists but is not the item's worktree. |
 | `check --run <runDir> --item <N> --command <cmd> --result pass\|fail\|error` | Records a check. Two `fail` results park the item; `error` is environmental and doesn't count. |
 | `finish --run <runDir> --item <N> --result merged\|held\|parked\|stopped [--reason <r>]` | `merged` merges locally into the integration branch and removes the item worktree; it refuses `hold`/`stop` items and dependents of a held item. |
 | `resume --run <runDir>` | Returns the first non-terminal item, or `done: true`. |
 | `status --run <runDir>` | Tally and per-item summary for `report.md`. |
+| `cleanup --run <runDir> [--include-held]` | After review. Refuses while any item is `pending` or `building`. Removes this run's worktrees through git without forcing (a dirty or busy one is kept and reported), deletes merged item branches, deletes the integration branch only once another branch or a remote holds its tip, and keeps `held` and `parked` branches unless `--include-held`. Removes the run's own worktree root only when empty. Records the result in `state.json`. |
 
 `CART_WORKTREE_ROOT` overrides the worktree root (tests use it).

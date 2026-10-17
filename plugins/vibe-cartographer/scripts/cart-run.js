@@ -15,6 +15,7 @@
  *   node cart-run.js finish   --run <runDir> --item <N> --result merged|held|parked|stopped [--reason <r>]
  *   node cart-run.js resume   --run <runDir>
  *   node cart-run.js status   --run <runDir>
+ *   node cart-run.js cleanup  --run <runDir> [--include-held]
  *
  * Invariants:
  *   - Never checks out anything in the builder's working tree. All work
@@ -25,6 +26,10 @@
  *   - A `check` that fails twice (result "fail"; "error" is environmental and
  *     does not count) parks the item automatically.
  *   - `finish merged` refuses a `hold` or `stop` item; `start` refuses `stop`.
+ *   - `start` refuses a path that exists but is not the item's worktree.
+ *   - The worktree root's parent is shared by every concurrent run. `cleanup`
+ *     touches only this run's worktrees and branches, never forces a removal,
+ *     and never deletes recursively.
  *
  * Exit codes: 0 ok, 1 usage or state error, 2 git or environment error
  * (the item is parked with the error before exiting 2 when one is known).
@@ -57,7 +62,9 @@ function args(argv) {
   const out = { _: [] };
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
-    if (a.startsWith('--')) { out[a.slice(2)] = argv[i + 1]; i++; } else out._.push(a);
+    if (!a.startsWith('--')) out._.push(a);
+    else if (argv[i + 1] === undefined || argv[i + 1].startsWith('--')) out[a.slice(2)] = true;
+    else { out[a.slice(2)] = argv[i + 1]; i++; }
   }
   return out;
 }
@@ -112,6 +119,29 @@ function itemOf(state, n) {
 function worktreeRoot(slug) {
   return path.join(process.env.CART_WORKTREE_ROOT || path.join(os.homedir(), '.cwt'), slug);
 }
+
+// Compare paths the way the OS does: git prints forward slashes, Windows ignores case.
+function samePath(a, b) { return normPath(a) === normPath(b); }
+
+function normPath(p) {
+  let r;
+  try { r = fs.realpathSync.native(p); } catch { r = path.resolve(p); }
+  return process.platform === 'win32' ? r.toLowerCase() : r;
+}
+
+function isUnder(p, root) { return normPath(p).startsWith(normPath(root) + path.sep); }
+
+function worktrees(repo) {
+  const out = [];
+  let cur = null;
+  for (const line of git(repo, 'worktree', 'list', '--porcelain').split('\n')) {
+    if (line.startsWith('worktree ')) { cur = { path: line.slice(9), branch: '' }; out.push(cur); }
+    else if (cur && line.startsWith('branch refs/heads/')) cur.branch = line.slice(18);
+  }
+  return out;
+}
+
+function ownsBranch(state, b) { return b === state.integration_branch || b.startsWith(`${state.integration_branch}--`); }
 
 function addWorktree(repo, dir, branch, from) {
   // One retry with a shorter path; never fall back to the builder's tree.
@@ -198,8 +228,21 @@ function cmdStart(a) {
   const item = itemOf(state, need(a, 'item'));
   if (item.stop_class === 'stop') throw new CartError(`item ${item.n} is stop-class; write it up, don't build it`);
   if (TERMINAL.includes(item.status)) throw new CartError(`item ${item.n} is already ${item.status}`);
-  if (item.status === 'building' && item.worktree && fs.existsSync(item.worktree)) {
-    return { item, resumed: true, worktree: item.worktree };
+  const dir = item.worktree || path.join(state.worktree_root, pad(item.n));
+  // Forget worktrees whose folders are gone, so a deleted one can be re-created on its branch.
+  git(state.repo, 'worktree', 'prune');
+  const registered = worktrees(state.repo).find((w) => samePath(w.path, dir));
+  if (registered) {
+    if (registered.branch !== item.branch) {
+      throw new CartError(`${dir} is a worktree of ${registered.branch || 'a detached HEAD'}, not a worktree of ${item.branch}`);
+    }
+    item.worktree = dir;
+    item.status = 'building';
+    saveState(file, state);
+    return { item, resumed: true, worktree: dir };
+  }
+  if (fs.existsSync(dir)) {
+    throw new CartError(`${dir} already exists and is not a worktree of ${item.branch}; move it aside, then start again`);
   }
   // Dependents of a hold item build on the hold branch; everything else on the integration tip.
   let from = state.integration_branch;
@@ -207,7 +250,6 @@ function cmdStart(a) {
     const dep = itemOf(state, item.on);
     if (dep.status === 'held' || dep.stop_class === 'hold') from = dep.branch;
   }
-  const dir = path.join(state.worktree_root, pad(item.n));
   try {
     item.worktree = branchExists(state.repo, item.branch)
       ? addWorktree(state.repo, dir, item.branch, null)
@@ -278,9 +320,72 @@ function cmdStatus(a) {
   };
 }
 
+function cmdCleanup(a) {
+  const { file, state } = loadState(need(a, 'run'));
+  const open = state.items.filter((i) => !TERMINAL.includes(i.status));
+  if (open.length) {
+    throw new CartError(`run is not finished: ${open.map((i) => `item ${i.n} (${i.status})`).join(', ')}; cleanup runs only on a finished run`);
+  }
+  const includeHeld = a['include-held'] === true;
+  const removed = [];
+  const deleted = [];
+  const kept = [];
+
+  // Worktrees: only this run's branches, only under this run's root, never forced.
+  // A dirty or busy worktree is kept; uncommitted work is what a forced removal destroys.
+  git(state.repo, 'worktree', 'prune');
+  for (const w of worktrees(state.repo)) {
+    if (!w.branch || !ownsBranch(state, w.branch)) continue;
+    if (!isUnder(w.path, state.worktree_root)) {
+      kept.push({ worktree: w.path, branch: w.branch, reason: 'outside the run worktree root; not the run\'s to remove' });
+      continue;
+    }
+    try { git(state.repo, 'worktree', 'remove', w.path); removed.push(w.path); }
+    catch (e) { kept.push({ worktree: w.path, branch: w.branch, reason: e.message }); }
+  }
+
+  const byBranch = new Map(state.items.map((i) => [i.branch, i]));
+  const ours = git(state.repo, 'for-each-ref', '--format=%(refname:short)', 'refs/heads/cart/')
+    .split('\n').filter((b) => b && ownsBranch(state, b));
+  const del = (b) => {
+    try { git(state.repo, 'branch', '-D', b); deleted.push(b); }
+    catch (e) { kept.push({ branch: b, reason: e.message }); }
+  };
+  const isAncestor = (b, of) => {
+    try { git(state.repo, 'merge-base', '--is-ancestor', b, of); return true; } catch { return false; }
+  };
+
+  for (const b of ours.filter((x) => x !== state.integration_branch)) {
+    const item = byBranch.get(b);
+    if (!item) kept.push({ branch: b, reason: 'not an item of this run' });
+    else if (item.status === 'merged') {
+      if (isAncestor(b, state.integration_branch)) del(b);
+      else kept.push({ branch: b, reason: 'has commits the integration branch does not' });
+    } else if (includeHeld) del(b);
+    else kept.push({ branch: b, reason: `${item.status}; pass --include-held to delete it` });
+  }
+
+  // The integration branch is the unpushed night's work: delete it only when
+  // another branch or a remote already has its tip.
+  if (ours.includes(state.integration_branch)) {
+    const holders = git(state.repo, 'for-each-ref', '--format=%(refname:short)', '--contains', state.integration_branch, 'refs/heads', 'refs/remotes')
+      .split('\n').filter((r) => r && !ownsBranch(state, r));
+    if (holders.length) del(state.integration_branch);
+    else kept.push({ branch: state.integration_branch, reason: 'not merged or pushed anywhere; push or merge it, then clean up again' });
+  }
+
+  // Only this run's root, and only if empty. Never a recursive delete: the parent is shared by every run.
+  let rootRemoved = false;
+  try { fs.rmdirSync(state.worktree_root); rootRemoved = true; } catch { rootRemoved = !fs.existsSync(state.worktree_root); }
+
+  state.cleanup = { at: new Date().toISOString(), removed_worktrees: removed, deleted_branches: deleted, kept, root_removed: rootRemoved };
+  saveState(file, state);
+  return { run: state.run, ...state.cleanup };
+}
+
 const COMMANDS = {
   init: cmdInit, 'add-item': cmdAddItem, start: cmdStart, check: cmdCheck,
-  finish: cmdFinish, resume: cmdResume, status: cmdStatus,
+  finish: cmdFinish, resume: cmdResume, status: cmdStatus, cleanup: cmdCleanup,
 };
 
 function main(argv) {
