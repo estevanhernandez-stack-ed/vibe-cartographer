@@ -132,6 +132,8 @@ End with the push step: offer it, never do it. Pushing, PRs and dashboard task s
 
 Give a short handoff: the tally line, the path to `report.md`, and the one next action.
 
+Clean up only after the builder's review, and only with `cart-run.js cleanup --run <runDir>` (`unattended-run.md` § Local branch layout). Never delete the worktree root or anything under it by hand: other runs on the machine share it.
+
 ## 8. Session End
 
 Call `session-logger.end(entry)` with the sessionUUID from section 2. `outcome: "completed"` when every item reached `merged` or `held`, `"partial"` when anything was parked or stopped, `"error"` when the run halted on a poisoned integration branch. `key_decisions` points at `docs/cart-runs/<run>/decisions.md` plus any mode choice. `artifact_generated` is `docs/cart-runs/<run>/report.md`. Include `complements_invoked` and `friction_notes` from what actually happened. One terminal entry per invocation.

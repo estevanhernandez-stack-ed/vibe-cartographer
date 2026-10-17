@@ -7,6 +7,24 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+## [1.13.1] — 2026-10-17 — clean up only what's yours
+
+Patch release. On 2026-10-16, closing one `/take` run with `rm -rf ~/.cwt` deleted the worktrees of a live run in another repo, because every run on the machine shares that root. The live run recovered with no commit lost, but cleanup should never have been able to reach it.
+
+### Added
+
+- **`cart-run.js cleanup --run <runDir> [--include-held]`.** Removes one finished run's worktrees and branches through git, and nothing else. It refuses while any item is pending or building. It never forces a worktree removal, so a worktree with uncommitted changes or a busy process is kept and reported. Merged item branches go. The integration branch goes only once another branch or a remote holds its tip, so an unpushed night of work is never deleted. Held and parked branches stay unless `--include-held` is passed. The run's own worktree root is removed only when empty.
+
+### Fixed
+
+- **`start` refuses an occupied path.** A path that exists but is not the item's worktree, such as a folder a worker wrote into early, now fails with exit 1 and a clear message instead of a blind retry, and the item is not parked.
+- **`start` recovers a deleted worktree.** Re-entering a building item whose worktree folder was deleted used to fail on git's "missing but already registered worktree" and park the item, because the one retry used the same short path. `start` now prunes stale worktree records first and re-creates the worktree on the item's branch with its commits.
+- **Boolean flags parse.** A flag with no value (`--include-held`) no longer swallows the next argument.
+
+### Changed
+
+- `unattended-run.md` and `/take` § 7 say to clean up with `cleanup --run` after review, and never to delete the shared worktree root by hand.
+
 ## [1.13.0] — 2026-10-16 — take over any list
 
 Minor release. Cart used to need its own eight-step chain to run. Now it can take over a list someone else wrote, a findings report or a backlog, and run it overnight with nothing pushed until you review.
