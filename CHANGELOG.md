@@ -49,6 +49,8 @@ Minor release. Cart used to need its own eight-step chain to run. Now it can tak
 
 Minor release. Lands the day Claude Sonnet 5.5 shipped, because the family's `bulk` tier now has a fast, cheap model to route to and the dispatch prompt had to be good enough to run there unattended. The SKILL still names tiers, never models; the session maps `bulk` to a model (the seat-level era map does that).
 
+**Validated (recorded 2026-10-16):** the real-app check was the Sanduhr Windows autonomous build of 2026-10-11, with bulk workers on Sonnet 5.5 under an Opus session. The orchestrator's collect-and-verify step caught a worker's mid-edit `commit -a` in a shared worktree and a review finding, both fixed before merge (626 dashboard decision E0pZADlGSCE1gndl8BeF).
+
 ### Added
 
 - **Worker brief in autonomous `/build`.** Every per-item subagent dispatch now closes with five parts: done-when lines (the item's acceptance criteria as checkable statements), carry-it-through (stop only when blocked on the builder or before an irreversible step), hold-the-scope (no unrequested features, tests, files, or refactors; name them in the report instead), prove-it (a real check that exercises the change, with the syntax-only and failed-to-start cases ruled out and lockfile installs allowed), and a fixed report shape (files, check and result, commit SHA, remains). The wording follows the vendor's published guidance for running agentic coding at medium effort; it costs nothing on stronger routing.
