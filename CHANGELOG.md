@@ -19,6 +19,7 @@ Patch release. A `/take` run cut its branches from whatever was checked out. On 
 ### Added
 
 - **`init --base <ref>`.** Names the run's base on purpose: `origin/main` to build on the remote tip without touching the builder's tree, or `HEAD` to build on the checkout as it stands. Recorded in `state.json` as `base_ref` with `behind_at_start`.
+- **`init --merge <ref>`** for feature work. Cuts the run from the checked-out branch and merges `<ref>` (usually `origin/main`) into it inside the run's integration worktree, so the run gets the feature's code and current `main` while the builder's checkout stays put. `git merge-tree` proves the merge clean first; a conflict is refused before anything is created. The refusal message recommends `--merge` whenever the branch has commits `main` lacks, and `--base origin/main` only when it has none.
 
 ## [1.13.1] — 2026-10-17 — clean up only what's yours
 
