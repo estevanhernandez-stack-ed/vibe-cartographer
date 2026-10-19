@@ -72,6 +72,8 @@ Runs when `/take` gets no argument, or the ask is "find the work here." Instead 
 
 **Verify each candidate against the repo.** Grooming, not trust: a candidate earns a place on the list by surviving a look at the code, and anything that is already done never reaches it. Sort every candidate into one of four verdicts, the same classes a backlog grooming pass uses.
 
+Verify against the run's base, not the working tree. Run `git fetch origin` first; when the checkout is behind the remote default branch (`git rev-list --count HEAD..origin/main`), read the code at `origin/main` (`git show origin/main:<path>`, `git log origin/main`), because work merged there but not pulled is already done. Name the behind-count in the confirmation.
+
 - **Already done:** commits, files or a passing validator already satisfy it. Drop it and record the evidence (the commit, the file, the validator pass).
 - **Duplicate:** the same work appears in more than one source. Merge into one item and keep every source ref on it.
 - **Stale:** it names files, features or plans that no longer exist, or its context has died. Flag it, do not build it.
@@ -96,6 +98,7 @@ Decide attended or unattended per `unattended-run.md` § When a run is unattende
 - **Neither signal:** today's behavior. Autonomous with the checkpoints `/build` Autonomous Mode describes, or step by step if the builder asked for it.
 - **Permission preflight, every unattended run:** before the builder leaves, run the preflight in `unattended-run.md` § When a run is unattended. No auto mode in sight means one line asking them to switch it on, then wait for their OK.
 - **Not a git repo, or a repo with no commits** (not a git repo means no `.git`; no commits means `git rev-parse HEAD` fails): unattended is unavailable. Say why in one sentence and offer an attended run. Do not recommend unattended on signals in this state.
+- **Stale checkout, every mode:** fetch, then count how far the checkout is behind the remote default branch. If it is behind, the start-of-run confirmation says so and settles the base: unattended runs pass `--base origin/main` when the branch has nothing `main` lacks, `--merge origin/main` when it carries its own commits (feature work; `--base origin/main` would drop them), or `--base HEAD` for this branch exactly as it stands, to `cart-run.js init`, which refuses a stale base without one and names the fitting choice; attended runs build in the working tree, so ask the builder to pull or switch first. Never build on a stale base silently.
 
 The item count is only known after drafting, so evaluate the length signal on the drafted list and fold the mode question into the one confirmation that shows the brief and list.
 

@@ -40,6 +40,10 @@ A new run whose slug collides with an existing folder gets `-2`, `-3`. A named r
 ## Local branch layout
 
 - At run start, record the base commit. Cut the integration branch `cart/<run-slug>` from it.
+- **The base is current, not just whatever is checked out.** A checkout behind the remote default branch builds and verifies against stale code; on 2026-10-17 a run cut from a branch 424 commits behind `main` produced a PR that conflicted and could not be tested. The helper's `init` fetches and refuses that case, and its message says which way out fits. Pick the base with the builder at the start-of-run confirmation:
+  - The branch has nothing the remote default lacks (0 ahead): `--base origin/main`. Nothing is lost.
+  - The branch has its own commits (feature work): `--merge origin/main`. The run is cut from the branch with `main` merged in, inside the integration worktree; the builder's checkout is untouched. `--base origin/main` here would leave the feature's code out. A merge that would conflict is refused before anything is created; the builder resolves it on the branch.
+  - The run is meant for the checkout exactly as it stands: `--base HEAD`.
 - Each item builds on `cart/<run-slug>--<NN>-<item-slug>` in its own worktree, cut from the integration branch's current tip.
 - When an item's done-when lines are met and its local checks pass, merge it locally into the integration branch.
 - Never `git commit -a` in a shared worktree. Stage explicit paths.
@@ -153,7 +157,7 @@ When told, push the integration branch (plus any approved `hold` branches, merge
 
 | Command | Does |
 |---|---|
-| `init --repo <dir> --slug <slug> [--date YYYY-MM-DD]` | Creates the run folder (colliding slug gets `-2`) with all five files from the templates, the integration branch at HEAD and its worktree under `~/.cwt/<run-slug>/int`. Records the builder's branch and uncommitted files. Refuses a repo with no commits. |
+| `init --repo <dir> --slug <slug> [--date YYYY-MM-DD] [--base <ref>] [--merge <ref>]` | Fetches `origin` (a failed fetch is a warning), then refuses (exit 1, nothing created) when the checkout is behind the remote default branch unless `--base` or `--merge` names the base; the message says which fits. `--merge <ref>` cuts from the base and merges `<ref>` in the integration worktree, after `git merge-tree` proves it clean (a conflict is refused before anything is created). Creates the run folder (colliding slug gets `-2`) with all five files from the templates, the integration branch at the base and its worktree under `~/.cwt/<run-slug>/int`. Records `base_ref`, `behind_at_start`, the builder's branch and uncommitted files. Refuses a repo with no commits. |
 | `add-item --run <runDir> --slug <s> --stop-class go\|hold\|stop [--title <t>] [--on <N>]` | Appends an item. `--on` marks a dependency; a dependent of a `hold` item builds on the hold branch. |
 | `start --run <runDir> --item <N>` | Creates the item branch and its worktree (short path, one retry, never the builder's tree) and returns the worktree path. Re-entering a `building` item returns its existing worktree, or re-creates it on its branch if the folder was deleted. Refuses `stop` items, and refuses (exit 1, nothing parked) a path that exists but is not the item's worktree. |
 | `check --run <runDir> --item <N> --command <cmd> --result pass\|fail\|error` | Records a check. Two `fail` results park the item; `error` is environmental and doesn't count. |
