@@ -7,6 +7,19 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+## [1.13.2] — 2026-10-17 — build on current code
+
+Patch release. A `/take` run cut its branches from whatever was checked out. On 2026-10-17 that was a feature branch 424 commits behind `main`, so the run built and verified against month-old code and produced a PR that conflicted and could not be tested. Most checkouts in a busy estate sit a few commits behind without anyone noticing.
+
+### Fixed
+
+- **`cart-run.js init` refuses a stale base.** It fetches `origin`, and when the checkout is behind the remote default branch it exits 1 before creating anything, naming the count and both ways out. A failed fetch is a warning, not a refusal; a repo with no remote is not checked.
+- **`/take` verifies against the base.** Harvest reads "already done?" from the remote default branch when the checkout is behind, and every mode names the behind-count at the start-of-run confirmation. Attended runs ask the builder to pull or switch first.
+
+### Added
+
+- **`init --base <ref>`.** Names the run's base on purpose: `origin/main` to build on the remote tip without touching the builder's tree, or `HEAD` to build on the checkout as it stands. Recorded in `state.json` as `base_ref` with `behind_at_start`.
+
 ## [1.13.1] — 2026-10-17 — clean up only what's yours
 
 Patch release. On 2026-10-16, closing one `/take` run with `rm -rf ~/.cwt` deleted the worktrees of a live run in another repo, because every run on the machine shares that root. The live run recovered with no commit lost, but cleanup should never have been able to reach it.

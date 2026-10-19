@@ -8,7 +8,7 @@
  * Rules: skills/guide/references/unattended-run.md.
  *
  * Usage (every command prints one JSON object on stdout):
- *   node cart-run.js init     --repo <dir> --slug <slug> [--date YYYY-MM-DD]
+ *   node cart-run.js init     --repo <dir> --slug <slug> [--date YYYY-MM-DD] [--base <ref>]
  *   node cart-run.js add-item --run <runDir> --slug <item-slug> --stop-class go|hold|stop [--title <t>] [--on <N>]
  *   node cart-run.js start    --run <runDir> --item <N>
  *   node cart-run.js check    --run <runDir> --item <N> --command <cmd> --result pass|fail|error
@@ -26,6 +26,8 @@
  *   - A `check` that fails twice (result "fail"; "error" is environmental and
  *     does not count) parks the item automatically.
  *   - `finish merged` refuses a `hold` or `stop` item; `start` refuses `stop`.
+ *   - `init` fetches and refuses a checkout behind the remote default branch
+ *     unless --base names the base (origin/main, or HEAD on purpose).
  *   - `start` refuses a path that exists but is not the item's worktree.
  *   - The worktree root's parent is shared by every concurrent run. `cleanup`
  *     touches only this run's worktrees and branches, never forces a removal,
@@ -167,6 +169,7 @@ function cmdInit(a) {
   // Porcelain lines start with a status column that may be a space, so read them untrimmed.
   const dirty = execFileSync('git', ['status', '--porcelain'], { cwd: repo, encoding: 'utf8' })
     .split('\n').filter(Boolean).map((l) => l.slice(3));
+  const { base, baseRef, behind, warnings } = resolveBase(repo, a.base);
   const date = a.date || today();
   const runsDir = path.join(repo, 'docs', 'cart-runs');
   let runSlug = slug;
@@ -180,7 +183,6 @@ function cmdInit(a) {
     const src = path.join(TEMPLATE_DIR, tpl);
     fs.writeFileSync(path.join(runDir, name), fs.existsSync(src) ? fs.readFileSync(src, 'utf8') : '');
   }
-  const base = git(repo, 'rev-parse', 'HEAD');
   const integration = `cart/${runSlug}`;
   git(repo, 'branch', integration, base);
   // Keyed by repo and run, so same-named runs in two repos never share a worktree root.
@@ -190,6 +192,8 @@ function cmdInit(a) {
     run: runSlug,
     repo,
     base_commit: base,
+    base_ref: baseRef,
+    behind_at_start: behind,
     integration_branch: integration,
     integration_worktree: intWt,
     worktree_root: root,
@@ -199,7 +203,51 @@ function cmdInit(a) {
     items: [],
   };
   saveState(path.join(runDir, 'state.json'), state);
-  return { runDir, run: runSlug, integration_branch: integration, integration_worktree: intWt, uncommitted_at_start: dirty };
+  return {
+    runDir, run: runSlug, integration_branch: integration, integration_worktree: intWt,
+    base_ref: baseRef, behind_at_start: behind, uncommitted_at_start: dirty, warnings,
+  };
+}
+
+// The run's base. A checkout behind the remote default would build and verify
+// against stale code (2026-10-17: a run cut from a branch 424 commits behind
+// main), so that case is refused unless --base names the base on purpose.
+function resolveBase(repo, wanted) {
+  const warnings = [];
+  const hasOrigin = git(repo, 'remote').split('\n').includes('origin');
+  if (hasOrigin) {
+    try {
+      execFileSync('git', ['fetch', '--quiet', 'origin'], { cwd: repo, stdio: ['ignore', 'pipe', 'pipe'], timeout: 60000 });
+    } catch (e) {
+      warnings.push(`git fetch origin failed, so the staleness check uses the last fetch: ${String(e.stderr || e.message).trim()}`);
+    }
+  }
+  let remoteDefault = null;
+  if (hasOrigin) {
+    try { remoteDefault = git(repo, 'symbolic-ref', '--quiet', '--short', 'refs/remotes/origin/HEAD'); } catch {
+      remoteDefault = ['origin/main', 'origin/master'].find((r) => branchRefExists(repo, `refs/remotes/${r}`)) || null;
+    }
+  }
+  const behind = remoteDefault ? Number(git(repo, 'rev-list', '--count', `HEAD..${remoteDefault}`)) : 0;
+  if (wanted !== undefined && wanted !== true) {
+    let base;
+    try { base = git(repo, 'rev-parse', '--verify', '--quiet', `${wanted}^{commit}`); } catch {
+      throw new CartError(`unknown base "${wanted}"`);
+    }
+    return { base, baseRef: wanted, behind, warnings };
+  }
+  if (behind > 0) {
+    const where = git(repo, 'rev-parse', '--abbrev-ref', 'HEAD');
+    throw new CartError(
+      `the checkout (${where}) is ${behind} commit${behind === 1 ? '' : 's'} behind ${remoteDefault}; a run cut from it builds and verifies against stale code. ` +
+      `Pass --base ${remoteDefault} to build on the remote tip, or --base HEAD to build on this checkout on purpose.`,
+    );
+  }
+  return { base: git(repo, 'rev-parse', 'HEAD'), baseRef: 'HEAD', behind, warnings };
+}
+
+function branchRefExists(repo, ref) {
+  try { git(repo, 'rev-parse', '--verify', '--quiet', ref); return true; } catch { return false; }
 }
 
 function branchExists(repo, b) {

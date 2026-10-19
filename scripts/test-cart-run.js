@@ -246,4 +246,50 @@ test('cleanup keeps an unpushed integration branch and says why', () => {
   assert.ok(!fs.existsSync(stateOf(runDir).integration_worktree), 'its worktree goes; the branch stays');
 });
 
+// A clone whose origin has moved on by one commit since the clone was made.
+function staleClone() {
+  const origin = repo();
+  const d = fs.mkdtempSync(path.join(os.tmpdir(), 'cart-clone-'));
+  sh(d, 'git', 'clone', '-q', origin, '.');
+  sh(d, 'git', 'config', 'user.email', 't@example.com');
+  sh(d, 'git', 'config', 'user.name', 't');
+  commitIn(origin, 'later.txt', 'pushed after the clone\n');
+  return { origin, clone: d };
+}
+
+test('init refuses a checkout behind the remote default, and creates nothing', () => {
+  const { clone } = staleClone();
+  const f = cartFails('init', '--repo', clone, '--slug', 'stale');
+  assert.strictEqual(f.code, 1);
+  assert.match(f.stderr, /1 commit behind origin\/main/);
+  assert.match(f.stderr, /--base origin\/main/);
+  assert.ok(!fs.existsSync(path.join(clone, 'docs', 'cart-runs')), 'no run folder');
+  assert.deepStrictEqual(branches(clone), ['main']);
+});
+
+test('init --base origin/main cuts from the remote tip; the builder tree stays put', () => {
+  const { origin, clone } = staleClone();
+  const res = cart('init', '--repo', clone, '--slug', 'fresh', '--base', 'origin/main');
+  assert.strictEqual(sh(clone, 'git', 'rev-parse', 'cart/fresh'), sh(origin, 'git', 'rev-parse', 'HEAD'));
+  assert.ok(fs.existsSync(path.join(res.integration_worktree, 'later.txt')));
+  assert.ok(!fs.existsSync(path.join(clone, 'later.txt')), 'builder tree not checked out');
+  const s = stateOf(res.runDir);
+  assert.strictEqual(s.base_ref, 'origin/main');
+  assert.strictEqual(s.behind_at_start, 1);
+});
+
+test('init --base HEAD builds on the stale checkout on purpose', () => {
+  const { clone } = staleClone();
+  const res = cart('init', '--repo', clone, '--slug', 'onpurpose', '--base', 'HEAD');
+  assert.strictEqual(sh(clone, 'git', 'rev-parse', 'cart/onpurpose'), sh(clone, 'git', 'rev-parse', 'HEAD'));
+  assert.strictEqual(stateOf(res.runDir).base_ref, 'HEAD');
+});
+
+test('init with no remote does not refuse, and an unknown --base does', () => {
+  const r = repo();
+  const res = cart('init', '--repo', r, '--slug', 'local');
+  assert.strictEqual(stateOf(res.runDir).base_ref, 'HEAD');
+  assert.match(cartFails('init', '--repo', repo(), '--slug', 'x', '--base', 'nope/main').stderr, /unknown base "nope\/main"/);
+});
+
 test.after(() => fs.rmSync(WT_ROOT, { recursive: true, force: true }));

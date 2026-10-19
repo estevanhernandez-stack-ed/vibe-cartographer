@@ -1,6 +1,6 @@
 {
   "name": "vibe-cartographer",
-  "version": "1.13.1",
+  "version": "1.13.2",
   "description": "Vibe Cartographer: find your direction no matter where you start. From a raw idea, it plots the course to a shipped app. Hand it a backlog, a findings report, a plan, or nothing at all, and it finds the work, plans it, and runs it overnight the way you would, with nothing pushed until you review.",
   "author": {
     "name": "626Labs LLC",
